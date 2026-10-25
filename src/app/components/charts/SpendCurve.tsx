@@ -134,7 +134,7 @@ export function SpendCurve({
         )}
       </svg>
       {baseline && (
-        <figcaption className="mt-1 flex items-center gap-2 text-[12px] opacity-80">
+        <figcaption className="mt-1 flex items-center gap-2 text-[12px] font-medium">
           <svg width="18" height="2" aria-hidden="true">
             <line x1="0" x2="18" y1="1" y2="1" stroke="currentColor" strokeOpacity="0.6" strokeDasharray="2 3" />
           </svg>

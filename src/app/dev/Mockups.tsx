@@ -13,6 +13,7 @@ import { DemoDataBanner } from "../components/ui/Badges";
 import { CircleIconButton } from "../components/ui/Buttons";
 import { HeroAmount } from "../components/ui/HeroAmount";
 import { Icon } from "../components/ui/Icon";
+import { Silhouette } from "./Silhouettes";
 
 /*
  * テーマの比較（開発環境だけ）。?v=<テーマ名> で切り替え。数字はすべてサンプル。
@@ -22,7 +23,7 @@ import { Icon } from "../components/ui/Icon";
  *  Tropical #A6C4B0 #A3D1BF #B2E0C9 #F8DAB9 #F59C8E
  *  Dusk     #1E1B3A #4B2E6F #C2508A #FF8C69 #FFD39A（日没後の空）
  *  Sakura   #FFF4F6 #F7C9D4 #E89AB0 #B5677F #5A3645（春の朝の桜）
- *  Frost    #F4F7FA #DCE4EC #A9B7C6 #5E6E80 #26303B（冬の朝の氷）
+ *  Frost    #F5F9FC #DCEBF5 #C5D3DC #9FC3DA #FFE9D2（透明な湖氷・朝日・南極の流氷）
  */
 
 type Variant = "aurora" | "earthy" | "tropical" | "dusk" | "sakura" | "frost";
@@ -33,7 +34,7 @@ const THEMES: Record<Variant, { label: string; page: "light" | "dark"; hero: "li
   tropical: { label: "Tropical", page: "light", hero: "light", card: "light" },
   dusk: { label: "Dusk", page: "dark", hero: "dark", card: "dark" },
   sakura: { label: "Sakura", page: "light", hero: "light", card: "light" },
-  frost: { label: "Frost", page: "light", hero: "dark", card: "light" },
+  frost: { label: "Frost", page: "light", hero: "light", card: "light" },
 };
 
 // 小さな英字ラベル（すべて大文字・字間を少し広げる）
@@ -77,6 +78,7 @@ export default function Mockups() {
         <span className="b4" />
         <span className="ribbon" />
         <span className="ribbon2" />
+        <Silhouette theme={v} />
       </div>
       <DemoDataBanner />
       <main className="app-shell flex flex-col gap-5">
