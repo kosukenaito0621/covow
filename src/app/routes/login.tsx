@@ -53,6 +53,7 @@ function Login() {
           options={[
             { value: "en", label: "EN" },
             { value: "ja", label: "日本語" },
+            { value: "mix", label: "Mix" },
           ]}
         />
       </div>

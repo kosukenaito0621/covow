@@ -1,7 +1,7 @@
-import type { Locale } from "./i18n";
+import type { BaseLocale } from "./i18n";
 
-/** スペース作成時に入れる初期カテゴリ（この順に並べる）。作った人の言語で入れ、あとから名前を変えられる */
-export const DEFAULT_CATEGORIES: Record<Locale, readonly string[]> = {
+/** スペース作成時に入れる初期カテゴリ（この順に並べる）。作った人のデータの言語（dataLocale）で入れ、あとから名前を変えられる */
+export const DEFAULT_CATEGORIES: Record<BaseLocale, readonly string[]> = {
   en: ["Groceries", "Daily goods", "Home & appliances", "Clothing & beauty", "Hobbies & fun", "Social", "Travel & outings", "Other"],
   ja: ["食費", "日用品", "家具・家電", "衣服・美容", "趣味・娯楽", "交際", "旅行・おでかけ", "その他"],
 };

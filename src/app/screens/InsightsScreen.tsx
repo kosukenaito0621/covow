@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import type { IsoDate, YearMonth } from "@shared/date/jst";
-import { formatMonth, formatMonthShort, formatShortDate } from "@shared/i18n";
+import { formatMonth, formatMonthShort, formatShortDate, textLocale } from "@shared/i18n";
 import { formatYen } from "@shared/money/amount";
 import { CategoryBars } from "../components/charts/CategoryBars";
 import { MonthlyBars } from "../components/charts/MonthlyBars";
@@ -143,7 +143,7 @@ function Overview({ d }: { d: InsightsData }) {
               points={d.daily.map((x) => ({ key: x.date, amount: x.amount }))}
               selectedIndex={sel}
               summary={t("insights.dailySummary", {
-                date: formatShortDate(d.daily[peak]?.date ?? d.yearMonth, locale),
+                date: formatShortDate(d.daily[peak]?.date ?? d.yearMonth, textLocale(locale)),
                 amount: formatYen(d.daily[peak]?.amount ?? 0),
               })}
             />

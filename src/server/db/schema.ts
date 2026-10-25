@@ -18,7 +18,8 @@ export const users = sqliteTable("users", {
   displayName: text("display_name").notNull(),
   avatarUrl: text("avatar_url"),
   // 画面の言語とテーマ（アカウントに保存し、どの端末でも同じにする）
-  locale: text("locale", { enum: LOCALES }).notNull().default("en"),
+  // 列の名前は language（Mix を足すときに作った列。古い locale 列は使わない。マイグレーション 0005 を参照）
+  locale: text("language", { enum: LOCALES }).notNull().default("en"),
   theme: text("theme", { enum: THEME_IDS }).notNull().default("aurora"),
   // 体験版の仮のアカウント（24時間で消える）。guestExpiresAt を過ぎたら毎日の定期処理で消す
   isGuest: integer("is_guest", { mode: "boolean" }).notNull().default(false),

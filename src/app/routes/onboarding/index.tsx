@@ -55,7 +55,7 @@ function Onboarding() {
     setStep(n);
   };
   const finish = () => {
-    // ホームで「やってみましょう」を一度だけ勧める
+    // ホームで「Let's Try」を一度だけ勧める
     if (me) {
       try {
         localStorage.setItem(offerKey(me.user.id), "1");

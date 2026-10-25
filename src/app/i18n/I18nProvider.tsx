@@ -1,5 +1,5 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { DEFAULT_LOCALE, isLocale, type Locale, type MessageKey, type Params, translate } from "@shared/i18n";
+import { DEFAULT_LOCALE, htmlLang, isLocale, type Locale, type MessageKey, type Params, translate } from "@shared/i18n";
 
 /*
  * 画面の言語。最初は英語で、設定で日本語に切り替えられる。
@@ -32,7 +32,7 @@ export function I18nProvider({ children, forceLocale }: { children: ReactNode; f
   const locale = forceLocale ?? stored;
 
   useEffect(() => {
-    document.documentElement.lang = locale;
+    document.documentElement.lang = htmlLang(locale);
   }, [locale]);
 
   const setLocale = useCallback((l: Locale) => {

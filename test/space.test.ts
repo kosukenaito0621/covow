@@ -43,6 +43,13 @@ describe("スペースを作る", () => {
     expect(first?.name).toBe("Groceries");
   });
 
+  it("Mix の人には日本語のカテゴリ（データは日本語）", async () => {
+    const a = await makeUser("Mix", "mix");
+    const space = await makeSpace(a);
+    const first = await env.DB.prepare("SELECT name FROM categories WHERE space_id = ? AND sort_order = 0").bind(space.id).first<{ name: string }>();
+    expect(first?.name).toBe("食費");
+  });
+
   it("名前が空なら 422、別サイトからは 403", async () => {
     const a = await makeUser("Aoi");
     expect((await a.call("/space", { method: "POST", body: { name: "   " } })).status).toBe(422);

@@ -141,7 +141,7 @@ export const ja = {
   "settings.notSet": "未設定",
   "settings.categories": "カテゴリ",
   "settings.addCategory": "カテゴリを追加",
-  "settings.tour": "使い方ガイドをもう一度",
+  "settings.tour": "Let's Try をもう一度",
   "settings.account": "アカウント",
   "settings.signOut": "ログアウト",
   "settings.deleteAccount": "アカウントを削除",
@@ -239,4 +239,5 @@ export const ja = {
   "onboarding.next": "次へ",
   "onboarding.skip": "スキップ",
   "onboarding.finish": "COVOW をはじめる",
+  "trial.account": "体験版のアカウント（24時間）",
 } as const satisfies Record<MessageKey, string>;

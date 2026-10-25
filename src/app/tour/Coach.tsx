@@ -9,7 +9,8 @@ import { type Mission, tourEvent } from "./missions";
 import { useTour } from "./TourProvider";
 
 /*
- * 「やってみましょう」のコーチ（画面の下、ナビの上）と、押す場所を囲む光る枠。
+ * 「Let's Try」のコーチ（画面の下、ナビの上）と、押す場所を囲む光る枠。
+ * 押す場所が画面の外（上、またはコーチとナビに隠れる下）にあるときは、スクロールの指示を出す。勝手には動かさない。
  * まわりは暗くせず、ふだんどおり操作できる。文言は日本語だけ（lang="ja" を付けて読み上げも日本語にする）。
  */
 
@@ -19,6 +20,7 @@ export function Coach() {
   const qc = useQueryClient();
   const [listOpen, setListOpen] = useState(false);
   const [calling, setCalling] = useState(false);
+  const [offscreen, setOffscreen] = useState<"up" | "down" | null>(null);
   const panel = useRef<HTMLDivElement>(null);
   const { state, missions, active, next, justDone } = tour;
 
@@ -69,7 +71,7 @@ export function Coach() {
   if (listOpen) {
     body = (
       <>
-        <Header label={`やってみましょう ${doneCount}/${total}`} onClose={() => setListOpen(false)} closeLabel="一覧を閉じる" />
+        <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => setListOpen(false)} closeLabel="一覧を閉じる" />
         <ul className="mt-2 flex max-h-[40dvh] flex-col overflow-y-auto">
           {missions.map((m, i) => {
             const done = state.done.includes(m.id);
@@ -94,7 +96,7 @@ export function Coach() {
   } else if (allDone && !state.celebrated) {
     body = (
       <>
-        <Header label={`やってみましょう ${doneCount}/${total}`} onClose={() => tour.markCelebrated()} />
+        <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => tour.markCelebrated()} />
         <p className="mt-2 text-[17px] font-semibold">すべて完了しました</p>
         <p className="mt-1 text-[14px] leading-relaxed text-white/90">基本の使い方はこれで以上です。設定からいつでも、もう一度ご覧いただけます。</p>
         <div className="mt-3 flex gap-2">
@@ -105,7 +107,7 @@ export function Coach() {
   } else if (allDone) {
     body = (
       <>
-        <Header label={`やってみましょう ${doneCount}/${total}`} onClose={() => tour.hide()} />
+        <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => tour.hide()} />
         <p className="mt-2 text-[15px]">すべてのミッションを完了しています。</p>
         <div className="mt-3 flex gap-2">
           <SecondaryCoachButton onClick={() => setListOpen(true)}>一覧</SecondaryCoachButton>
@@ -116,7 +118,7 @@ export function Coach() {
   } else if (justDone && !active) {
     body = (
       <>
-        <Header label={`やってみましょう ${doneCount}/${total}`} onClose={() => tour.hide()} />
+        <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => tour.hide()} />
         <p className="mt-2 flex items-center gap-2 text-[15px] font-semibold">
           <Icon name="check" size={18} />「{justDone.title}」が完了しました
         </p>
@@ -131,9 +133,15 @@ export function Coach() {
     const m = active ?? next!;
     body = (
       <>
-        <Header label={`やってみましょう ${doneCount}/${total}`} onClose={() => tour.hide()} />
+        <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => tour.hide()} />
         <p className="mt-2 text-[17px] font-semibold">{m.title}</p>
         <p className="mt-1 text-[14px] leading-relaxed text-white/90">{m.body}</p>
+        {active && offscreen && (
+          <p className="mt-2 flex items-center gap-1.5 text-[14px] font-semibold">
+            <Icon name={offscreen === "down" ? "arrowDown" : "arrowUp"} size={16} />
+            {offscreen === "down" ? "下" : "上"}にスクロールすると、押す場所が表示されます
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap gap-2">
           {m.action && active ? (
             <PrimaryCoachButton onClick={() => void runAction(m)} disabled={calling}>
@@ -159,7 +167,7 @@ export function Coach() {
           <motion.section
             key={listOpen ? "list" : (active?.id ?? justDone?.id ?? (allDone ? "all" : next?.id))}
             lang="ja"
-            aria-label="やってみましょう"
+            aria-label="Let's Try"
             aria-live="polite"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -171,7 +179,7 @@ export function Coach() {
           </motion.section>
         </AnimatePresence>
       </div>
-      {active && <Spotlight targets={active.targets} />}
+      {active && <Spotlight targets={active.targets} panel={panel} onOffscreen={setOffscreen} />}
     </>
   );
 }
@@ -212,7 +220,16 @@ function SecondaryCoachButton(props: { onClick: () => void; children: string }) 
  * 押す場所を光る枠で囲む。targets の順に探し、最初に見つかったものを囲む（シートの中の送信ボタンを優先するなど）。
  * シート（<dialog>）の中にあるときは、そのシートの中に枠を描く（シートは一番手前に出るため）。
  */
-function Spotlight({ targets }: { targets: string[] }) {
+function Spotlight({
+  targets,
+  panel,
+  onOffscreen,
+}: {
+  targets: string[];
+  panel: React.RefObject<HTMLDivElement | null>;
+  /** 押す場所が画面の外にあるとき、その向き（見えていれば null） */
+  onOffscreen: (dir: "up" | "down" | null) => void;
+}) {
   const [box, setBox] = useState<{ el: Element; rect: DOMRect; host: HTMLElement | null } | null>(null);
 
   useEffect(() => {
@@ -226,16 +243,20 @@ function Spotlight({ targets }: { targets: string[] }) {
       }
       const rect = found?.getBoundingClientRect();
       const host = (found?.closest("dialog[open]") as HTMLElement | null) ?? null;
-      const sig = rect ? `${rect.x},${rect.y},${rect.width},${rect.height},${!!host}` : "";
+      // 見えている範囲：画面の上端から、コーチ（とその下のナビ）の上端まで。シートの中はシートの中で見えているものとする
+      const visibleBottom = panel.current?.getBoundingClientRect().top ?? innerHeight;
+      const dir: "up" | "down" | null = !rect || host ? null : rect.top < 0 ? "up" : rect.bottom > visibleBottom ? "down" : null;
+      const sig = rect ? `${rect.x},${rect.y},${rect.width},${rect.height},${!!host},${dir}` : "";
       if (sig !== last) {
         last = sig;
         setBox(found && rect ? { el: found, rect, host } : null);
+        onOffscreen(dir);
       }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [targets]);
+  }, [targets, panel, onOffscreen]);
 
   if (!box) return null;
   const pad = 6;

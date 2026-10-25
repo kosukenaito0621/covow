@@ -44,6 +44,13 @@ describe("体験版", () => {
     expect(cats[0]?.name).toBe("食費");
   });
 
+  it("Mix で始めると、画面の言語は Mix のまま、見本データは日本語", async () => {
+    const t = await startTrial("10.0.0.9", { lang: "mix", theme: "aurora" });
+    const me = await (await t.call("/me")).json<{ user: { locale: string }; space: { name: string } }>();
+    expect(me.user.locale).toBe("mix");
+    expect(me.space.name).toBe("ふたりの家");
+  });
+
   it("招待・参加・メンバーを外す・抜ける・スペース作成はお休み（403 TRIAL_LOCKED）", async () => {
     const t = await startTrial("10.0.0.2");
     for (const [method, path] of [

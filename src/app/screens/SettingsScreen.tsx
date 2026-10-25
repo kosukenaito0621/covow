@@ -72,8 +72,9 @@ export function SettingsScreen({
         <Avatar name={d.me.name} size={52} />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[17px] font-semibold">{d.me.name}</p>
-          <p className={`truncate text-[13px] ${muted}`}>{d.me.email}</p>
-          <p className={`text-[12px] ${muted}`}>{t("settings.signedIn")}</p>
+          {/* 体験版の仮のアカウントには、意味のあるメールアドレスがないので出さない */}
+          {!actions.isGuest && <p className={`truncate text-[13px] ${muted}`}>{d.me.email}</p>}
+          <p className={`text-[12px] ${muted}`}>{actions.isGuest ? t("trial.account") : t("settings.signedIn")}</p>
         </div>
         <RowIcon icon="edit" label={t("settings.displayName")} />
       </GlassCard>
@@ -93,6 +94,7 @@ export function SettingsScreen({
           options={[
             { value: "en", label: "English" },
             { value: "ja", label: "日本語" },
+                { value: "mix", label: "Mix" },
           ]}
         />
       </Block>

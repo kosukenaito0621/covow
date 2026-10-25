@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { DEFAULT_CATEGORIES, INVITE_TTL_HOURS, MAX_SPACE_MEMBERS } from "../../shared/constants";
-import type { Locale } from "../../shared/i18n";
+import { dataLocale, type Locale } from "../../shared/i18n";
 import { randomToken, sha256Hex } from "../auth/tokens";
 import type { Db } from "../db/client";
 import { invites, spaceMembers, spaces, users } from "../db/schema";
@@ -34,7 +34,7 @@ export async function createSpace(db: Db, input: { userId: string; name: string;
     d1.prepare("INSERT INTO spaces (id, name, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?)").bind(spaceId, input.name, input.userId, now, now),
     // すでにどこかのスペースにいれば、UNIQUE（1人1スペース）で失敗し、スペースごと取り消される
     d1.prepare("INSERT INTO space_members (space_id, user_id, role, joined_at) VALUES (?, ?, 'owner', ?)").bind(spaceId, input.userId, now),
-    ...DEFAULT_CATEGORIES[input.locale].map((name, i) =>
+    ...DEFAULT_CATEGORIES[dataLocale(input.locale)].map((name, i) =>
       d1
         .prepare("INSERT INTO categories (id, space_id, name, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
         .bind(crypto.randomUUID(), spaceId, name, i, now, now),

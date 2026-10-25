@@ -143,7 +143,7 @@ export const en = {
   "settings.notSet": "Not set",
   "settings.categories": "Categories",
   "settings.addCategory": "Add category",
-  "settings.tour": "Take the tour again",
+  "settings.tour": "Let's Try again",
   "settings.account": "Account",
   "settings.signOut": "Sign out",
   "settings.deleteAccount": "Delete account",
@@ -241,6 +241,7 @@ export const en = {
   "onboarding.next": "Next",
   "onboarding.skip": "Skip",
   "onboarding.finish": "Start using COVOW",
+  "trial.account": "Demo account (24 hours)",
 } as const;
 
 export type MessageKey = keyof typeof en;

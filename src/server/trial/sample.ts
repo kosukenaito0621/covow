@@ -1,13 +1,13 @@
 import { DEFAULT_CATEGORIES } from "../../shared/constants";
 import { addDays, addMonths, type IsoDate, yearMonthOf } from "../../shared/date/jst";
-import type { Locale } from "../../shared/i18n";
+import type { BaseLocale } from "../../shared/i18n";
 
 /*
  * 体験版の見本のスペース。数か月使い込んだように見える架空のデータ（実在の人・店・実データは使わない）。
  * 毎回同じ並びの「乱数」を使い、今日の日付に合わせてずらすだけなので、結果はいつも同じ形になる。
  */
 
-type Text = Record<Locale, string>;
+type Text = Record<BaseLocale, string>;
 
 export const SAMPLE_NAMES = {
   you: { en: "Guest", ja: "ゲスト" },
@@ -68,7 +68,8 @@ function rng(seed: number) {
 
 export interface SampleInput {
   d1: D1Database;
-  locale: Locale;
+  /** データの言語（Mix のときは ja を渡す） */
+  locale: BaseLocale;
   today: IsoDate;
   now: string;
   youId: string;

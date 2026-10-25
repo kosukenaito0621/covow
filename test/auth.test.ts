@@ -159,6 +159,8 @@ describe("ログイン中の本人", () => {
     expect(ok.status).toBe(200);
     expect((await ok.json<{ user: Record<string, unknown> }>()).user).toMatchObject({ locale: "en", theme: "sakura" });
 
+    const mix = await call("/api/me", { method: "PATCH", headers, body: JSON.stringify({ locale: "mix" }) });
+    expect((await mix.json<{ user: Record<string, unknown> }>()).user).toMatchObject({ locale: "mix" });
     for (const body of [{ theme: "neon" }, { locale: "fr" }, { displayName: "   " }, {}, { email: "x@example.com" }]) {
       const res = await call("/api/me", { method: "PATCH", headers, body: JSON.stringify(body) });
       expect(res.status, JSON.stringify(body)).toBe(422);

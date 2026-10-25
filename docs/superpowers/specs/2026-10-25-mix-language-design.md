@@ -86,10 +86,10 @@
   - 日付の表記（`formatMonth` など）は、Mix では英語の表記にする。
   - 文に差し込む日付だけは、呼び出し側が Mix のとき日本語の表記にする（`textLocale(locale)` を用意）。
   - `dataLocale(locale)`（Mix → `ja`）を用意し、初期カテゴリ・見本データで使う。
-- データベース：`users.locale` の CHECK 制約に `mix` を足す。
-  - SQLite は CHECK を後から変えられないため、users テーブルを作り直すマイグレーションにする。
-  - ほかのテーブルが users を参照しているので、`PRAGMA defer_foreign_keys = on` で、作り直しの間だけ外部キーの確認を最後に回す（D1 の推奨どおり。作る前に最新の公式ドキュメントで確認する）。
-  - 本番の DB はまだないので、既存データへの影響は開発用の DB だけ。
+- データベース：Mix を受け付ける新しい列 `users.language`（CHECK：en / ja / mix）を足し、`locale` の値を写す（マイグレーション 0005）。
+  - **実装時の変更（2026-10-25）**：当初は users テーブルの作り直しを考えたが、D1 は外部キーを切れず、古いテーブルを消すと
+    ON DELETE CASCADE でログイン情報・メンバー情報まで消えてしまう（`defer_foreign_keys` は確認を後回しにするだけで、連鎖削除は止まらない）。
+    そのため新しい列を足す方法に変えた。古い `locale` 列は残すが使わない。アプリの中の名前は今までどおり `locale`（列だけ `language`）。
 - サーバー：
   - 初期カテゴリ（スペース作成）と体験版の見本データは `dataLocale(user.locale)` を使う。
   - `PATCH /api/me`・ログイン・体験版は `mix` を受け付ける。

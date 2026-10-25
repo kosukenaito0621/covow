@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { en } from "./en";
-import { DEFAULT_LOCALE, formatMonth, formatMonthShort, formatShortDate, spokenDate, translate, weekdayLetter } from "./index";
+import { dataLocale, DEFAULT_LOCALE, formatMonth, htmlLang, MIX_JA_KEYS, textLocale, formatMonthShort, formatShortDate, spokenDate, translate, weekdayLetter } from "./index";
 import { ja } from "./ja";
 
 describe("英語／日本語", () => {
@@ -40,5 +40,20 @@ describe("英語／日本語", () => {
     expect(weekdayLetter(6, "ja")).toBe("日");
     expect(spokenDate("2026-10-19", 0, "en")).toBe("Monday, October 19");
     expect(spokenDate("2026-10-19", 0, "ja")).toBe("10月19日（月）");
+  });
+
+  it("Mix：意味を読み取る文だけ日本語、ほかは英語。日付は英語の表記、データと文中の日付は日本語", () => {
+    expect(translate("mix", "plan.under", { amount: "¥1,200" })).toBe(translate("ja", "plan.under", { amount: "¥1,200" }));
+    expect(translate("mix", "attention.overBudgetConfirm")).toBe(translate("ja", "attention.overBudgetConfirm"));
+    expect(translate("mix", "home.leftToSpend")).toBe("Left to spend");
+    expect(translate("mix", "plan.markBought")).toBe(translate("en", "plan.markBought"));
+    expect(translate("mix", "plan.thisMonthLeft")).toBe(translate("en", "plan.thisMonthLeft"));
+    for (const k of MIX_JA_KEYS) expect(translate("mix", k), k).toBe(translate("ja", k));
+    expect(formatMonth("2026-10", "mix")).toBe("Oct 2026");
+    expect(weekdayLetter(6, "mix")).toBe("S");
+    expect(dataLocale("mix")).toBe("ja");
+    expect(textLocale("mix")).toBe("ja");
+    expect(htmlLang("mix")).toBe("ja");
+    expect(dataLocale("en")).toBe("en");
   });
 });

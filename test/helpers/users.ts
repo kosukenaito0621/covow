@@ -6,7 +6,7 @@ import { users } from "../../src/server/db/schema";
 export const ORIGIN = "http://localhost:5173";
 
 /** テスト用のユーザーとログインの Cookie を作る（Google ログインは通さない） */
-export async function makeUser(name: string, locale: "en" | "ja" = "en") {
+export async function makeUser(name: string, locale: "en" | "ja" | "mix" = "en") {
   const db = createDb(env.DB);
   const id = crypto.randomUUID();
   const now = new Date().toISOString();

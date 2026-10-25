@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { addDays, addMonths, isYearMonth, jstThisMonth, weekDates, weekStartOf, yearMonthOf } from "@shared/date/jst";
-import { formatMonth, formatShortDate, weekdayName } from "@shared/i18n";
+import { formatMonth, formatShortDate, textLocale, weekdayName } from "@shared/i18n";
 import { formatYen } from "@shared/money/amount";
 import { dailyQuery, summaryQuery } from "../../api/data";
 import { meQuery } from "../../api/me";
@@ -230,7 +230,7 @@ function Home() {
 }
 
 /**
- * 初期設定を終えた人に、一度だけ「やってみましょう」を勧めるカード（案内は日本語だけ）。
+ * 初期設定を終えた人に、一度だけ「Let's Try」を勧めるカード（案内は日本語だけ）。
  * 体験版の人には最初からコーチが出るので、ここでは出さない。
  */
 function TourOffer() {
@@ -253,8 +253,8 @@ function TourOffer() {
     setOffered(false);
   };
   return (
-    <section lang="ja" aria-label="やってみましょう" className="overlay-glass-dark flex flex-col gap-2 rounded-[24px] px-4 py-4 text-white">
-      <p className="text-[17px] font-semibold">やってみましょう（約3分）</p>
+    <section lang="ja" aria-label="Let's Try" className="overlay-glass-dark flex flex-col gap-2 rounded-[24px] px-4 py-4 text-white">
+      <p className="text-[17px] font-semibold">Let's Try（約3分）</p>
       <p className="text-[14px] leading-relaxed text-white/90">登録から購入済みにするまでの基本操作を、実際の画面で順に案内します。</p>
       <div className="flex gap-2">
         <button
@@ -298,7 +298,7 @@ function WeekSpend({ month, today }: { month: string; today: string }) {
           points={dates.map((date, i) => ({ key: date, amount: amounts[i] ?? 0 }))}
           selectedIndex={sel}
           baseline={{ value: avg, label: t("home.avgPerDay") }}
-          summary={t("home.weekPeak", { weekday: weekdayName(peak, locale), amount: formatYen(amounts[peak] ?? 0) })}
+          summary={t("home.weekPeak", { weekday: weekdayName(peak, textLocale(locale)), amount: formatYen(amounts[peak] ?? 0) })}
         />
       </div>
       <div className="mt-3" data-tour="day-chips">

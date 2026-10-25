@@ -1,5 +1,5 @@
 import { jstToday } from "../../shared/date/jst";
-import type { Locale } from "../../shared/i18n";
+import { dataLocale, type Locale } from "../../shared/i18n";
 import type { ThemeId } from "../../shared/theme";
 import { randomToken, sha256Hex } from "../auth/tokens";
 import type { Db } from "../db/client";
@@ -49,24 +49,26 @@ export async function createTrial(db: Db, input: { ip: string; locale: Locale; t
   const spaceId = crypto.randomUUID();
   const token = randomToken();
   const d1 = db.$client;
+  // 見本データは「データの言語」で作る（Mix は日本語）
+  const lang = dataLocale(input.locale);
   const user = (id: string, name: string) =>
     d1
       .prepare(
-        `INSERT INTO users (id, google_sub, email, display_name, avatar_url, locale, theme, is_guest, guest_expires_at, created_at, updated_at)
+        `INSERT INTO users (id, google_sub, email, display_name, avatar_url, language, theme, is_guest, guest_expires_at, created_at, updated_at)
          VALUES (?, ?, ?, ?, NULL, ?, ?, 1, ?, ?, ?)`,
       )
       // 仮のアカウントなので、Google の ID とメールアドレスは使えない形の値にする
       .bind(id, `guest:${id}`, `${id}@guest.invalid`, name, input.locale, input.theme, expiresAt, nowIso, nowIso);
 
   await d1.batch([
-    user(youId, SAMPLE_NAMES.you[input.locale]),
-    user(partnerId, SAMPLE_NAMES.partner[input.locale]),
+    user(youId, SAMPLE_NAMES.you[lang]),
+    user(partnerId, SAMPLE_NAMES.partner[lang]),
     d1
       .prepare("INSERT INTO spaces (id, name, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
-      .bind(spaceId, SAMPLE_NAMES.space[input.locale], youId, nowIso, nowIso),
+      .bind(spaceId, SAMPLE_NAMES.space[lang], youId, nowIso, nowIso),
     d1.prepare("INSERT INTO space_members (space_id, user_id, role, joined_at) VALUES (?, ?, 'owner', ?)").bind(spaceId, youId, nowIso),
     d1.prepare("INSERT INTO space_members (space_id, user_id, role, joined_at) VALUES (?, ?, 'member', ?)").bind(spaceId, partnerId, nowIso),
-    ...sampleStatements({ d1, locale: input.locale, today, now: nowIso, youId, partnerId, spaceId }),
+    ...sampleStatements({ d1, locale: lang, today, now: nowIso, youId, partnerId, spaceId }),
     // ログインのしるし（期限は体験版と同じ24時間。延長しない）
     d1
       .prepare("INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)")
@@ -97,7 +99,7 @@ export async function partnerVisit(db: Db, input: { spaceId: string; youId: stri
       `INSERT INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, created_at, updated_at)
        VALUES (?, ?, ?, NULL, ?, ?, ?, ?, NULL, NULL, 'planned', ?, ?)`,
     )
-    .bind(id, input.spaceId, partner.id, PARTNER_VISIT_PLAN.text[input.locale], PARTNER_VISIT_PLAN.amount, cat?.id ?? null, partnerVisitDate(jstToday()), now, now)
+    .bind(id, input.spaceId, partner.id, PARTNER_VISIT_PLAN.text[dataLocale(input.locale)], PARTNER_VISIT_PLAN.amount, cat?.id ?? null, partnerVisitDate(jstToday()), now, now)
     .run();
   return { id };
 }

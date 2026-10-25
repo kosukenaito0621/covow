@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { jstThisMonth, jstToday, jstYearMonthOfInstant, yearMonthOf } from "@shared/date/jst";
-import type { MessageKey } from "@shared/i18n";
+import { dataLocale, type MessageKey } from "@shared/i18n";
 import { remainingAfterPlanChange } from "@shared/money/summary";
 import {
   categoriesQuery,
@@ -55,7 +55,7 @@ export function usePlanForm(onSaved?: (plan: Plan) => void) {
       open={state.open}
       onClose={close}
       plan={state.plan}
-      sample={!state.plan && tour.active?.id === "add-plan" ? SAMPLES.plan[locale] : null}
+      sample={!state.plan && tour.active?.id === "add-plan" ? SAMPLES.plan[dataLocale(locale)] : null}
       categories={categories.data ?? []}
       members={(space.data?.members ?? []).map((m) => ({ id: m.id, name: m.displayName }))}
       previewRemaining={(amount, date) => {
@@ -115,7 +115,7 @@ export function useExpenseForm() {
         open={state.open && !confirmDelete}
         onClose={close}
         expense={state.expense}
-        sample={!state.expense && tour.active?.id === "expense" ? SAMPLES.expense[locale] : null}
+        sample={!state.expense && tour.active?.id === "expense" ? SAMPLES.expense[dataLocale(locale)] : null}
         today={jstToday()}
         categories={categories.data ?? []}
         pending={create.isPending || update.isPending}

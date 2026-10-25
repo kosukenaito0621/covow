@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, daysInMonth, type IsoDate, yearMonthOf } from "@shared/date/jst";
 import { INVITE_TTL_HOURS } from "@shared/constants";
-import { LOCALES, type Locale } from "@shared/i18n";
+import { dataLocale, LOCALES, type Locale } from "@shared/i18n";
 import { categoryBreakdown, dailySpend, memberBreakdown, monthlyTrend, planVsActual, trendStats } from "@shared/money/analytics";
 import { type ExpenseLike, monthOverMonth, type PlanLike, remainingAfterPlanChange, summarizeMonth } from "@shared/money/summary";
 import { FloatingNav } from "../components/glass/FloatingNav";
@@ -133,6 +133,8 @@ export default function ScreenPreviews() {
   const tab = (q.get("tab") as InsightsTab | null) ?? "overview";
   const { theme, setTheme } = useTheme();
   const { locale, setLocale } = useT();
+  // 見本データの言語（Mix は日本語）
+  const dl = dataLocale(locale);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -144,20 +146,20 @@ export default function ScreenPreviews() {
 
   const catName = (id: string | null) => {
     const c = CATS.find((x) => x.id === id);
-    return c ? c[locale] : null;
+    return c ? c[dl] : null;
   };
   const plans: PlanView[] = RAW_PLANS.map((r) => ({
     ...r,
-    title: r[locale],
+    title: r[dl],
     createdBy: NAMES[r.by] ?? r.by,
     category: catName(r.cat),
-    memo: r.memo?.[locale],
+    memo: r.memo?.[dl],
   }));
 
   const insights = useMemo(() => {
     // 今月は今日まで（先の日は0円の平らな線になるだけなので出さない）
     const dates = Array.from({ length: Number(TODAY.slice(8)) }, (_, i) => addDays(`${YM}-01`, i));
-    const cats = categoryBreakdown({ yearMonth: YM, expenses, categories: CATS.map((c) => ({ id: c.id, name: c[locale] })) });
+    const cats = categoryBreakdown({ yearMonth: YM, expenses, categories: CATS.map((c) => ({ id: c.id, name: c[dl] })) });
     const trend = monthlyTrend({ endYearMonth: YM, months: 6, expenses, budgets: BUDGETS });
     const stats = trendStats(trend, YM);
     const members = memberBreakdown({ yearMonth: YM, memberIds: [ME, HARU], expenses, plans: planLikes });
@@ -178,7 +180,7 @@ export default function ScreenPreviews() {
       trendOverCount: stats.overCount,
       members: members.map((m) => ({ id: m.userId, name: m.userId ? (NAMES[m.userId] ?? "") : "", amount: m.amount, ratio: summary.actualTotal === 0 ? 0 : m.amount / summary.actualTotal, planCount: m.planCount })),
     };
-  }, [locale]);
+  }, [locale, dl]);
 
   const plan = plans.find((p) => p.id === planId) ?? plans[0]!;
   const planLike = planLikes.find((p) => p.id === plan.id)!;
@@ -204,6 +206,7 @@ export default function ScreenPreviews() {
               options={[
                 { value: "en", label: "EN" },
                 { value: "ja", label: "日本語" },
+            { value: "mix", label: "Mix" },
               ]}
             />
             <TabChips
@@ -256,7 +259,7 @@ export default function ScreenPreviews() {
                 onRemoveMember: () => undefined,
               },
               budgets: [0, 1, 2].map((i) => ({ yearMonth: addMonths(YM, i), amount: budgetOf(addMonths(YM, i)) })),
-              categories: CATS.map((c) => ({ id: c.id, name: c[locale] })),
+              categories: CATS.map((c) => ({ id: c.id, name: c[dl] })),
             }}
           />
         )}

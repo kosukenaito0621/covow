@@ -83,6 +83,7 @@ export default function ComponentGallery() {
               options={[
                 { value: "en", label: "English" },
                 { value: "ja", label: "日本語" },
+                { value: "mix", label: "Mix" },
               ]}
             />
             <TabChips
