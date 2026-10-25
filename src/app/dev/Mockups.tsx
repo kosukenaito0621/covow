@@ -1,6 +1,6 @@
 import "./mockups.css";
-import { useState, type ReactNode } from "react";
-import { weekDates, weekStartOf, addDays } from "@shared/date/jst";
+import { useState } from "react";
+import { addDays, weekDates, weekStartOf } from "@shared/date/jst";
 import { formatNumber, formatYen } from "@shared/money/amount";
 import { DayChips } from "../components/charts/DayChips";
 import { SpendCurve } from "../components/charts/SpendCurve";
@@ -16,13 +16,20 @@ import { HeroAmount } from "../components/ui/HeroAmount";
 import { Icon } from "../components/ui/Icon";
 
 /*
- * デザイン案の比較（開発環境だけ）。?v=a | b | c で切り替え。数字はすべてサンプル。
- *  案A 霧のオーロラ：明るい霧＋パステルのオーロラ。ヒーローはスモークガラス。ピルは2列
- *  案B 夜のオーロラ：深い紺＋鮮やかなオーロラ。すべて暗いガラス。ピルは横長を縦に並べる
- *  案C 水面のひかり：澄んだ水色。ヒーローも明るい水のガラス。実支出を大きく、残り2つを2列
+ * デザイン案の比較（開発環境だけ）。?v=aurora | earthy | tropical で切り替え。数字はすべてサンプル。
+ * 質感（透けるガラス・オーロラの背景）は共通で、色だけを変える。配置も共通にして色を比べやすくする。
+ *  Aurora   #0A1422 #1A3553 #2AA3B8 #74F9D9 #FFFFFF（夜の紺。すべて暗いガラス）
+ *  Earthy   #6C4A3A #9A6A4F #C6925A #DDC38A #7B8A6A（砂の明るさ。ヒーローは土色のガラス）
+ *  Tropical #A6C4B0 #A3D1BF #B2E0C9 #F8DAB9 #F59C8E（明るい砂浜。ヒーローも明るいガラス）
  */
 
-type Variant = "a" | "b" | "c";
+type Variant = "aurora" | "earthy" | "tropical";
+
+const THEMES: Record<Variant, { label: string; page: "light" | "dark"; hero: "light" | "dark"; card: "light" | "dark" }> = {
+  aurora: { label: "Aurora", page: "dark", hero: "dark", card: "dark" },
+  earthy: { label: "Earthy", page: "light", hero: "dark", card: "light" },
+  tropical: { label: "Tropical", page: "light", hero: "light", card: "light" },
+};
 
 const TODAY = "2026-10-25";
 const WEEK = [3_200, 8_200, 0, 1_480, 5_600, 12_900, 2_300];
@@ -48,10 +55,11 @@ function DotAmount({ value, max = 28, room }: { value: number; max?: number; roo
 }
 
 export default function Mockups() {
-  const initial = (new URLSearchParams(window.location.search).get("v") as Variant) ?? "a";
-  const [v, setV] = useState<Variant>(["a", "b", "c"].includes(initial) ? initial : "a");
+  const q = new URLSearchParams(window.location.search).get("v") as Variant | null;
+  const [v, setV] = useState<Variant>(q && q in THEMES ? q : "aurora");
+  const t = THEMES[v];
   return (
-    <div className={`theme-${v} min-h-dvh ${v === "b" ? "text-white" : "text-ink"}`}>
+    <div className={`mock theme-${v} min-h-dvh text-[color:var(--page-text)]`}>
       <div className="aurora" aria-hidden="true">
         <span className="b1" />
         <span className="b2" />
@@ -65,22 +73,19 @@ export default function Mockups() {
           label="デザイン案"
           value={v}
           onChange={setV}
-          tone={v === "b" ? "dark" : "light"}
-          options={[
-            { value: "a", label: "A 霧のオーロラ" },
-            { value: "b", label: "B 夜のオーロラ" },
-            { value: "c", label: "C 水面のひかり" },
-          ]}
+          tone={t.page}
+          options={(Object.keys(THEMES) as Variant[]).map((k) => ({ value: k, label: THEMES[k].label }))}
         />
-        <Header dark={v === "b"} />
-        <Hero variant={v} />
-        {v === "a" && <PillsGrid />}
-        {v === "b" && <PillsStacked />}
-        {v === "c" && <PillsWide />}
-        <Upcoming card={v === "b" ? "lg-dark" : v === "c" ? "lg-water" : "lg-light"} muted={v === "b" ? "text-white/90" : "text-ink-muted"} />
+        <Header tone={t.page} />
+        <Hero tone={t.hero} />
+        <Pills />
+        <Upcoming tone={t.card} />
       </main>
       {/* 追加ボタンはほかの丸いボタンと同じ 44px。親指の届く右下（ナビの上）に置く */}
-      <div data-fixed-overlay className="fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px)] z-30">
+      <div
+        data-fixed-overlay
+        className="fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px)] z-30"
+      >
         <AddPill onClick={() => undefined} />
       </div>
       <FloatingNav currentPath="/" />
@@ -88,8 +93,7 @@ export default function Mockups() {
   );
 }
 
-function Header({ dark }: { dark: boolean }) {
-  const tone = dark ? "dark" : "light";
+function Header({ tone }: { tone: "light" | "dark" }) {
   return (
     <header className="flex items-center justify-between gap-2">
       <div>
@@ -100,7 +104,7 @@ function Header({ dark }: { dark: boolean }) {
           <CircleIconButton tone={tone} icon="chevronRight" label="次の月" />
         </div>
       </div>
-      <div className="flex -space-x-2" aria-label="メンバー：あおい、はる">
+      <div className="flex -space-x-2 text-[#1f2937]" aria-label="メンバー：あおい、はる">
         <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">あ</span>
         <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">は</span>
       </div>
@@ -108,25 +112,24 @@ function Header({ dark }: { dark: boolean }) {
   );
 }
 
-function Hero({ variant }: { variant: Variant }) {
+function Hero({ tone }: { tone: "light" | "dark" }) {
   const thisWeek = weekStartOf(TODAY);
   const [start, setStart] = useState(thisWeek);
   const [sel, setSel] = useState(6);
   const dates = weekDates(start);
   const amounts = start === thisWeek ? WEEK : WEEK.map((a) => Math.round(a * 0.7));
-  const light = variant === "c";
-  const tone = light ? "light" : "dark";
+  const muted = tone === "light" ? "text-ink-muted" : "text-white/90";
   const peak = amounts.indexOf(Math.max(...amounts));
   return (
-    <section aria-labelledby="hero-label" className={`lg ${light ? "lg-water" : "lg-dark"} rounded-[32px] p-5`}>
+    <section aria-labelledby="hero-label" className="lg lg-hero rounded-[32px] p-5">
       <div className="flex items-center justify-between gap-3">
-        <p id="hero-label" className={`text-[15px] font-medium ${light ? "text-ink" : "text-white"}`}>
+        <p id="hero-label" className="text-[15px] font-medium">
           今月、あといくら使える？
         </p>
         <CircleIconButton tone={tone} icon="arrowUpRight" label="分析を見る" />
       </div>
       <HeroAmount value={remaining} />
-      <p className={`num mt-1 flex flex-wrap gap-x-3 text-[13px] ${light ? "text-ink-muted" : "text-white/90"}`}>
+      <p className={`num mt-1 flex flex-wrap gap-x-3 text-[13px] ${muted}`}>
         <span className="whitespace-nowrap">予算 {formatYen(DATA.budget)}</span>
         <span className="whitespace-nowrap">実支出 {formatYen(DATA.actual)}</span>
         <span className="whitespace-nowrap">予定 {formatYen(DATA.planned)}</span>
@@ -156,47 +159,38 @@ function Hero({ variant }: { variant: Variant }) {
   );
 }
 
-function Pill({
-  className,
-  label,
-  children,
-  aria,
-  foot,
-}: {
-  className: string;
-  label: string;
-  children: ReactNode;
-  aria: string;
-  foot?: ReactNode;
-}) {
-  return (
-    <div role="group" aria-label={aria} className={`lg rounded-full ${className}`}>
-      <span className="block text-[13px] leading-none font-semibold">{label}</span>
-      <span aria-hidden="true">{children}</span>
-      {foot && <span className="flex items-center gap-1.5 text-[12px] leading-none font-medium">{foot}</span>}
-    </div>
-  );
-}
-
 const ariaActual = `今月の実支出 ${formatYen(DATA.actual)}、先月の同じ日までより12%多い`;
 const ariaPlanned = `未購入の予定 ${formatYen(DATA.planned)}、${DATA.plannedCount}件`;
 const ariaUsage = `予算使用率 ${Math.round(usage * 100)}%`;
 // 2列のピルの中で数字に使える幅
 const HALF = "((min(100vw, 480px) - 44px) / 2 - 52px)";
 
-/** 案A：実支出と未購入の予定を2列、使用率を横長に */
-function PillsGrid() {
-  const cls = "flex h-[112px] flex-col justify-between px-[26px] py-[16px]";
-  const wide = "col-span-2 flex h-[84px] items-center justify-between gap-3 px-8";
+/** 実支出と未購入の予定を2列、使用率を横長に */
+function Pills() {
+  const half = "lg rounded-full flex h-[112px] flex-col justify-between px-[26px] py-[16px]";
   return (
     <div className="grid grid-cols-2 gap-3">
-      <Pill className={`lg-ember ${cls}`} label="今月の実支出" aria={ariaActual} foot={<DeltaBadge ratio={0.12} />}>
-        <DotAmount value={DATA.actual} max={24} room={HALF} />
-      </Pill>
-      <Pill className={`lg-indigo ${cls}`} label="未購入の予定" aria={ariaPlanned} foot={`${DATA.plannedCount}件`}>
-        <DotAmount value={DATA.planned} max={24} room={HALF} />
-      </Pill>
-      <div role="group" aria-label={ariaUsage} className={`lg lg-aurora rounded-full ${wide}`}>
+      <div role="group" aria-label={ariaActual} className={`${half} lg-p1`}>
+        <span className="text-[13px] leading-none font-semibold">今月の実支出</span>
+        <span aria-hidden="true">
+          <DotAmount value={DATA.actual} max={24} room={HALF} />
+        </span>
+        <span className="flex items-center text-[12px] leading-none font-medium">
+          <DeltaBadge ratio={0.12} />
+        </span>
+      </div>
+      <div role="group" aria-label={ariaPlanned} className={`${half} lg-p2`}>
+        <span className="text-[13px] leading-none font-semibold">未購入の予定</span>
+        <span aria-hidden="true">
+          <DotAmount value={DATA.planned} max={24} room={HALF} />
+        </span>
+        <span className="text-[12px] leading-none font-medium">{DATA.plannedCount}件</span>
+      </div>
+      <div
+        role="group"
+        aria-label={ariaUsage}
+        className="lg lg-p3 col-span-2 flex h-[84px] items-center justify-between gap-3 rounded-full px-8"
+      >
         <span className="flex flex-col gap-2">
           <span className="text-[13px] leading-none font-semibold">予算使用率</span>
           <UsageArc rate={usage} />
@@ -210,68 +204,8 @@ function PillsGrid() {
   );
 }
 
-/** 案B：横長のカプセルを縦に3本。ラベルは左、金額は右に大きく */
-function PillsStacked() {
-  const cls = "flex h-[84px] items-center justify-between gap-3 px-7";
-  const ROOM = "(min(100vw, 480px) - 32px - 56px - 120px)";
-  return (
-    <div className="flex flex-col gap-3">
-      {[
-        { c: "lg-ember", l: "今月の実支出", a: ariaActual, v: <DotAmount value={DATA.actual} max={30} room={ROOM} />, f: <DeltaBadge ratio={0.12} /> },
-        { c: "lg-indigo", l: "未購入の予定", a: ariaPlanned, v: <DotAmount value={DATA.planned} max={30} room={ROOM} />, f: `${DATA.plannedCount}件` },
-        {
-          c: "lg-aurora",
-          l: "予算使用率",
-          a: ariaUsage,
-          v: (
-            <span className="dot-number text-[30px]">
-              {Math.round(usage * 100)}
-              <span className="font-ui text-[16px] font-bold">%</span>
-            </span>
-          ),
-          f: <UsageArc rate={usage} />,
-        },
-      ].map((p) => (
-        <div key={p.l} role="group" aria-label={p.a} className={`lg rounded-full ${p.c} ${cls}`}>
-          <span className="flex flex-col gap-2">
-            <span className="text-[13px] leading-none font-semibold">{p.l}</span>
-            <span className="flex items-center gap-1.5 text-[12px] leading-none font-medium">{p.f}</span>
-          </span>
-          <span aria-hidden="true">{p.v}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/** 案C：実支出を横いっぱいに大きく、未購入の予定と使用率を2列 */
-function PillsWide() {
-  return (
-    <div className="flex flex-col gap-3">
-      <Pill
-        className="lg-ember flex h-[96px] flex-col justify-between px-8 py-[16px]"
-        label="今月の実支出"
-        aria={ariaActual}
-        foot={<DeltaBadge ratio={0.12} />}
-      >
-        <DotAmount value={DATA.actual} max={32} room="(min(100vw, 480px) - 96px)" />
-      </Pill>
-      <div className="grid grid-cols-2 gap-3">
-        <Pill className="lg-indigo flex h-[104px] flex-col justify-between px-[26px] py-[16px]" label="未購入の予定" aria={ariaPlanned} foot={`${DATA.plannedCount}件`}>
-          <DotAmount value={DATA.planned} max={24} room={HALF} />
-        </Pill>
-        <Pill className="lg-aurora flex h-[104px] flex-col justify-between px-[26px] py-[16px]" label="予算使用率" aria={ariaUsage} foot={<UsageArc rate={usage} />}>
-          <span className="dot-number text-[26px]">
-            {Math.round(usage * 100)}
-            <span className="font-ui text-[15px] font-bold">%</span>
-          </span>
-        </Pill>
-      </div>
-    </div>
-  );
-}
-
-function Upcoming({ card, muted }: { card: string; muted: string }) {
+function Upcoming({ tone }: { tone: "light" | "dark" }) {
+  const muted = tone === "light" ? "text-ink-muted" : "text-white/90";
   return (
     <section aria-labelledby="upcoming" className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
@@ -284,7 +218,7 @@ function Upcoming({ card, muted }: { card: string; muted: string }) {
         </a>
       </div>
       {UPCOMING.map((p) => (
-        <article key={p.t} className={`lg ${card} flex items-center justify-between gap-3 rounded-[24px] px-4 py-3`}>
+        <article key={p.t} className="lg lg-card flex items-center justify-between gap-3 rounded-[24px] px-4 py-3">
           <div className="min-w-0">
             <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{p.t}</p>
             <p className={`num text-[12px] ${muted}`}>

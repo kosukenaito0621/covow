@@ -4,8 +4,10 @@
  * 透け感の作り方：
  *  1) 背後に「透けて見えるもの」を置く：ゆっくり動くオーロラの光（大きな radial-gradient の塊と、オーロラの帯）
  *  2) カードは半透明＋backdrop-filter でぼかして透かす
- *  3) 立体感：上辺の強い反射（スペキュラー）、縁の光る線（グラデーションの枠）、内側の影、柔らかい外側の影
+ *  3) 立体感：上辺の反射（スペキュラー）、縁の光る線（グラデーションの枠）、内側の影、柔らかい外側の影
  *  4) 質感：静止したグレインを一番上の層に焼き込む
+ *
+ * 色はテーマ（.theme-aurora / .theme-earthy / .theme-tropical）の変数だけで決める。質感のルールは共通。
  */
 
 :root {
@@ -152,83 +154,78 @@
   z-index: 1;
 }
 
-/* 明るいガラス（濃い文字） */
-.lg-light {
-  color: var(--ink);
+/* ヒーローカード */
+.lg-hero {
+  color: var(--hero-text);
+  --sheen: var(--hero-sheen);
   background:
     var(--grain-soft),
-    linear-gradient(145deg, rgb(255 255 255 / 0.62), rgb(255 255 255 / 0.3));
+    radial-gradient(70% 60% at 0% 100%, var(--hero-glow1), transparent 70%),
+    radial-gradient(60% 70% at 100% 40%, var(--hero-glow2), transparent 70%),
+    linear-gradient(180deg, var(--hero-top), var(--hero-bottom));
   box-shadow:
-    inset 0 -10px 24px -14px rgb(255 255 255 / 0.9),
-    inset 0 1px 0 rgb(255 255 255 / 0.9),
-    0 24px 48px -26px rgb(40 50 110 / 0.45);
+    inset 0 1px 0 rgb(255 255 255 / 0.45),
+    inset 0 -18px 30px -24px var(--hero-glow1),
+    0 30px 60px -30px var(--shadow);
 }
-/* スモークガラス（白い文字） */
-.lg-dark {
-  color: #fff;
-  --sheen: 0.12;
+/* 一覧などのカード */
+.lg-card {
+  color: var(--card-text);
+  --sheen: var(--card-sheen);
   background:
     var(--grain-soft),
-    radial-gradient(70% 60% at 0% 100%, rgb(114 229 245 / 0.28), transparent 70%),
-    radial-gradient(60% 70% at 100% 40%, rgb(242 166 222 / 0.24), transparent 70%),
-    linear-gradient(180deg, rgb(23 36 58 / 0.76), rgb(17 24 39 / 0.84));
+    linear-gradient(145deg, var(--card-a), var(--card-b));
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.35),
-    inset 0 -18px 30px -24px rgb(114 229 245 / 0.5),
-    0 30px 60px -30px rgb(17 24 39 / 0.6);
+    inset 0 -10px 24px -14px rgb(255 255 255 / var(--card-inner, 0.6)),
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 24px 48px -26px var(--shadow);
 }
-/* 澄んだ水のガラス（濃い文字。案C） */
-.lg-water {
-  color: var(--ink);
-  --sheen: 0.7;
-  background:
-    var(--grain-soft),
-    radial-gradient(80% 50% at 80% 110%, rgb(114 229 245 / 0.35), transparent 70%),
-    radial-gradient(60% 60% at 0% 0%, rgb(255 255 255 / 0.6), transparent 70%),
-    linear-gradient(160deg, rgb(255 255 255 / 0.5), rgb(189 239 255 / 0.28));
+/* ピル。色の意味は固定：p1＝今月の実支出、p2＝未購入の予定、p3＝予算使用率 */
+.lg-p1,
+.lg-p2,
+.lg-p3 {
   box-shadow:
-    inset 0 -14px 28px -18px rgb(114 229 245 / 0.8),
-    inset 0 1px 0 rgb(255 255 255 / 1),
-    0 24px 50px -28px rgb(20 80 120 / 0.45);
+    inset 0 -12px 24px -16px rgb(255 255 255 / 0.55),
+    inset 0 1px 0 rgb(255 255 255 / 0.7),
+    0 22px 44px -24px var(--shadow);
 }
-
-/* 色のついたガラス（ピル）。色の意味は固定：ember＝実支出、indigo＝未購入の予定、aurora＝使用率 */
-.lg-ember {
-  color: var(--ink);
+.lg-p1 {
+  color: var(--p1-text);
+  --sheen: var(--p1-sheen, 0.4);
   background:
     var(--grain-soft),
-    radial-gradient(90% 120% at 100% 100%, rgb(255 209 139 / 0.85), transparent 65%),
-    linear-gradient(130deg, rgb(255 156 140 / 0.78), rgb(255 184 137 / 0.62) 55%, rgb(255 209 139 / 0.55));
-  box-shadow:
-    inset 0 -12px 24px -16px rgb(255 240 210 / 0.9),
-    inset 0 1px 0 rgb(255 255 255 / 0.85),
-    0 22px 44px -24px rgb(200 90 60 / 0.5);
+    radial-gradient(90% 120% at 100% 100%, var(--p1-glow), transparent 65%),
+    linear-gradient(130deg, var(--p1-a), var(--p1-b));
 }
-.lg-indigo {
-  color: #fff;
-  --sheen: 0.18;
+.lg-p2 {
+  color: var(--p2-text);
+  --sheen: var(--p2-sheen, 0.18);
   background:
     var(--grain-soft),
-    radial-gradient(70% 120% at 110% 120%, rgb(189 239 255 / 0.55), transparent 65%),
-    radial-gradient(60% 90% at 95% 85%, rgb(169 165 245 / 0.45), transparent 70%),
-    linear-gradient(140deg, rgb(43 47 107 / 0.92), rgb(53 58 134 / 0.86) 60%, rgb(76 79 174 / 0.78));
-  box-shadow:
-    inset 0 -12px 24px -16px rgb(189 239 255 / 0.6),
-    inset 0 1px 0 rgb(255 255 255 / 0.5),
-    0 22px 44px -24px rgb(43 47 107 / 0.6);
+    radial-gradient(70% 120% at 110% 120%, var(--p2-glow), transparent 65%),
+    linear-gradient(140deg, var(--p2-a), var(--p2-b));
 }
-.lg-aurora {
-  color: #fff;
-  --sheen: 0.18;
+.lg-p3 {
+  color: var(--p3-text);
+  --sheen: var(--p3-sheen, 0.18);
   background:
     var(--grain-soft),
-    radial-gradient(60% 90% at 100% -25%, rgb(242 166 222 / 0.7), transparent 60%),
-    radial-gradient(70% 100% at 10% 120%, rgb(114 229 245 / 0.4), transparent 65%),
-    linear-gradient(160deg, rgb(110 64 106 / 0.9), rgb(72 46 84 / 0.9) 60%, rgb(43 47 107 / 0.9));
+    radial-gradient(60% 90% at 100% -25%, var(--p3-glow), transparent 60%),
+    linear-gradient(160deg, var(--p3-a), var(--p3-b));
+}
+/* 光る玉（追加ボタン・アバター）の色もテーマに合わせる */
+.mock .add-orb {
+  background: radial-gradient(circle at 32% 26%, #fff 0 18%, rgb(255 255 255 / 0.94) 34%, var(--orb-mid) 70%, var(--orb-edge));
   box-shadow:
-    inset 0 -12px 24px -16px rgb(242 166 222 / 0.6),
-    inset 0 1px 0 rgb(255 255 255 / 0.5),
-    0 22px 44px -24px rgb(59 42 63 / 0.6);
+    inset 0 -6px 12px var(--orb-edge),
+    inset 0 2px 2px rgb(255 255 255 / 1),
+    0 0 0 1px rgb(255 255 255 / 0.7),
+    0 16px 32px -12px var(--shadow),
+    0 0 40px -6px var(--orb-glow);
+}
+/* 下部ナビの色もテーマに合わせる */
+.mock .overlay-glass-dark {
+  background: var(--nav-bg);
 }
 
 /* 動きを減らす・透明度を下げる設定 */
@@ -242,75 +239,162 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  .lg-light,
-  .lg-water {
-    background: #f5f6f8;
+  .lg-hero {
+    background: var(--hero-solid);
   }
-  .lg-dark {
-    background: var(--smoke-deep);
+  .lg-card {
+    background: var(--card-solid);
   }
   .aurora .ribbon {
     display: none;
   }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .lg-light,
-  .lg-water {
-    background: rgb(255 255 255 / 0.92);
+  .lg-hero {
+    background: var(--hero-solid);
   }
-  .lg-dark {
-    background: rgb(17 24 39 / 0.94);
+  .lg-card {
+    background: var(--card-solid);
   }
 }
 
-/* ============ 案ごとの色 ============ */
-/* 案A：霧のオーロラ（明るい霧の上に、パステルのオーロラ） */
-.theme-a {
-  --aurora-base: linear-gradient(180deg, #eef0f4, #e6e4f3);
-  --a1: rgb(114 229 245 / 0.75);
-  --a2: rgb(242 166 222 / 0.75);
-  --a3: rgb(169 165 245 / 0.7);
-  --a4: rgb(255 156 140 / 0.55);
-  --r1: rgb(189 239 255 / 0.9);
-  --r2: rgb(169 165 245 / 0.85);
-  --r3: rgb(242 166 222 / 0.85);
-}
-/* 案B：夜のオーロラ（深い紺に、鮮やかなオーロラ）※指示書 4.1「明るいベース」から外れる */
-.theme-b {
-  --aurora-base: radial-gradient(120% 80% at 50% 0%, #1b2a4a, #0d1424 70%);
-  --a1: rgb(114 229 245 / 0.45);
-  --a2: rgb(169 165 245 / 0.5);
-  --a3: rgb(242 166 222 / 0.35);
-  --a4: rgb(80 220 190 / 0.35);
-  --r1: rgb(90 240 200 / 0.75);
-  --r2: rgb(114 229 245 / 0.7);
-  --r3: rgb(169 165 245 / 0.75);
-  --ribbon-opacity: 0.9;
+/* ============ テーマ ============ */
+
+/* Aurora：夜空の紺に、ティールとミントのオーロラ（#0A1422 #1A3553 #2AA3B8 #74F9D9 #FFFFFF） */
+.theme-aurora {
   color-scheme: dark;
+  --ink: #0a1422;
+  --ink-muted: #1a3553;
+  --page-text: #ffffff;
+  --aurora-base: radial-gradient(120% 80% at 50% 0%, #1a3553, #0a1422 72%);
+  --a1: rgb(42 163 184 / 0.55);
+  --a2: rgb(116 249 217 / 0.32);
+  --a3: rgb(26 53 83 / 0.9);
+  --a4: rgb(42 163 184 / 0.4);
+  --r1: rgb(116 249 217 / 0.75);
+  --r2: rgb(42 163 184 / 0.75);
+  --r3: rgb(255 255 255 / 0.3);
+  --ribbon-opacity: 0.9;
+  --shadow: rgb(3 8 15 / 0.7);
+  --hero-text: #ffffff;
+  --hero-sheen: 0.12;
+  --hero-glow1: rgb(116 249 217 / 0.22);
+  --hero-glow2: rgb(42 163 184 / 0.3);
+  --hero-top: rgb(26 53 83 / 0.74);
+  --hero-bottom: rgb(10 20 34 / 0.84);
+  --hero-solid: #10203a;
+  --card-text: #ffffff;
+  --card-sheen: 0.1;
+  --card-inner: 0.15;
+  --card-a: rgb(26 53 83 / 0.66);
+  --card-b: rgb(10 20 34 / 0.72);
+  --card-solid: #12233b;
+  --p1-text: #0a1422;
+  --p1-a: rgb(116 249 217 / 0.9);
+  --p1-b: rgb(42 163 184 / 0.82);
+  --p1-glow: rgb(255 255 255 / 0.35);
+  --p2-text: #ffffff;
+  --p2-a: rgb(26 53 83 / 0.92);
+  --p2-b: rgb(18 70 96 / 0.88);
+  --p2-glow: rgb(42 163 184 / 0.55);
+  --p3-text: #ffffff;
+  --p3-a: rgb(10 20 34 / 0.88);
+  --p3-b: rgb(26 53 83 / 0.88);
+  --p3-glow: rgb(116 249 217 / 0.4);
+  --nav-bg: rgb(10 20 34 / 0.8);
+  --orb-mid: rgb(220 255 246 / 0.88);
+  --orb-edge: rgb(116 249 217 / 0.55);
+  --orb-glow: rgb(116 249 217 / 0.6);
 }
-/* 案C：水面のひかり（澄んだ水色と、水面のゆらぎ） */
-.theme-c {
-  --aurora-base: linear-gradient(180deg, #eaf6fa, #e4ecf8);
-  --a1: rgb(114 229 245 / 0.7);
-  --a2: rgb(189 239 255 / 0.9);
-  --a3: rgb(169 165 245 / 0.55);
-  --a4: rgb(242 166 222 / 0.45);
-  --r1: rgb(255 255 255 / 0.9);
-  --r2: rgb(114 229 245 / 0.7);
-  --r3: rgb(189 239 255 / 0.9);
-  --ribbon-opacity: 0.6;
+
+/* Earthy：砂の明るさに、土・テラコッタ・オリーブ（#6C4A3A #9A6A4F #C6925A #DDC38A #7B8A6A） */
+.theme-earthy {
+  --ink: #3a2a21;
+  --ink-muted: #5e4a3e;
+  --page-text: #3a2a21;
+  --aurora-base: linear-gradient(180deg, #f4ede0, #e9dfca);
+  --a1: rgb(198 146 90 / 0.55);
+  --a2: rgb(221 195 138 / 0.75);
+  --a3: rgb(123 138 106 / 0.5);
+  --a4: rgb(154 106 79 / 0.42);
+  --r1: rgb(221 195 138 / 0.85);
+  --r2: rgb(198 146 90 / 0.65);
+  --r3: rgb(123 138 106 / 0.6);
+  --ribbon-opacity: 0.7;
+  --shadow: rgb(70 45 30 / 0.45);
+  --hero-text: #ffffff;
+  --hero-sheen: 0.12;
+  --hero-glow1: rgb(221 195 138 / 0.28);
+  --hero-glow2: rgb(123 138 106 / 0.3);
+  --hero-top: rgb(100 68 53 / 0.9);
+  --hero-bottom: rgb(64 44 34 / 0.92);
+  --hero-solid: #5a3e31;
+  --card-text: #3a2a21;
+  --card-sheen: 0.55;
+  --card-a: rgb(255 252 245 / 0.62);
+  --card-b: rgb(255 246 230 / 0.34);
+  --card-solid: #f7f1e6;
+  --p1-text: #3a2a21;
+  --p1-a: rgb(198 146 90 / 0.88);
+  --p1-b: rgb(221 195 138 / 0.8);
+  --p1-glow: rgb(255 240 210 / 0.5);
+  --p2-text: #ffffff;
+  --p2-a: rgb(70 81 57 / 0.94);
+  --p2-b: rgb(88 100 74 / 0.9);
+  --p2-glow: rgb(221 195 138 / 0.35);
+  --p3-text: #ffffff;
+  --p3-a: rgb(100 68 53 / 0.94);
+  --p3-b: rgb(124 84 62 / 0.9);
+  --p3-glow: rgb(221 195 138 / 0.45);
+  --nav-bg: rgb(64 44 34 / 0.82);
+  --orb-mid: rgb(248 238 215 / 0.9);
+  --orb-edge: rgb(198 146 90 / 0.45);
+  --orb-glow: rgb(221 195 138 / 0.7);
 }
-/* 水面のゆらぎ（コースティクス）。静止画 */
-.theme-c .aurora::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.5;
-  background:
-    radial-gradient(18px 10px at 20% 30%, rgb(255 255 255 / 0.9), transparent),
-    radial-gradient(26px 12px at 70% 18%, rgb(255 255 255 / 0.8), transparent),
-    radial-gradient(22px 9px at 45% 62%, rgb(255 255 255 / 0.85), transparent),
-    radial-gradient(30px 14px at 85% 75%, rgb(255 255 255 / 0.7), transparent),
-    radial-gradient(16px 8px at 12% 85%, rgb(255 255 255 / 0.8), transparent);
-  background-size: 220px 180px;
+
+/* Tropical：明るい砂浜に、ミント・セージ・ピーチ・コーラル（#A6C4B0 #A3D1BF #B2E0C9 #F8DAB9 #F59C8E） */
+.theme-tropical {
+  --ink: #1f3a33;
+  --ink-muted: #3d574f;
+  --page-text: #1f3a33;
+  --aurora-base: linear-gradient(180deg, #f8f4ea, #edf6ef);
+  --a1: rgb(178 224 201 / 0.85);
+  --a2: rgb(248 218 185 / 0.85);
+  --a3: rgb(163 209 191 / 0.75);
+  --a4: rgb(245 156 142 / 0.55);
+  --r1: rgb(178 224 201 / 0.9);
+  --r2: rgb(248 218 185 / 0.85);
+  --r3: rgb(245 156 142 / 0.6);
+  --ribbon-opacity: 0.7;
+  --shadow: rgb(40 90 75 / 0.35);
+  --hero-text: #1f3a33;
+  --hero-sheen: 0.6;
+  --hero-glow1: rgb(245 156 142 / 0.28);
+  --hero-glow2: rgb(248 218 185 / 0.5);
+  --hero-top: rgb(255 255 255 / 0.55);
+  --hero-bottom: rgb(178 224 201 / 0.4);
+  --hero-solid: #eef7f1;
+  --card-text: #1f3a33;
+  --card-sheen: 0.6;
+  --card-a: rgb(255 255 255 / 0.62);
+  --card-b: rgb(255 255 255 / 0.3);
+  --card-solid: #f7faf8;
+  --p1-text: #1f3a33;
+  --p1-a: rgb(245 156 142 / 0.88);
+  --p1-b: rgb(248 218 185 / 0.82);
+  --p1-glow: rgb(255 240 225 / 0.6);
+  --p2-text: #1f3a33;
+  --p2-sheen: 0.4;
+  --p2-a: rgb(166 196 176 / 0.9);
+  --p2-b: rgb(163 209 191 / 0.82);
+  --p2-glow: rgb(255 255 255 / 0.45);
+  --p3-text: #1f3a33;
+  --p3-sheen: 0.4;
+  --p3-a: rgb(178 224 201 / 0.9);
+  --p3-b: rgb(166 196 176 / 0.84);
+  --p3-glow: rgb(248 218 185 / 0.75);
+  --nav-bg: rgb(31 58 51 / 0.84);
+  --orb-mid: rgb(255 240 228 / 0.9);
+  --orb-edge: rgb(245 156 142 / 0.45);
+  --orb-glow: rgb(178 224 201 / 0.8);
 }
