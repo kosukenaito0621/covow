@@ -14,6 +14,7 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
+import { Route as DevLogoRouteImport } from './routes/dev.logo'
 import { Route as DevMockupsRouteImport } from './routes/dev.mockups'
 
 const IndexRoute = IndexRouteImport.update({
@@ -41,6 +42,11 @@ const DevComponentsRoute = DevComponentsRouteImport.update({
   path: '/dev/components',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevLogoRoute = DevLogoRouteImport.update({
+  id: '/dev/logo',
+  path: '/dev/logo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DevMockupsRoute = DevMockupsRouteImport.update({
   id: '/dev/mockups',
   path: '/dev/mockups',
@@ -53,6 +59,7 @@ export interface FileRoutesByFullPath {
   '/plans': typeof PlansRoute
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
+  '/dev/logo': typeof DevLogoRoute
   '/dev/mockups': typeof DevMockupsRoute
 }
 export interface FileRoutesByTo {
@@ -61,6 +68,7 @@ export interface FileRoutesByTo {
   '/plans': typeof PlansRoute
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
+  '/dev/logo': typeof DevLogoRoute
   '/dev/mockups': typeof DevMockupsRoute
 }
 export interface FileRoutesById {
@@ -70,6 +78,7 @@ export interface FileRoutesById {
   '/plans': typeof PlansRoute
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
+  '/dev/logo': typeof DevLogoRoute
   '/dev/mockups': typeof DevMockupsRoute
 }
 export interface FileRouteTypes {
@@ -80,6 +89,7 @@ export interface FileRouteTypes {
     | '/plans'
     | '/settings'
     | '/dev/components'
+    | '/dev/logo'
     | '/dev/mockups'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -88,6 +98,7 @@ export interface FileRouteTypes {
     | '/plans'
     | '/settings'
     | '/dev/components'
+    | '/dev/logo'
     | '/dev/mockups'
   id:
     | '__root__'
@@ -96,6 +107,7 @@ export interface FileRouteTypes {
     | '/plans'
     | '/settings'
     | '/dev/components'
+    | '/dev/logo'
     | '/dev/mockups'
   fileRoutesById: FileRoutesById
 }
@@ -105,6 +117,7 @@ export interface RootRouteChildren {
   PlansRoute: typeof PlansRoute
   SettingsRoute: typeof SettingsRoute
   DevComponentsRoute: typeof DevComponentsRoute
+  DevLogoRoute: typeof DevLogoRoute
   DevMockupsRoute: typeof DevMockupsRoute
 }
 
@@ -145,6 +158,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevComponentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/logo': {
+      id: '/dev/logo'
+      path: '/dev/logo'
+      fullPath: '/dev/logo'
+      preLoaderRoute: typeof DevLogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dev/mockups': {
       id: '/dev/mockups'
       path: '/dev/mockups'
@@ -161,6 +181,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlansRoute: PlansRoute,
   SettingsRoute: SettingsRoute,
   DevComponentsRoute: DevComponentsRoute,
+  DevLogoRoute: DevLogoRoute,
   DevMockupsRoute: DevMockupsRoute,
 }
 export const routeTree = rootRouteImport
