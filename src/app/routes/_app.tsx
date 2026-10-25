@@ -6,12 +6,14 @@ import { PreferencesSync } from "../components/PreferencesSync";
 
 /*
  * ログインが必要な画面のまとまり（ホーム・予定・分析・設定）。
- * ログインしていなければログイン画面へ送り、戻り先を ?next= で渡す。
+ * ログインしていなければログイン画面へ送り、戻り先を ?next= で渡す。スペースがなければ作る画面へ送る。
  */
 export const Route = createFileRoute("/_app")({
   beforeLoad: async ({ context, location }) => {
     const me = await context.queryClient.ensureQueryData(meQuery);
     if (!me) throw redirect({ to: "/login", search: { next: location.href } });
+    // まだスペースがない人は、スペースを作る画面へ
+    if (!me.space) throw redirect({ to: "/onboarding/space" });
   },
   component: AppLayout,
 });

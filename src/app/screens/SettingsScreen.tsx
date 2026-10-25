@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
 import type { YearMonth } from "@shared/date/jst";
 import { formatMonth, type Locale } from "@shared/i18n";
 import type { ThemeId } from "@shared/theme";
@@ -7,24 +7,17 @@ import { GlassCard } from "../components/glass/GlassCard";
 import { TabChips } from "../components/glass/TabChips";
 import { ThemePicker } from "../components/settings/ThemePicker";
 import { Avatar } from "../components/ui/Avatar";
-import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 import { Icon, type IconName } from "../components/ui/Icon";
 import { mutedText, SectionLabel } from "../components/ui/SectionLabel";
 import { ErrorMessage } from "../components/ui/States";
 import { useT } from "../i18n/I18nProvider";
 import { useTheme } from "../theme/ThemeProvider";
-import type { MemberView } from "./types";
+import { SpaceCard, type SpaceCardProps } from "./SpaceCard";
 
 export interface SettingsData {
   me: { name: string; email: string };
   /** スペース・予算・カテゴリは、まだ作っていない段階では null（その欄を出さない） */
-  space: {
-    name: string;
-    members: readonly MemberView[];
-    max: number;
-    /** 発行済みの招待リンク（空きがあるときだけ） */
-    invite: { url: string; hours: number } | null;
-  } | null;
+  space: SpaceCardProps | null;
   budgets: readonly { yearMonth: YearMonth; amount: number | null }[] | null;
   categories: readonly string[] | null;
 }
@@ -38,14 +31,20 @@ export interface SettingsActions {
 }
 
 /** 設定。テーマと言語はその場で切り替わり、onPreferenceChange でアカウントにも保存する */
-export function SettingsScreen({ data: d, actions = {} }: { data: SettingsData; actions?: SettingsActions }) {
+export function SettingsScreen({
+  data: d,
+  actions = {},
+  spaceFallback,
+}: {
+  data: SettingsData;
+  actions?: SettingsActions;
+  /** スペースの欄の読み込み中・失敗の表示（space が null のときに代わりに出す） */
+  spaceFallback?: ReactNode;
+}) {
   const { t, locale, setLocale } = useT();
   const { theme, setTheme } = useTheme();
   const muted = mutedText(theme.tone.card);
-  const [copied, setCopied] = useState(false);
   const space = d.space;
-  const alone = (space?.members.length ?? 0) <= 1;
-  const seats = space ? Math.max(0, space.max - space.members.length) : 0;
   const changeTheme = (id: ThemeId) => {
     setTheme(id);
     actions.onPreferenceChange?.({ theme: id });
@@ -88,66 +87,20 @@ export function SettingsScreen({ data: d, actions = {} }: { data: SettingsData; 
         />
       </Block>
 
-      {space && (
-      <Block
-        id="set-space"
-        title={t("settings.space")}
-        aside={<span className="num text-[12px] font-semibold">{t("settings.membersCount", { count: space.members.length, max: space.max })}</span>}
-      >
-        <GlassCard className="flex flex-col px-4 py-2">
-          <Row label={t("settings.spaceName")} value={space.name} chevron />
-          <ul className="flex flex-col py-2" aria-label={t("insights.members")}>
-            {space.members.map((m) => (
-              <li key={m.id} className="flex min-h-14 items-center gap-3">
-                <Avatar name={m.name} />
-                <span className="flex-1 truncate text-[15px] font-semibold">{m.name}</span>
-                {m.isMe && (
-                  <span className="rounded-full border border-current/25 px-2 py-0.5 text-[12px] font-semibold">{t("settings.you")}</span>
-                )}
-              </li>
-            ))}
-            {Array.from({ length: seats }, (_, i) => (
-              <li key={`seat-${i}`} className={`flex min-h-14 items-center gap-3 ${muted}`}>
-                <span aria-hidden="true" className="inline-flex size-10 items-center justify-center rounded-full border border-dashed border-current/45">
-                  <Icon name="plus" size={18} />
-                </span>
-                <span className="text-[14px]">{t("settings.openSlot")}</span>
-              </li>
-            ))}
-          </ul>
-          {space.invite && (
-            <div className="mb-2 flex flex-col gap-3 rounded-[18px] border border-current/15 p-4">
-              <p className="flex items-center gap-2 text-[15px] font-semibold">
-                <Icon name="share" size={18} />
-                {t("settings.invite")}
-              </p>
-              <p className={`text-[13px] leading-relaxed ${muted}`}>{t("settings.inviteBody", { hours: space.invite.hours })}</p>
-              <p className="num truncate rounded-[12px] bg-current/6 px-3 py-2 text-[13px]">{space.invite.url}</p>
-              <PrimaryButton
-                tone={theme.tone.card}
-                icon={copied ? "check" : "copy"}
-                onClick={() => {
-                  void navigator.clipboard?.writeText(space.invite!.url).catch(() => undefined);
-                  setCopied(true);
-                }}
-                aria-live="polite"
-              >
-                {copied ? t("settings.copied") : t("settings.copyLink")}
-              </PrimaryButton>
-            </div>
-          )}
-          <div className="border-t border-current/10 py-2">
-            <SecondaryButton tone={theme.tone.card} icon="arrowLeft" disabled={alone} fullWidth aria-describedby={alone ? "leave-note" : undefined}>
-              {t("settings.leave")}
-            </SecondaryButton>
-            {alone && (
-              <p id="leave-note" className={`mt-2 text-center text-[12px] ${muted}`}>
-                {t("settings.leaveLast")}
-              </p>
-            )}
-          </div>
-        </GlassCard>
-      </Block>
+      {(space || spaceFallback) && (
+        <Block
+          id="set-space"
+          title={t("settings.space")}
+          aside={
+            space && (
+              <span className="num text-[12px] font-semibold">
+                {t("settings.membersCount", { count: space.members.length, max: space.max })}
+              </span>
+            )
+          }
+        >
+          {space ? <SpaceCard {...space} /> : spaceFallback}
+        </Block>
       )}
 
       {d.budgets && (

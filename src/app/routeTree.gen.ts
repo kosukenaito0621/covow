@@ -18,6 +18,8 @@ import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevLogoRouteImport } from './routes/dev.logo'
 import { Route as DevScreensRouteImport } from './routes/dev.screens'
+import { Route as InviteTokenRouteImport } from './routes/invite/$token'
+import { Route as OnboardingSpaceRouteImport } from './routes/onboarding/space'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -63,6 +65,16 @@ const DevScreensRoute = DevScreensRouteImport.update({
   path: '/dev/screens',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingSpaceRoute = OnboardingSpaceRouteImport.update({
+  id: '/onboarding/space',
+  path: '/onboarding/space',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -73,6 +85,8 @@ export interface FileRoutesByFullPath {
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
   '/dev/screens': typeof DevScreensRoute
+  '/invite/$token': typeof InviteTokenRoute
+  '/onboarding/space': typeof OnboardingSpaceRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -82,6 +96,8 @@ export interface FileRoutesByTo {
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
   '/dev/screens': typeof DevScreensRoute
+  '/invite/$token': typeof InviteTokenRoute
+  '/onboarding/space': typeof OnboardingSpaceRoute
   '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
@@ -94,6 +110,8 @@ export interface FileRoutesById {
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
   '/dev/screens': typeof DevScreensRoute
+  '/invite/$token': typeof InviteTokenRoute
+  '/onboarding/space': typeof OnboardingSpaceRoute
   '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
@@ -107,6 +125,8 @@ export interface FileRouteTypes {
     | '/dev/components'
     | '/dev/logo'
     | '/dev/screens'
+    | '/invite/$token'
+    | '/onboarding/space'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -116,6 +136,8 @@ export interface FileRouteTypes {
     | '/dev/components'
     | '/dev/logo'
     | '/dev/screens'
+    | '/invite/$token'
+    | '/onboarding/space'
     | '/'
   id:
     | '__root__'
@@ -127,6 +149,8 @@ export interface FileRouteTypes {
     | '/dev/components'
     | '/dev/logo'
     | '/dev/screens'
+    | '/invite/$token'
+    | '/onboarding/space'
     | '/_app/'
   fileRoutesById: FileRoutesById
 }
@@ -136,6 +160,8 @@ export interface RootRouteChildren {
   DevComponentsRoute: typeof DevComponentsRoute
   DevLogoRoute: typeof DevLogoRoute
   DevScreensRoute: typeof DevScreensRoute
+  InviteTokenRoute: typeof InviteTokenRoute
+  OnboardingSpaceRoute: typeof OnboardingSpaceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -203,6 +229,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevScreensRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/space': {
+      id: '/onboarding/space'
+      path: '/onboarding/space'
+      fullPath: '/onboarding/space'
+      preLoaderRoute: typeof OnboardingSpaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -228,6 +268,8 @@ const rootRouteChildren: RootRouteChildren = {
   DevComponentsRoute: DevComponentsRoute,
   DevLogoRoute: DevLogoRoute,
   DevScreensRoute: DevScreensRoute,
+  InviteTokenRoute: InviteTokenRoute,
+  OnboardingSpaceRoute: OnboardingSpaceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
