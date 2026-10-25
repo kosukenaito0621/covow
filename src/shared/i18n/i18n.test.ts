@@ -1,0 +1,37 @@
+import { describe, expect, it } from "vitest";
+import { en } from "./en";
+import { DEFAULT_LOCALE, formatMonth, formatShortDate, spokenDate, translate, weekdayLetter } from "./index";
+import { ja } from "./ja";
+
+describe("英語／日本語", () => {
+  it("日本語の辞書は英語と同じキーをすべて持ち、空の文言がない", () => {
+    expect(Object.keys(ja).sort()).toEqual(Object.keys(en).sort());
+    for (const [k, v] of Object.entries(ja)) expect(v, k).not.toBe("");
+  });
+
+  it("差し込む値の名前が、英語と日本語でそろっている", () => {
+    const names = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+    for (const k of Object.keys(en) as (keyof typeof en)[]) expect(names(ja[k]), k).toEqual(names(en[k]));
+  });
+
+  it("最初の言語は英語", () => {
+    expect(DEFAULT_LOCALE).toBe("en");
+  });
+
+  it("値を差し込む", () => {
+    expect(translate("en", "metric.items", { count: 3 })).toBe("3 items");
+    expect(translate("ja", "metric.items", { count: 3 })).toBe("3件");
+    expect(translate("ja", "home.leftToSpend")).toBe("あと使える金額");
+  });
+
+  it("日付の表記", () => {
+    expect(formatMonth("2026-10", "en")).toBe("Oct 2026");
+    expect(formatMonth("2026-10", "ja")).toBe("2026年10月");
+    expect(formatShortDate("2026-10-27", "en")).toBe("Oct 27");
+    expect(formatShortDate("2026-10-27", "ja")).toBe("10/27");
+    expect(weekdayLetter(6, "en")).toBe("S");
+    expect(weekdayLetter(6, "ja")).toBe("日");
+    expect(spokenDate("2026-10-19", 0, "en")).toBe("Monday, October 19");
+    expect(spokenDate("2026-10-19", 0, "ja")).toBe("10月19日（月）");
+  });
+});

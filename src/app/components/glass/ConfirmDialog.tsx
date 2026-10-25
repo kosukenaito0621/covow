@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useId, useRef } from "react";
+import { useT } from "../../i18n/I18nProvider";
 import { PrimaryButton, SecondaryButton } from "../ui/Buttons";
 
 /** 確認ダイアログ。取り消しにくい操作の前に出す */
@@ -7,7 +8,7 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel,
-  cancelLabel = "やめる",
+  cancelLabel,
   busy,
   onConfirm,
   onCancel,
@@ -21,6 +22,7 @@ export function ConfirmDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t } = useT();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const bodyId = useId();
@@ -56,7 +58,7 @@ export function ConfirmDialog({
           )}
           <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <SecondaryButton onClick={onCancel} disabled={busy}>
-              {cancelLabel}
+              {cancelLabel ?? t("common.cancel")}
             </SecondaryButton>
             <PrimaryButton onClick={onConfirm} loading={busy ?? false}>
               {confirmLabel}

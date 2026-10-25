@@ -1,5 +1,6 @@
 import { animate, useReducedMotion } from "motion/react";
 import { type ReactNode, useEffect, useId, useRef } from "react";
+import { useT } from "../../i18n/I18nProvider";
 import { CircleIconButton } from "../ui/Buttons";
 
 /**
@@ -19,6 +20,7 @@ export function GlassSheet({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const { t } = useT();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const reduce = useReducedMotion();
@@ -63,7 +65,7 @@ export function GlassSheet({
             <h2 id={titleId} className="text-[17px] font-semibold">
               {title}
             </h2>
-            <CircleIconButton icon="close" label="閉じる" onClick={onClose} />
+            <CircleIconButton icon="close" label={t("common.close")} onClick={onClose} />
           </header>
           <div className="flex-1 overflow-y-auto px-5 pb-4">{children}</div>
           {footer && (

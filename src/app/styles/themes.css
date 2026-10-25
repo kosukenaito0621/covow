@@ -1,0 +1,336 @@
+/*
+ * カラーテーマ（全6種）。<html data-theme="..."> で切り替える。色の意味（p1＝実支出、p2＝未購入の予定、p3＝予算使用率）は全テーマ共通。
+ * 文字のコントラストは、描画結果の画素で WCAG AA を満たすように調整してある（scripts/measure-contrast.js）。
+ */
+
+/* Aurora：添付写真から抽出（夜空 #04060C・#082858、光 #16CEC6・#B794DB・#FC73A9、雪 #C1D5EA）
+   パレット：#060A18 #082858 #16CEC6 #B794DB #FC73A9 */
+[data-theme="aurora"] {
+  color-scheme: dark;
+  --ink: #060a18;
+  --ink-muted: #082858;
+  --page-text: #ffffff;
+  --aurora-base: radial-gradient(130% 85% at 50% 0%, #0b2f66, #082858 30%, #060a18 75%);
+  --a1: rgb(22 206 198 / 0.5);
+  --a2: rgb(183 148 219 / 0.42);
+  --a3: rgb(14 112 180 / 0.55);
+  --a4: rgb(252 115 169 / 0.32);
+  --r1: rgb(22 206 198 / 0.85);
+  --r2: rgb(110 220 200 / 0.7);
+  --r3: rgb(183 148 219 / 0.8);
+  --r4: rgb(183 148 219 / 0.75);
+  --r5: rgb(252 115 169 / 0.7);
+  --ribbon-opacity: 0.95;
+  --ribbon2-opacity: 0.85;
+  --shadow: rgb(2 4 12 / 0.7);
+  --hero-text: #ffffff;
+  --hero-sheen: 0.12;
+  --hero-glow1: rgb(22 206 198 / 0.24);
+  --hero-glow2: rgb(183 148 219 / 0.3);
+  --hero-top: rgb(8 40 88 / 0.72);
+  --hero-bottom: rgb(6 10 24 / 0.84);
+  --hero-solid: #0a1a3a;
+  --card-text: #ffffff;
+  --card-sheen: 0.1;
+  --card-inner: 0.15;
+  --card-a: rgb(8 40 88 / 0.62);
+  --card-b: rgb(6 10 24 / 0.72);
+  --card-solid: #0b1a36;
+  --p1-text: #060a18;
+  --p1-a: rgb(22 206 198 / 0.9);
+  --p1-b: rgb(140 230 215 / 0.82);
+  --p1-glow: rgb(255 255 255 / 0.35);
+  --p2-text: #ffffff;
+  --p2-a: rgb(56 40 120 / 0.92);
+  --p2-b: rgb(92 70 160 / 0.86);
+  --p2-glow: rgb(183 148 219 / 0.5);
+  --p3-text: #ffffff;
+  --p3-a: rgb(80 24 74 / 0.92);
+  --p3-b: rgb(140 44 104 / 0.86);
+  --p3-glow: rgb(252 115 169 / 0.55);
+  --nav-bg: rgb(6 10 24 / 0.8);
+  --orb-mid: rgb(225 250 248 / 0.9);
+  --orb-edge: rgb(22 206 198 / 0.5);
+  --orb-glow: rgb(183 148 219 / 0.7);
+}
+
+/* Earthy：砂の明るさに、土・テラコッタ・オリーブ（#6C4A3A #9A6A4F #C6925A #DDC38A #7B8A6A） */
+[data-theme="earthy"] {
+  --ink: #3a2a21;
+  --ink-muted: #5e4a3e;
+  --page-text: #3a2a21;
+  --aurora-base: linear-gradient(180deg, #f4ede0, #e9dfca);
+  --a1: rgb(198 146 90 / 0.55);
+  --a2: rgb(221 195 138 / 0.75);
+  --a3: rgb(123 138 106 / 0.5);
+  --a4: rgb(154 106 79 / 0.42);
+  --r1: rgb(221 195 138 / 0.85);
+  --r2: rgb(198 146 90 / 0.65);
+  --r3: rgb(123 138 106 / 0.6);
+  --ribbon-opacity: 0.7;
+  --shadow: rgb(70 45 30 / 0.45);
+  --hero-text: #ffffff;
+  --hero-sheen: 0.12;
+  --hero-glow1: rgb(221 195 138 / 0.28);
+  --hero-glow2: rgb(123 138 106 / 0.3);
+  --hero-top: rgb(100 68 53 / 0.9);
+  --hero-bottom: rgb(64 44 34 / 0.92);
+  --hero-solid: #5a3e31;
+  --card-text: #3a2a21;
+  --card-sheen: 0.55;
+  --card-a: rgb(255 252 245 / 0.62);
+  --card-b: rgb(255 246 230 / 0.34);
+  --card-solid: #f7f1e6;
+  --p1-text: #3a2a21;
+  --p1-a: rgb(198 146 90 / 0.88);
+  --p1-b: rgb(221 195 138 / 0.8);
+  --p1-glow: rgb(255 240 210 / 0.5);
+  --p2-text: #ffffff;
+  --p2-a: rgb(70 81 57 / 0.94);
+  --p2-b: rgb(88 100 74 / 0.9);
+  --p2-glow: rgb(221 195 138 / 0.35);
+  --p3-text: #3a2a21;
+  --p3-a: rgb(184 138 110 / 0.92);
+  --p3-b: rgb(214 182 156 / 0.88);
+  --p3-glow: rgb(255 240 210 / 0.55);
+  --nav-bg: rgb(64 44 34 / 0.82);
+  --orb-mid: rgb(248 238 215 / 0.9);
+  --orb-edge: rgb(198 146 90 / 0.45);
+  --orb-glow: rgb(221 195 138 / 0.7);
+}
+
+/* Tropical：明るい砂浜に、ミント・セージ・ピーチ・コーラル（#A6C4B0 #A3D1BF #B2E0C9 #F8DAB9 #F59C8E） */
+[data-theme="tropical"] {
+  --ink: #1f3a33;
+  --ink-muted: #3d574f;
+  --page-text: #1f3a33;
+  --aurora-base: linear-gradient(180deg, #f8f4ea, #edf6ef);
+  --a1: rgb(178 224 201 / 0.85);
+  --a2: rgb(248 218 185 / 0.85);
+  --a3: rgb(163 209 191 / 0.75);
+  --a4: rgb(245 156 142 / 0.55);
+  --r1: rgb(178 224 201 / 0.9);
+  --r2: rgb(248 218 185 / 0.85);
+  --r3: rgb(245 156 142 / 0.6);
+  --ribbon-opacity: 0.7;
+  --shadow: rgb(40 90 75 / 0.35);
+  --hero-text: #1f3a33;
+  --hero-sheen: 0.6;
+  --hero-glow1: rgb(245 156 142 / 0.28);
+  --hero-glow2: rgb(248 218 185 / 0.5);
+  --hero-top: rgb(255 255 255 / 0.55);
+  --hero-bottom: rgb(178 224 201 / 0.4);
+  --hero-solid: #eef7f1;
+  --card-text: #1f3a33;
+  --card-sheen: 0.6;
+  --card-a: rgb(255 255 255 / 0.62);
+  --card-b: rgb(255 255 255 / 0.3);
+  --card-solid: #f7faf8;
+  --p1-text: #1f3a33;
+  --p1-a: rgb(245 156 142 / 0.88);
+  --p1-b: rgb(248 218 185 / 0.82);
+  --p1-glow: rgb(255 240 225 / 0.6);
+  --p2-text: #1f3a33;
+  --p2-sheen: 0.4;
+  --p2-a: rgb(166 196 176 / 0.9);
+  --p2-b: rgb(163 209 191 / 0.82);
+  --p2-glow: rgb(255 255 255 / 0.45);
+  --p3-text: #1f3a33;
+  --p3-sheen: 0.4;
+  --p3-a: rgb(178 224 201 / 0.9);
+  --p3-b: rgb(166 196 176 / 0.84);
+  --p3-glow: rgb(248 218 185 / 0.75);
+  --nav-bg: rgb(31 58 51 / 0.84);
+  --orb-mid: rgb(255 240 228 / 0.9);
+  --orb-edge: rgb(245 156 142 / 0.45);
+  --orb-glow: rgb(178 224 201 / 0.8);
+}
+
+/* Dusk：日没後の空。藍紫からローズ、夕陽のコーラルと金（#1E1B3A #4B2E6F #C2508A #FF8C69 #FFD39A） */
+[data-theme="dusk"] {
+  color-scheme: dark;
+  --ink: #1e1b3a;
+  --ink-muted: #4b2e6f;
+  --page-text: #ffffff;
+  --aurora-base: linear-gradient(180deg, #2b2252 0%, #1e1b3a 50%, #3b2146 100%);
+  --a1: rgb(194 80 138 / 0.5);
+  --a2: rgb(255 140 105 / 0.42);
+  --a3: rgb(75 46 111 / 0.85);
+  --a4: rgb(255 211 154 / 0.3);
+  --r1: rgb(255 211 154 / 0.6);
+  --r2: rgb(255 140 105 / 0.75);
+  --r3: rgb(194 80 138 / 0.8);
+  --ribbon-opacity: 0.8;
+  --shadow: rgb(10 6 25 / 0.65);
+  --hero-text: #ffffff;
+  --hero-sheen: 0.12;
+  --hero-glow1: rgb(255 140 105 / 0.26);
+  --hero-glow2: rgb(194 80 138 / 0.3);
+  --hero-top: rgb(75 46 111 / 0.74);
+  --hero-bottom: rgb(30 27 58 / 0.86);
+  --hero-solid: #2e2450;
+  --card-text: #ffffff;
+  --card-sheen: 0.1;
+  --card-inner: 0.15;
+  --card-a: rgb(75 46 111 / 0.6);
+  --card-b: rgb(30 27 58 / 0.72);
+  --card-solid: #2a2147;
+  --p1-text: #1e1b3a;
+  --p1-a: rgb(255 140 105 / 0.9);
+  --p1-b: rgb(255 211 154 / 0.84);
+  --p1-glow: rgb(255 240 210 / 0.45);
+  --p2-text: #ffffff;
+  --p2-a: rgb(60 36 92 / 0.92);
+  --p2-b: rgb(86 56 128 / 0.86);
+  --p2-glow: rgb(194 80 138 / 0.45);
+  --p3-text: #ffffff;
+  --p3-a: rgb(112 36 82 / 0.92);
+  --p3-b: rgb(150 56 108 / 0.86);
+  --p3-glow: rgb(255 140 105 / 0.5);
+  --nav-bg: rgb(30 27 58 / 0.82);
+  --orb-mid: rgb(255 238 220 / 0.9);
+  --orb-edge: rgb(255 140 105 / 0.5);
+  --orb-glow: rgb(194 80 138 / 0.65);
+}
+
+/* Sakura：春の朝の桜。白に近い桃色から、くすんだ梅色まで（#FFF4F6 #F7C9D4 #E89AB0 #B5677F #5A3645） */
+[data-theme="sakura"] {
+  --ink: #4a2c39;
+  --ink-muted: #6d4757;
+  --page-text: #4a2c39;
+  --aurora-base: linear-gradient(180deg, #fff4f6, #f9e8ee);
+  --a1: rgb(247 201 212 / 0.9);
+  --a2: rgb(232 154 176 / 0.6);
+  --a3: rgb(255 244 246 / 0.9);
+  --a4: rgb(181 103 127 / 0.35);
+  --r1: rgb(255 255 255 / 0.85);
+  --r2: rgb(247 201 212 / 0.9);
+  --r3: rgb(232 154 176 / 0.7);
+  --ribbon-opacity: 0.7;
+  --shadow: rgb(120 60 80 / 0.32);
+  --hero-text: #4a2c39;
+  --hero-sheen: 0.65;
+  --hero-glow1: rgb(232 154 176 / 0.3);
+  --hero-glow2: rgb(255 255 255 / 0.55);
+  --hero-top: rgb(255 255 255 / 0.58);
+  --hero-bottom: rgb(247 201 212 / 0.42);
+  --hero-solid: #fdf0f3;
+  --card-text: #4a2c39;
+  --card-sheen: 0.6;
+  --card-a: rgb(255 255 255 / 0.64);
+  --card-b: rgb(255 255 255 / 0.32);
+  --card-solid: #fff8fa;
+  --p1-text: #4a2c39;
+  --p1-a: rgb(232 154 176 / 0.88);
+  --p1-b: rgb(247 201 212 / 0.84);
+  --p1-glow: rgb(255 244 246 / 0.6);
+  --p2-text: #ffffff;
+  --p2-a: rgb(104 56 76 / 0.94);
+  --p2-b: rgb(128 72 94 / 0.9);
+  --p2-glow: rgb(247 201 212 / 0.4);
+  --p3-text: #4a2c39;
+  --p3-sheen: 0.45;
+  --p3-a: rgb(206 136 162 / 0.9);
+  --p3-b: rgb(232 168 190 / 0.86);
+  --p3-glow: rgb(255 244 246 / 0.6);
+  --nav-bg: rgb(90 54 69 / 0.84);
+  --orb-mid: rgb(255 240 244 / 0.9);
+  --orb-edge: rgb(232 154 176 / 0.5);
+  --orb-glow: rgb(247 201 212 / 0.85);
+}
+
+/* Frost：透明な湖氷、やわらかく差す朝日、南極の流氷。薄い水色と薄いグレーに、朝日の温かさを少し
+   パレット：#F5F9FC #DCEBF5 #C5D3DC #9FC3DA #FFE9D2（文字は黒ではなく深い氷河の青 #1F3B57） */
+[data-theme="frost"] {
+  --ink: #1f3b57;
+  --ink-muted: #3f5a73;
+  --page-text: #1f3b57;
+  --aurora-base: linear-gradient(185deg, #f8fbfe 0%, #eaf3f9 55%, #f6f1ea 100%);
+  --a1: rgb(220 235 245 / 0.95);
+  --a2: rgb(197 211 220 / 0.7);
+  --a3: rgb(159 195 218 / 0.55);
+  --a4: rgb(255 226 196 / 0.6);
+  --r1: rgb(255 255 255 / 0.9);
+  --r2: rgb(200 228 245 / 0.8);
+  --r3: rgb(255 233 210 / 0.65);
+  --ribbon-opacity: 0.65;
+  --shadow: rgb(60 100 130 / 0.28);
+  --hero-text: #1f3b57;
+  --hero-sheen: 0.7;
+  --hero-glow1: rgb(159 195 218 / 0.38);
+  --hero-glow2: rgb(255 233 210 / 0.55);
+  --hero-top: rgb(255 255 255 / 0.6);
+  --hero-bottom: rgb(220 235 245 / 0.46);
+  --hero-solid: #f2f8fc;
+  --card-text: #1f3b57;
+  --card-sheen: 0.65;
+  --card-a: rgb(255 255 255 / 0.66);
+  --card-b: rgb(255 255 255 / 0.34);
+  --card-solid: #f7fafc;
+  --p1-text: #1f3b57;
+  --p1-sheen: 0.5;
+  --p1-a: rgb(255 228 200 / 0.9);
+  --p1-b: rgb(255 244 232 / 0.84);
+  --p1-glow: rgb(255 214 180 / 0.6);
+  --p2-text: #1f3b57;
+  --p2-sheen: 0.45;
+  --p2-a: rgb(159 195 218 / 0.9);
+  --p2-b: rgb(205 228 242 / 0.84);
+  --p2-glow: rgb(255 255 255 / 0.5);
+  --p3-text: #1f3b57;
+  --p3-sheen: 0.45;
+  --p3-a: rgb(168 192 210 / 0.92);
+  --p3-b: rgb(200 216 228 / 0.88);
+  --p3-glow: rgb(255 255 255 / 0.55);
+  --nav-bg: rgb(70 102 128 / 0.82);
+  --orb-mid: rgb(245 250 255 / 0.92);
+  --orb-edge: rgb(159 195 218 / 0.5);
+  --orb-glow: rgb(255 233 210 / 0.85);
+}
+
+/* ============ 背景のシルエット（ピントの外れた影） ============ */
+.aurora .silhouette {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: var(--sil-opacity, 0.5);
+  pointer-events: none;
+  overflow: visible; /* 地面や水面は、横長の画面でも端が見えないよう viewBox の外まで描く */
+}
+/* 明るいテーマは黒ではなく、テーマの深い色の影にする（カードの文字を読みやすく保つ） */
+[data-theme="aurora"] {
+  --sil-color: #02040c;
+  --sil-halo: #16cec6;
+  --sil-opacity: 0.85;
+}
+[data-theme="earthy"] {
+  --sil-color: #4a3428;
+  --sil-halo: #d98a52; /* 山頂の朝焼け（アルペングロー） */
+  --sil-opacity: 0.5;
+}
+[data-theme="tropical"] {
+  --sil-color: #1f3a33;
+  --sil-halo: #f59c8e;
+  --sil-opacity: 0.42;
+}
+[data-theme="dusk"] {
+  --sil-color: #0d0a1f;
+  --sil-halo: #ff8c69;
+  --sil-opacity: 0.62;
+}
+[data-theme="sakura"] {
+  --sil-color: #5a3645;
+  --sil-halo: #e89ab0;
+  --sil-opacity: 0.42;
+}
+[data-theme="frost"] {
+  --sil-color: #5e7f99;
+  --sil-halo: #ffe0c2;
+  --sil-opacity: 0.4;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .aurora .silhouette {
+    display: none;
+  }
+}

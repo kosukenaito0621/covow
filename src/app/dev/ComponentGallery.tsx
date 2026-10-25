@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { addDays, weekDates, weekStartOf } from "@shared/date/jst";
-import { formatYen, formatYenShort } from "@shared/money/amount";
+import { formatMonth, formatShortDate, LOCALES, weekdayName, type Locale } from "@shared/i18n";
+import { formatYen } from "@shared/money/amount";
 import { CategoryBars } from "../components/charts/CategoryBars";
 import { DayChips } from "../components/charts/DayChips";
 import { SpendCurve } from "../components/charts/SpendCurve";
@@ -9,47 +10,94 @@ import { AddPill } from "../components/glass/AddPill";
 import { ConfirmDialog } from "../components/glass/ConfirmDialog";
 import { DeltaBadge } from "../components/glass/DeltaBadge";
 import { FloatingNav } from "../components/glass/FloatingNav";
+import { GlassCard } from "../components/glass/GlassCard";
 import { GlassSheet } from "../components/glass/GlassSheet";
 import { HeroGlassCard } from "../components/glass/HeroGlassCard";
 import { MetricPill } from "../components/glass/MetricPill";
 import { TabChips } from "../components/glass/TabChips";
-import { UsageArc } from "../components/glass/UsageArc";
-import { HeroAmount } from "../components/ui/HeroAmount";
+import { UsedBar } from "../components/glass/UsedBar";
 import { CategoryBadge, DemoDataBanner, FromPlanBadge, StatusBadge } from "../components/ui/Badges";
 import { CircleIconButton, PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 import { AmountInput, FormField, TextInput } from "../components/ui/FormField";
+import { HeroAmount } from "../components/ui/HeroAmount";
+import { Icon } from "../components/ui/Icon";
 import { AttentionNote, EmptyState, ErrorMessage, LoadingSkeleton, Skeleton } from "../components/ui/States";
+import { useT } from "../i18n/I18nProvider";
+import { useTheme } from "../theme/ThemeProvider";
+import { THEME_IDS, THEMES, type ThemeId } from "../theme/themes";
 
 /*
  * 部品の確認用ページ（開発環境だけ）。数字はすべてサンプル。
- * ?state=empty / loading / error / long で状態を切り替えられる。
+ * 上のつまみでテーマと言語を切り替える。?theme=frost&lang=ja&state=empty|loading|error|long&view=parts&used=1.15 でも指定できる。
  */
 
 const TODAY = "2026-10-25";
 const SAMPLE_WEEK = [3_200, 8_200, 0, 1_480, 5_600, 12_900, 2_300];
+const SAMPLE = { budget: 180_000, actual: 63_480, planned: 41_200, plannedCount: 3 };
+// ?state=long：8桁の金額で崩れないかを見る
+const LONG = { budget: 99_999_999, actual: 12_345_678, planned: 9_876_543, plannedCount: 12 };
+const UPCOMING = [
+  { t: "ダイニングチェア（2脚）", a: 28_000, who: "Aoi", d: "2026-10-27" },
+  { t: "加湿器", a: 9_800, who: "Haru", d: "2026-10-29" },
+  { t: "冬用のラグ", a: 3_400, who: "Aoi", d: "2026-11-02" },
+];
 
 type View = "home" | "parts";
+
+const LABEL = "text-[12px] leading-none font-semibold tracking-[0.08em] uppercase";
 
 export default function ComponentGallery() {
   const params = new URLSearchParams(window.location.search);
   const state = params.get("state") ?? "data";
-  const [view, setView] = useState<View>((params.get("view") as View) ?? "home");
+  const [view, setView] = useState<View>(params.get("view") === "parts" ? "parts" : "home");
+  const { theme, setTheme } = useTheme();
+  const { locale, setLocale } = useT();
+
+  // URL で指定されたテーマと言語に一度だけ合わせる（スクリーンショット用）
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const th = q.get("theme");
+    const lang = q.get("lang");
+    if (th && (THEME_IDS as readonly string[]).includes(th)) setTheme(th as ThemeId);
+    if (lang && (LOCALES as readonly string[]).includes(lang)) setLocale(lang as Locale);
+  }, [setTheme, setLocale]);
 
   return (
     <>
-      <div className="frost-backdrop" aria-hidden="true" />
       <DemoDataBanner />
       <main className="app-shell flex flex-col gap-5">
-        <TabChips
-          label="確認する内容"
-          value={view}
-          onChange={setView}
-          options={[
-            { value: "home", label: "ホームの組み合わせ" },
-            { value: "parts", label: "部品の一覧" },
-          ]}
-        />
-        {view === "home" ? <HomePreview state={state} /> : <PartsPreview />}
+        <div className="flex flex-col gap-2" data-dev-toolbar>
+          <TabChips
+            label="Theme"
+            value={theme.id}
+            onChange={setTheme}
+            tone={theme.tone.page}
+            options={THEME_IDS.map((id) => ({ value: id, label: THEMES[id].label }))}
+          />
+          <div className="flex gap-2">
+            <TabChips
+              label="Language"
+              value={locale}
+              onChange={setLocale}
+              tone={theme.tone.page}
+              options={[
+                { value: "en", label: "English" },
+                { value: "ja", label: "日本語" },
+              ]}
+            />
+            <TabChips
+              label="View"
+              value={view}
+              onChange={setView}
+              tone={theme.tone.page}
+              options={[
+                { value: "home", label: "Home" },
+                { value: "parts", label: "Parts" },
+              ]}
+            />
+          </div>
+        </div>
+        {view === "home" ? <HomePreview state={state} usedParam={Number(params.get("used"))} /> : <PartsPreview />}
       </main>
       <FloatingNav currentPath="/" />
     </>
@@ -57,59 +105,58 @@ export default function ComponentGallery() {
 }
 
 function HomeHeader() {
+  const { t, locale } = useT();
+  const { theme } = useTheme();
   return (
     <header className="flex items-center justify-between gap-2">
       <div>
         <p className="text-[20px] font-bold tracking-tight">COVOW</p>
         <div className="mt-0.5 flex items-center gap-1">
-          <CircleIconButton tone="light" icon="chevronLeft" label="前の月" className="size-11" />
-          <h1 className="num text-[15px] font-semibold">2026年10月</h1>
-          <CircleIconButton tone="light" icon="chevronRight" label="次の月" className="size-11" />
+          <CircleIconButton tone={theme.tone.page} icon="chevronLeft" label={t("home.prevMonth")} />
+          <h1 className="num text-[15px] font-semibold">{formatMonth("2026-10", locale)}</h1>
+          <CircleIconButton tone={theme.tone.page} icon="chevronRight" label={t("home.nextMonth")} />
         </div>
       </div>
-      <div className="flex -space-x-2" aria-label="メンバー：あおい、はる">
-        <span className="inline-flex size-10 items-center justify-center rounded-full border-2 border-frost bg-lavender text-[14px] font-semibold text-ink">
-          あ
-        </span>
-        <span className="inline-flex size-10 items-center justify-center rounded-full border-2 border-frost bg-ice text-[14px] font-semibold text-ink">
-          は
-        </span>
+      <div className="flex -space-x-2 text-[#1f2937]" aria-label="Aoi, Haru">
+        <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">A</span>
+        <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">H</span>
       </div>
     </header>
   );
 }
 
-function HomePreview({ state }: { state: string }) {
-  const weekStart = weekStartOf(TODAY);
-  const [start, setStart] = useState(weekStart);
-  const dates = weekDates(start);
-  const amounts = start === weekStart ? SAMPLE_WEEK : SAMPLE_WEEK.map((a) => Math.round(a * 0.7));
+function HomePreview({ state, usedParam }: { state: string; usedParam: number }) {
+  const { t, locale } = useT();
+  const { theme } = useTheme();
+  const tone = theme.tone.hero;
+  const muted = tone === "light" ? "text-ink-muted" : "text-white/90";
+  const thisWeek = weekStartOf(TODAY);
+  const [start, setStart] = useState(thisWeek);
   const [sel, setSel] = useState(6);
-  const long = state === "long";
-  const budget = long ? 99_999_999 : 180_000;
-  const actual = long ? 12_345_678 : 63_480;
-  const planned = long ? 9_876_543 : 41_200;
-  const remaining = budget - actual - planned;
-  const peak = amounts.indexOf(Math.max(...amounts));
-  const weekdays = ["月", "火", "水", "木", "金", "土", "日"];
   const [sheet, setSheet] = useState(false);
+  const dates = weekDates(start);
+  const amounts = start === thisWeek ? SAMPLE_WEEK : SAMPLE_WEEK.map((a) => Math.round(a * 0.7));
+  const d = state === "long" ? LONG : SAMPLE;
+  const remaining = d.budget - d.actual - d.planned;
+  const rate = usedParam > 0 ? usedParam : (d.actual + d.planned) / d.budget;
+  const peak = amounts.indexOf(Math.max(...amounts));
 
   if (state === "loading") {
     return (
       <>
         <HomeHeader />
-        <LoadingSkeleton label="ホームを読み込み中">
-          <div className="hero-glass has-grain flex flex-col gap-3 p-5">
-            <Skeleton tone="dark" className="h-4 w-40" />
-            <Skeleton tone="dark" className="h-12 w-56" />
-            <Skeleton tone="dark" className="h-3 w-64" />
-            <Skeleton tone="dark" className="mt-4 h-28 w-full" />
-            <Skeleton tone="dark" className="h-11 w-full" />
+        <LoadingSkeleton>
+          <div className="lg lg-hero flex flex-col gap-3 rounded-[32px] p-5">
+            <Skeleton tone={tone} className="h-4 w-40" />
+            <Skeleton tone={tone} className="h-12 w-56" />
+            <Skeleton tone={tone} className="h-3 w-64" />
+            <Skeleton tone={tone} className="mt-4 h-28 w-full" />
+            <Skeleton tone={tone} className="h-11 w-full" />
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            {[0, 1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-[112px] rounded-full" />
-            ))}
+            <Skeleton className="h-[112px] rounded-full" />
+            <Skeleton className="h-[112px] rounded-full" />
+            <Skeleton className="col-span-2 h-[84px] rounded-full" />
           </div>
         </LoadingSkeleton>
       </>
@@ -128,27 +175,20 @@ function HomePreview({ state }: { state: string }) {
       <>
         <HomeHeader />
         <HeroGlassCard labelledBy="hero-label">
-          <p id="hero-label" className="text-[15px] text-white/78">
-            今月、あといくら使える？
+          <p id="hero-label" className={LABEL}>
+            {t("home.leftToSpend")}
           </p>
-          <p className="mt-1 text-[15px]">今月の予算を決めよう</p>
-          <PrimaryButton tone="dark" className="mt-3">
-            予算を決める
+          <PrimaryButton tone={tone} className="mt-3">
+            {t("home.setBudget")}
           </PrimaryButton>
-          <div className="mt-6 rounded-[24px] border border-white/15">
-            <EmptyState
-              tone="dark"
-              icon="chart"
-              title="まだ記録がありません"
-              body="買いたいものを登録すると、ここにふたりの支出が表示されます"
-            />
+          <div className="mt-6 rounded-[24px] border border-current/15">
+            <EmptyState tone={tone} icon="chart" title={t("home.noRecords")} body={t("home.noRecordsBody")} />
           </div>
         </HeroGlassCard>
-        <div className="grid grid-cols-2 gap-3">
-          <MetricPill theme="ember" label="今月の実支出" value="0" ariaLabel="今月の実支出 0円" sub="先月の記録なし" />
-          <MetricPill theme="indigo" label="未購入の予定" value="0" ariaLabel="未購入の予定 0円、0件" sub="0件" />
-          <MetricPill theme="aurora" label="予算使用率" value="—" ariaLabel="予算使用率 予算が未設定です" sub="予算が未設定" />
-          <div className="flex items-center justify-center"><AddPill label="最初の購入予定を追加" onClick={() => undefined} /></div>
+        <div className="flex justify-center">
+          <PrimaryButton tone={theme.tone.page} icon="plus">
+            {t("home.addFirst")}
+          </PrimaryButton>
         </div>
       </>
     );
@@ -159,128 +199,122 @@ function HomePreview({ state }: { state: string }) {
       <HomeHeader />
       <HeroGlassCard labelledBy="hero-label">
         <div className="flex items-center justify-between gap-3">
-          <p id="hero-label" className="text-[15px] text-white/78">
-            今月、あといくら使える？
+          <p id="hero-label" className={LABEL}>
+            {t("home.leftToSpend")}
           </p>
-          <CircleIconButton icon="arrowUpRight" label="分析を見る" />
+          <CircleIconButton tone={tone} icon="arrowUpRight" label={t("nav.insights")} />
         </div>
         <HeroAmount value={remaining} />
-        <p className="num mt-1 flex flex-wrap gap-x-1.5 text-[13px] text-white/78">
-          <span className="whitespace-nowrap">予算 {formatYen(budget)}</span>
-          <span aria-hidden="true">・</span>
-          <span className="whitespace-nowrap">実支出 {formatYen(actual)}</span>
-          <span aria-hidden="true">・</span>
-          <span className="whitespace-nowrap">予定 {formatYen(planned)}</span>
+        <p className={`num mt-1 flex flex-wrap gap-x-3 text-[13px] ${muted}`}>
+          <span className="whitespace-nowrap">
+            {t("home.budget")} {formatYen(d.budget)}
+          </span>
+          <span className="whitespace-nowrap">
+            {t("home.spent")} {formatYen(d.actual)}
+          </span>
+          <span className="whitespace-nowrap">
+            {t("home.planned")} {formatYen(d.planned)}
+          </span>
         </p>
-        <div className="mt-5">
+        <div className="mt-4">
           <SpendCurve
-            points={dates.map((d, i) => ({ key: d, amount: amounts[i] ?? 0 }))}
+            points={dates.map((date, i) => ({ key: date, amount: amounts[i] ?? 0 }))}
             selectedIndex={sel}
-            baseline={{ value: Math.round(amounts.reduce((a, b) => a + b, 0) / 7), label: "1日の平均" }}
-            summary={`今週の支出は${weekdays[peak]}曜が最も多く ${formatYen(amounts[peak] ?? 0)}`}
+            baseline={{ value: Math.round(amounts.reduce((a, b) => a + b, 0) / 7), label: t("home.avgPerDay") }}
+            summary={t("home.weekPeak", { weekday: weekdayName(peak, locale), amount: formatYen(amounts[peak] ?? 0) })}
           />
         </div>
         <div className="mt-3">
-          <DayChips dates={dates} amounts={amounts} selectedIndex={sel} onSelect={setSel} today={TODAY} />
+          <DayChips tone={tone} dates={dates} amounts={amounts} selectedIndex={sel} onSelect={setSel} today={TODAY} />
         </div>
         <div className="mt-3">
           <WeekNavigator
+            tone={tone}
             start={dates[0]!}
             end={dates[6]!}
             onPrev={() => setStart(addDays(start, -7))}
             onNext={() => setStart(addDays(start, 7))}
-            nextDisabled={start >= weekStart}
+            nextDisabled={start >= thisWeek}
           />
         </div>
       </HeroGlassCard>
 
       <div className="grid grid-cols-2 gap-3">
         <MetricPill
-          theme="ember"
-          label="今月の実支出"
-          value={formatYenShort(actual)}
-          ariaLabel={`今月の実支出 ${formatYen(actual)}、先月の同じ日までより12%多い`}
-          aside={<DeltaBadge ratio={0.12} />}
+          tone="p1"
+          label={t("metric.spent")}
+          amount={d.actual}
+          ariaLabel={`${t("metric.spentAria", { amount: formatYen(d.actual) })}. ${t("delta.up", { percent: 12 })}`}
+          foot={<DeltaBadge ratio={0.12} />}
           onClick={() => undefined}
         />
         <MetricPill
-          theme="indigo"
-          label="未購入の予定"
-          value={formatYenShort(planned)}
-          ariaLabel={`未購入の予定 ${formatYen(planned)}、3件`}
-          sub="3件"
+          tone="p2"
+          label={t("metric.planned")}
+          amount={d.planned}
+          ariaLabel={t("metric.plannedAria", { amount: formatYen(d.planned), count: d.plannedCount })}
+          foot={t("metric.items", { count: d.plannedCount })}
           onClick={() => undefined}
         />
-        <MetricPill
-          theme="aurora"
-          label="予算使用率"
-          value={`${Math.round(((actual + planned) / budget) * 100)}%`}
-          ariaLabel={`予算使用率 ${Math.round(((actual + planned) / budget) * 100)}%`}
-          aside={<UsageArc rate={(actual + planned) / budget} />}
-        />
-        <div className="flex items-center justify-center"><AddPill onClick={() => setSheet(true)} /></div>
+        <div className="col-span-2">
+          <UsedBar rate={rate} used={Math.round(d.budget * rate)} budget={d.budget} />
+        </div>
       </div>
 
-      <section aria-labelledby="upcoming" className="flex flex-col gap-2">
+      <section aria-labelledby="upcoming" className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between">
-          <h2 id="upcoming" className="text-[17px] font-semibold">
-            直近の購入予定
+          <h2 id="upcoming" className={LABEL}>
+            {t("home.upcoming")}
           </h2>
-          <a href="#" className="inline-flex min-h-11 items-center text-[14px] font-semibold underline-offset-4 hover:underline">
-            すべて見る
+          <a href="#" className={`inline-flex min-h-11 items-center gap-1 ${LABEL}`}>
+            {t("home.all")}
+            <Icon name="chevronRight" size={14} />
           </a>
         </div>
-        {[
-          { t: "ダイニングチェア（2脚）", a: 28_000, who: "あおい", d: "10/27", s: "planned" as const },
-          { t: "加湿器", a: 9_800, who: "はる", d: "10/29", s: "planned" as const },
-          { t: "冬用のラグ", a: 3_400, who: "あおい", d: "11/2", s: "planned" as const },
-        ].map((p) => (
-          <article key={p.t} className="flex items-center justify-between gap-3 rounded-[24px] bg-white/72 px-4 py-3 shadow-[inset_0_0_0_1px_rgb(17_24_39/0.06)]">
+        {UPCOMING.map((p) => (
+          <GlassCard key={p.t} className="flex items-center justify-between gap-3 px-4 py-3">
             <div className="min-w-0">
               <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{p.t}</p>
-              <p className="text-[12px] text-ink-muted">
-                {p.who} ・ {p.d}
+              <p className={`num text-[12px] ${theme.tone.card === "light" ? "text-ink-muted" : "text-white/90"}`}>
+                {p.who} ・ {formatShortDate(p.d, locale)}
               </p>
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
-              <span className="num text-[15px] font-semibold">{formatYen(p.a)}</span>
-              <StatusBadge status={p.s} />
-            </div>
-          </article>
+            <span className="num shrink-0 text-[15px] font-semibold">{formatYen(p.a)}</span>
+          </GlassCard>
         ))}
       </section>
 
-      <button
-        type="button"
-        className="flex min-h-11 items-center gap-2 rounded-2xl bg-white/60 px-4 py-2 text-left text-[14px] font-medium"
+      <div
+        data-fixed-overlay
+        className="fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px)] z-30"
       >
-        先月以前の未購入の予定が2件あります
-      </button>
+        <AddPill onClick={() => setSheet(true)} />
+      </div>
 
       <GlassSheet
         open={sheet}
         onClose={() => setSheet(false)}
-        title="購入予定を追加"
+        title={t("plan.add")}
         footer={
           <div className="flex flex-col gap-3">
             <p className="num flex items-center justify-between text-[14px]">
-              <span className="text-white/78">いまの残額 {formatYen(remaining)}</span>
-              <span className="font-semibold">→ 登録後 {formatYen(remaining - 128_400)}</span>
+              <span className="text-white/90">{formatYen(remaining)}</span>
+              <span className="font-semibold">→ {formatYen(remaining - 128_400)}</span>
             </p>
             <PrimaryButton tone="dark" fullWidth>
-              登録する
+              {t("plan.add")}
             </PrimaryButton>
           </div>
         }
       >
         <div className="flex flex-col gap-4">
-          <FormField label="商品名" required>
+          <FormField label="商品名 / Item" required>
             {(p) => <TextInput {...p} defaultValue="ソファ" />}
           </FormField>
-          <FormField label="予定金額" required error="99,999,999円以下で入力してください">
+          <FormField label="予定金額 / Amount" required>
             {(p) => <AmountInput {...p} defaultValue="128,400" />}
           </FormField>
-          <AttentionNote tone="dark">予算を超えそうです。内容を確認しますか？</AttentionNote>
+          <AttentionNote tone="dark">{t("attention.overBudgetConfirm")}</AttentionNote>
         </div>
       </GlassSheet>
     </>
@@ -288,58 +322,50 @@ function HomePreview({ state }: { state: string }) {
 }
 
 function PartsPreview() {
+  const { t } = useT();
+  const { theme } = useTheme();
   const [tab, setTab] = useState<"all" | "planned" | "purchased" | "canceled">("all");
   const [confirm, setConfirm] = useState(false);
   return (
     <div className="flex flex-col gap-6">
       <Section title="TabChips">
         <TabChips
-          label="予定の絞り込み"
+          label="Filter"
           value={tab}
           onChange={setTab}
+          tone={theme.tone.page}
           options={[
-            { value: "all", label: "すべて" },
-            { value: "planned", label: "未購入" },
-            { value: "purchased", label: "購入済み" },
-            { value: "canceled", label: "キャンセル" },
+            { value: "all", label: t("home.all") },
+            { value: "planned", label: t("status.planned") },
+            { value: "purchased", label: t("status.purchased") },
+            { value: "canceled", label: t("status.canceled") },
           ]}
         />
       </Section>
 
-      <Section title="MetricPill（8桁・短縮表示）">
+      <Section title="MetricPill / UsedBar">
         <div className="grid grid-cols-2 gap-3">
-          {[9_800, 128_400, 1_234_567, 99_999_999].map((v) => (
-            <MetricPill
-              key={v}
-              theme="ember"
-              label="今月の実支出"
-              value={formatYenShort(v)}
-              ariaLabel={`今月の実支出 ${formatYen(v)}`}
-              aside={<DeltaBadge ratio={-0.03} />}
-              sub={formatYen(v)}
-            />
+          {[9_800, 99_999_999].map((v) => (
+            <MetricPill key={v} tone="p1" label={t("metric.spent")} amount={v} ariaLabel={formatYen(v)} foot={<DeltaBadge ratio={-0.03} />} />
           ))}
-          <MetricPill theme="indigo" label="未購入の予定" value="9999万" ariaLabel="未購入の予定" sub="12件" />
-          <MetricPill
-            theme="aurora"
-            label="予算使用率"
-            value="115%"
-            ariaLabel="予算使用率 115%、予算を超えそうです"
-            aside={<UsageArc rate={1.15} />}
-            sub="超えそう"
-          />
+          <MetricPill tone="p2" label={t("metric.planned")} amount={12_345_678} ariaLabel={formatYen(12_345_678)} foot={t("metric.items", { count: 12 })} />
+          <MetricPill tone="p2" label={t("metric.planned")} amount={0} ariaLabel={formatYen(0)} foot={<DeltaBadge ratio={null} />} />
+          <div className="col-span-2 flex flex-col gap-3">
+            <UsedBar rate={0.05} used={9_000} budget={180_000} />
+            <UsedBar rate={1.15} used={207_000} budget={180_000} />
+          </div>
         </div>
       </Section>
 
-      <Section title="AmountDisplay（1億円未満の全桁）">
-        <div className="hero-glass has-grain flex flex-col gap-1 p-5">
-          {[1, 12, 123, 1_234, 12_345, 123_456, 1_234_567, 12_345_678, 99_999_999, -15_000].map((v) => (
+      <Section title="HeroAmount">
+        <HeroGlassCard>
+          {[1, 1_234, 123_456, 12_345_678, 99_999_999, -15_000].map((v) => (
             <HeroAmount key={v} value={v} />
           ))}
-        </div>
+        </HeroGlassCard>
       </Section>
 
-      <Section title="バッジ">
+      <Section title="Badges">
         <div className="flex flex-wrap gap-2">
           <StatusBadge status="planned" />
           <StatusBadge status="purchased" />
@@ -350,47 +376,55 @@ function PartsPreview() {
           <DeltaBadge ratio={0.01} />
           <DeltaBadge ratio={-0.12} />
           <DeltaBadge ratio={0} />
-          <DeltaBadge ratio={null} />
         </div>
       </Section>
 
-      <Section title="ボタン">
+      <Section title="Buttons">
         <div className="flex flex-wrap items-center gap-2">
-          <PrimaryButton icon="check">購入済みにする</PrimaryButton>
-          <SecondaryButton icon="edit">編集</SecondaryButton>
-          <PrimaryButton loading>保存しています</PrimaryButton>
-          <PrimaryButton disabled>無効</PrimaryButton>
-          <CircleIconButton tone="light" icon="info" label="ヘルプ" />
+          <PrimaryButton tone={theme.tone.page} icon="check">
+            {t("status.purchased")}
+          </PrimaryButton>
+          <SecondaryButton tone={theme.tone.page} icon="edit">
+            Edit
+          </SecondaryButton>
+          <PrimaryButton tone={theme.tone.page} loading>
+            Saving
+          </PrimaryButton>
+          <CircleIconButton tone={theme.tone.page} icon="info" label="Help" />
           <AddPill onClick={() => setConfirm(true)} />
         </div>
       </Section>
 
-      <Section title="カテゴリ別（横棒）">
-        <div className="hero-glass has-grain p-5">
+      <Section title="CategoryBars">
+        <HeroGlassCard>
           <CategoryBars
             rows={[
               { key: "food", name: "食費", amount: 32_400, ratio: 0.51 },
               { key: "home", name: "家具・家電", amount: 18_000, ratio: 0.28 },
-              { key: "daily", name: "日用品", amount: 8_480, ratio: 0.13 },
-              { key: "none", name: "未分類", amount: 4_600, ratio: 0.08 },
+              { key: "none", name: t("badge.uncategorized"), amount: 4_600, ratio: 0.08 },
             ]}
           />
-        </div>
+        </HeroGlassCard>
       </Section>
 
-      <Section title="空・エラー・注意">
-        <div className="flex flex-col gap-3 rounded-[24px] bg-white/60">
-          <EmptyState title="購入予定はまだありません" body="ふたりの予定を共有しよう" action={{ label: "購入予定を追加", onClick: () => undefined }} />
-        </div>
-        <ErrorMessage message="保存できませんでした。通信状況を確認して、もう一度お試しください" onRetry={() => undefined} />
-        <AttentionNote>予算を ¥15,000 超えそうです</AttentionNote>
+      <Section title="Empty / Error / Attention">
+        <GlassCard>
+          <EmptyState
+            tone={theme.tone.card}
+            title={t("home.noRecords")}
+            body={t("home.noRecordsBody")}
+            action={{ label: t("plan.add"), onClick: () => undefined }}
+          />
+        </GlassCard>
+        <ErrorMessage message={t("common.saveError")} onRetry={() => undefined} />
+        <AttentionNote>{t("attention.overBy", { amount: formatYen(15_000) })}</AttentionNote>
       </Section>
 
       <ConfirmDialog
         open={confirm}
-        title="この予定を削除しますか？"
-        body="支出の記録は残ります（予定とのひも付けだけ外れます）"
-        confirmLabel="削除する"
+        title="Delete this plan?"
+        body="Expense records stay (only the link is removed)."
+        confirmLabel="Delete"
         onConfirm={() => setConfirm(false)}
         onCancel={() => setConfirm(false)}
       />
@@ -398,10 +432,10 @@ function PartsPreview() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-[15px] font-semibold text-ink-muted">{title}</h2>
+      <h2 className={LABEL}>{title}</h2>
       {children}
     </section>
   );

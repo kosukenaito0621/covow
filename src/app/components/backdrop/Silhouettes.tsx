@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import type { ThemeId } from "../../theme/themes";
 
 /*
  * テーマごとの背景のシルエット（ピントの外れた大きな影）。
@@ -9,7 +10,7 @@ import type { CSSProperties, ReactNode } from "react";
  * 静止画で、アニメーションさせない。色と濃さはテーマの変数（--sil-color / --sil-halo / --sil-opacity）で決める。
  */
 
-export type SilhouetteTheme = "aurora" | "earthy" | "tropical" | "dusk" | "sakura" | "frost";
+export type SilhouetteTheme = ThemeId;
 
 interface Shape {
   viewBox: string;

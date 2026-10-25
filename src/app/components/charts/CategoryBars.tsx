@@ -16,7 +16,7 @@ export function CategoryBars({
             <span className="font-semibold">{r.name}</span>
             <span className="num shrink-0">
               {formatYen(r.amount)}
-              <span className="ml-2 text-white/78">{Math.round(r.ratio * 100)}%</span>
+              <span className="ml-2 opacity-85">{Math.round(r.ratio * 100)}%</span>
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-white/12" aria-hidden="true">

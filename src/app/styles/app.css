@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./tokens.css";
 @import "./glass.css";
+@import "./themes.css";
 
 /* Tailwind のユーティリティからトークンを使えるようにする */
 @theme inline {
@@ -8,6 +9,7 @@
   --color-mist: var(--frost-mist);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
+  --color-page: var(--page-text);
   --color-smoke: var(--smoke-deep);
   --color-cyan: var(--glow-cyan);
   --color-ice: var(--glow-ice);
@@ -32,8 +34,9 @@
   body {
     margin: 0;
     min-height: 100dvh;
-    background: var(--frost-base);
-    color: var(--ink);
+    /* 背景の色と文字の色はテーマで決まる（背景の光は AuroraBackdrop） */
+    background: var(--aurora-base, var(--frost-base));
+    color: var(--page-text, var(--ink));
     font-family: var(--font-ui);
     font-size: var(--text-body);
     line-height: 1.6;

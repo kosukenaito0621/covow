@@ -1,4 +1,5 @@
 import { type ComponentProps, type ReactNode, useId } from "react";
+import { useT } from "../../i18n/I18nProvider";
 
 type Tone = "light" | "dark";
 
@@ -21,6 +22,7 @@ export function FormField({
   tone?: Tone;
   children: (props: { id: string; "aria-describedby"?: string; "aria-invalid"?: boolean }) => ReactNode;
 }) {
+  const { t } = useT();
   const id = useId();
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
@@ -30,7 +32,7 @@ export function FormField({
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-semibold">
         {label}
-        {required ? <span className={`ml-1 text-xs font-normal ${muted}`}>必須</span> : null}
+        {required ? <span className={`ml-1 text-xs font-normal ${muted}`}>{t("common.required")}</span> : null}
       </label>
       {children({ id, "aria-describedby": describedBy, "aria-invalid": error ? true : undefined })}
       {hint && !error && (

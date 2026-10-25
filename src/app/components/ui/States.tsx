@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useT } from "../../i18n/I18nProvider";
 import { PrimaryButton, SecondaryButton } from "./Buttons";
 import { Icon, type IconName } from "./Icon";
 
@@ -41,7 +42,7 @@ export function EmptyState({
 
 /** エラー表示。事実と次にできることを書き、再試行ボタンを付ける */
 export function ErrorMessage({
-  message = "読み込めませんでした。通信状況を確認して、もう一度お試しください",
+  message,
   onRetry,
   tone = "light",
 }: {
@@ -49,6 +50,7 @@ export function ErrorMessage({
   onRetry?: () => void;
   tone?: Tone;
 }) {
+  const { t } = useT();
   return (
     <div
       role="alert"
@@ -58,11 +60,11 @@ export function ErrorMessage({
     >
       <p className="flex items-start gap-2 text-[15px]">
         <Icon name="attention" size={20} className="mt-0.5 shrink-0" />
-        {message}
+        {message ?? t("common.loadError")}
       </p>
       {onRetry && (
         <SecondaryButton tone={tone} icon="refresh" onClick={onRetry}>
-          もう一度読み込む
+          {t("common.retry")}
         </SecondaryButton>
       )}
     </div>
@@ -74,10 +76,11 @@ export function Skeleton({ className, tone = "light" }: { className?: string; to
   return <div aria-hidden="true" className={`skeleton ${tone === "dark" ? "skeleton-dark" : ""} ${className ?? ""}`} />;
 }
 
-export function LoadingSkeleton({ label = "読み込み中", children }: { label?: string; children: ReactNode }) {
+export function LoadingSkeleton({ label, children }: { label?: string; children: ReactNode }) {
+  const { t } = useT();
   return (
     <div role="status" aria-live="polite">
-      <span className="sr-only">{label}</span>
+      <span className="sr-only">{label ?? t("common.loading")}</span>
       {children}
     </div>
   );

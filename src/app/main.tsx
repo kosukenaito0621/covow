@@ -7,7 +7,9 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { MotionConfig } from "motion/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { I18nProvider } from "./i18n/I18nProvider";
 import { routeTree } from "./routeTree.gen";
+import { ThemeProvider } from "./theme/ThemeProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,9 +37,13 @@ if (!root) throw new Error("#root がありません");
 createRoot(root).render(
   <StrictMode>
     <MotionConfig reducedMotion="user">
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+          </QueryClientProvider>
+        </I18nProvider>
+      </ThemeProvider>
     </MotionConfig>
   </StrictMode>,
 );

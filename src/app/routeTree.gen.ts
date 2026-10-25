@@ -15,7 +15,6 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevLogoRouteImport } from './routes/dev.logo'
-import { Route as DevMockupsRouteImport } from './routes/dev.mockups'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -47,11 +46,6 @@ const DevLogoRoute = DevLogoRouteImport.update({
   path: '/dev/logo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DevMockupsRoute = DevMockupsRouteImport.update({
-  id: '/dev/mockups',
-  path: '/dev/mockups',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,7 +54,6 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
-  '/dev/mockups': typeof DevMockupsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -69,7 +62,6 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
-  '/dev/mockups': typeof DevMockupsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -79,7 +71,6 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
-  '/dev/mockups': typeof DevMockupsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -90,7 +81,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
-    | '/dev/mockups'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -99,7 +89,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
-    | '/dev/mockups'
   id:
     | '__root__'
     | '/'
@@ -108,7 +97,6 @@ export interface FileRouteTypes {
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
-    | '/dev/mockups'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -118,7 +106,6 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   DevComponentsRoute: typeof DevComponentsRoute
   DevLogoRoute: typeof DevLogoRoute
-  DevMockupsRoute: typeof DevMockupsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,13 +152,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevLogoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dev/mockups': {
-      id: '/dev/mockups'
-      path: '/dev/mockups'
-      fullPath: '/dev/mockups'
-      preLoaderRoute: typeof DevMockupsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -182,7 +162,6 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   DevComponentsRoute: DevComponentsRoute,
   DevLogoRoute: DevLogoRoute,
-  DevMockupsRoute: DevMockupsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
