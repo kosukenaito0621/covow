@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryBreakdown, dailySpend, memberBreakdown, monthlyTrend } from "./analytics";
+import { categoryBreakdown, dailySpend, memberBreakdown, monthlyTrend, trendStats } from "./analytics";
 import type { ExpenseLike } from "./summary";
 
 const e = (id: string, amount: number, spentAt: string, extra: Partial<ExpenseLike> = {}): ExpenseLike => ({
@@ -88,5 +88,19 @@ describe("日別の実支出（SpendCurve）", () => {
       { date: "2026-10-20", amount: 0 },
       { date: "2026-10-21", amount: 900 },
     ]);
+  });
+});
+
+describe("trendStats", () => {
+  const trend = [
+    { yearMonth: "2026-08", actual: 100_000, budget: 90_000 },
+    { yearMonth: "2026-09", actual: 50_001, budget: null },
+    { yearMonth: "2026-10", actual: 10_000, budget: 5_000 },
+  ];
+  it("途中の月を除いて平均し、予算オーバーは途中の月も数える", () => {
+    expect(trendStats(trend, "2026-10")).toEqual({ average: 75_001, overCount: 2 });
+  });
+  it("終わった月がなければ平均は null", () => {
+    expect(trendStats([trend[2]!], "2026-10")).toEqual({ average: null, overCount: 1 });
   });
 });

@@ -15,6 +15,7 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevLogoRouteImport } from './routes/dev.logo'
+import { Route as DevScreensRouteImport } from './routes/dev.screens'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const DevLogoRoute = DevLogoRouteImport.update({
   path: '/dev/logo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevScreensRoute = DevScreensRouteImport.update({
+  id: '/dev/screens',
+  path: '/dev/screens',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
+  '/dev/screens': typeof DevScreensRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
+  '/dev/screens': typeof DevScreensRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
+  '/dev/screens': typeof DevScreensRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
+    | '/dev/screens'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
+    | '/dev/screens'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
+    | '/dev/screens'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,6 +118,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   DevComponentsRoute: typeof DevComponentsRoute
   DevLogoRoute: typeof DevLogoRoute
+  DevScreensRoute: typeof DevScreensRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevLogoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dev/screens': {
+      id: '/dev/screens'
+      path: '/dev/screens'
+      fullPath: '/dev/screens'
+      preLoaderRoute: typeof DevScreensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   DevComponentsRoute: DevComponentsRoute,
   DevLogoRoute: DevLogoRoute,
+  DevScreensRoute: DevScreensRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

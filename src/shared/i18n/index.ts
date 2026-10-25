@@ -35,6 +35,12 @@ export const formatMonth = (ym: string, locale: Locale): string =>
     ? `${Number(ym.slice(0, 4))}年${Number(ym.slice(5, 7))}月`
     : new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric", timeZone: "UTC" }).format(parseYm(ym));
 
+/** 月だけの短い表記（Oct／10月）。グラフの目盛りに使う */
+export const formatMonthShort = (ym: string, locale: Locale): string =>
+  locale === "ja"
+    ? `${Number(ym.slice(5, 7))}月`
+    : new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" }).format(parseYm(ym));
+
 /** 月日の短い表記（Oct 27／10/27） */
 export const formatShortDate = (date: string, locale: Locale): string =>
   locale === "ja"

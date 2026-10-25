@@ -115,3 +115,18 @@ export const dailySpend = (input: {
     date,
     amount: sum(input.expenses.filter((e) => e.spentAt === date).map((e) => e.actualAmount)),
   }));
+
+/**
+ * 推移のまとめ：月の平均と、予算を超えた月の数。
+ * 途中の月（currentYearMonth）は金額がまだ少ないので平均から外す。予算オーバーの数には含める。
+ */
+export const trendStats = (
+  trend: readonly { yearMonth: YearMonth; actual: number; budget: number | null }[],
+  currentYearMonth: YearMonth,
+): { average: number | null; overCount: number } => {
+  const done = trend.filter((m) => m.yearMonth !== currentYearMonth);
+  return {
+    average: done.length === 0 ? null : Math.round(sum(done.map((m) => m.actual)) / done.length),
+    overCount: trend.filter((m) => m.budget !== null && m.actual > m.budget).length,
+  };
+};

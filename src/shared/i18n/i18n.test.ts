@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { en } from "./en";
-import { DEFAULT_LOCALE, formatMonth, formatShortDate, spokenDate, translate, weekdayLetter } from "./index";
+import { DEFAULT_LOCALE, formatMonth, formatMonthShort, formatShortDate, spokenDate, translate, weekdayLetter } from "./index";
 import { ja } from "./ja";
 
 describe("英語／日本語", () => {
@@ -27,6 +27,8 @@ describe("英語／日本語", () => {
   it("日付の表記", () => {
     expect(formatMonth("2026-10", "en")).toBe("Oct 2026");
     expect(formatMonth("2026-10", "ja")).toBe("2026年10月");
+    expect(formatMonthShort("2026-05", "en")).toBe("May");
+    expect(formatMonthShort("2026-05", "ja")).toBe("5月");
     expect(formatShortDate("2026-10-27", "en")).toBe("Oct 27");
     expect(formatShortDate("2026-10-27", "ja")).toBe("10/27");
     expect(weekdayLetter(6, "en")).toBe("S");
