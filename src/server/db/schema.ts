@@ -20,9 +20,23 @@ export const users = sqliteTable("users", {
   // 画面の言語とテーマ（アカウントに保存し、どの端末でも同じにする）
   locale: text("locale", { enum: LOCALES }).notNull().default("en"),
   theme: text("theme", { enum: THEME_IDS }).notNull().default("aurora"),
+  // 体験版の仮のアカウント（24時間で消える）。guestExpiresAt を過ぎたら毎日の定期処理で消す
+  isGuest: integer("is_guest", { mode: "boolean" }).notNull().default(false),
+  guestExpiresAt: text("guest_expires_at"),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+/** 体験版を作った回数（IP のハッシュ×日本時間の日付ごと）。作りすぎを防ぐ */
+export const trialQuota = sqliteTable(
+  "trial_quota",
+  {
+    key: text("key").notNull(),
+    day: text("day").notNull(),
+    count: integer("count").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.key, t.day] })],
+);
 
 export const sessions = sqliteTable(
   "sessions",

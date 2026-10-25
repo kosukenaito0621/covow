@@ -92,6 +92,8 @@ export const authRoutes = new Hono<AppEnv>()
       console.warn("google_login_failed", e instanceof GoogleLoginError ? e.reason : "unknown");
       return toLogin(e instanceof GoogleLoginError ? e.reason : "failed");
     }
+    // 体験版を使っていた人がログインしたら、体験版のログインのしるしは消す（データは定期処理で消える）
+    if (c.var.user?.isGuest && c.var.sessionId) await deleteSession(c.var.db, c.var.sessionId);
     const userId = await upsertUser(c.var.db, profile, saved);
     const token = await createSession(c.var.db, userId);
     setSessionCookie(c, token);

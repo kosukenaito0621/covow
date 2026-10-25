@@ -43,7 +43,8 @@ export async function findSession(
     return null;
   }
   let renewed = false;
-  if (expires - now.getTime() < SESSION_RENEW_THRESHOLD_DAYS * DAY_MS) {
+  // 体験版の仮のアカウントは延長しない（24時間で終わり）
+  if (!row.user.isGuest && expires - now.getTime() < SESSION_RENEW_THRESHOLD_DAYS * DAY_MS) {
     await db
       .update(sessions)
       .set({ expiresAt: new Date(now.getTime() + SESSION_TTL_DAYS * DAY_MS).toISOString() })

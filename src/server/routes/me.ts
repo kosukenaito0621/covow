@@ -18,6 +18,8 @@ const publicUser = (u: SessionUser) => ({
   avatarUrl: u.avatarUrl,
   locale: u.locale,
   theme: u.theme,
+  isGuest: u.isGuest,
+  guestExpiresAt: u.guestExpiresAt,
 });
 
 /** 表示名・言語・テーマのうち、送られてきたものだけを変える */
