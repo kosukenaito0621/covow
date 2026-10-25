@@ -1,0 +1,9 @@
+# ローカル開発用の環境変数。このファイルを .dev.vars にコピーして値を入れる（.dev.vars はコミットしない）。
+# 本番は `npx wrangler secret put <NAME> --env production` で登録する。
+
+# Google Cloud Console で作成した OAuth クライアント ID（ウェブアプリケーション）
+GOOGLE_CLIENT_ID=
+# 同じ OAuth クライアントのシークレット
+GOOGLE_CLIENT_SECRET=
+# アプリの URL（オリジン）。ローカルは http://localhost:5173
+APP_ORIGIN=

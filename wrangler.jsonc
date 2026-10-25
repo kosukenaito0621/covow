@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "covow",
+  "main": "./src/server/index.ts",
+  "compatibility_date": "2026-10-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true,
+  "observability": { "enabled": true },
+  "assets": {
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  // 開発用（ローカル）。本番は env.production で別の DB を使う。
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "covow-db-dev",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "production": {
+      // フェーズ9で本番 D1 を作成してから database_id を設定する
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "covow-db",
+          "database_id": "REPLACE_IN_PHASE_9",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* フェーズ3でトークン・ガラス表現を追加する */
+
+:root {
+  --frost-base: #eceef1;
+  --ink: #111827;
+  --font-ja: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--frost-base);
+  color: var(--ink);
+  font-family: "Inter Variable", var(--font-ja);
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.text-body {
+  font-size: 15px;
+}
