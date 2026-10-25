@@ -15,6 +15,13 @@
       "when": 1792900625511,
       "tag": "0001_space_member_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792925162873,
+      "tag": "0002_user_preferences",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { addDays, addMonths, daysInMonth, type IsoDate, yearMonthOf } from "@shared/date/jst";
+import { INVITE_TTL_HOURS } from "@shared/constants";
 import { LOCALES, type Locale } from "@shared/i18n";
 import { categoryBreakdown, dailySpend, memberBreakdown, monthlyTrend, planVsActual, trendStats } from "@shared/money/analytics";
 import { type ExpenseLike, monthOverMonth, type PlanLike, remainingAfterPlanChange, summarizeMonth } from "@shared/money/summary";
@@ -250,7 +251,7 @@ export default function ScreenPreviews() {
                   { id: HARU, name: "Haru" },
                 ],
                 max: 4,
-                invite: { url: "https://covow.example/invite/Xk2f…", hours: 48 },
+                invite: { url: "https://covow.example/invite/Xk2f…", hours: INVITE_TTL_HOURS },
               },
               budgets: [0, 1, 2].map((i) => ({ yearMonth: addMonths(YM, i), amount: budgetOf(addMonths(YM, i)) })),
               categories: CATS.map((c) => c[locale]),

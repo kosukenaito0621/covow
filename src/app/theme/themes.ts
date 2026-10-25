@@ -1,6 +1,7 @@
-/** カラーテーマ（全6種）。CSS の値は styles/themes.css の [data-theme] にある */
-export const THEME_IDS = ["aurora", "earthy", "tropical", "dusk", "sakura", "frost"] as const;
-export type ThemeId = (typeof THEME_IDS)[number];
+import type { ThemeId } from "@shared/theme";
+
+/** カラーテーマ（全6種）。CSS の値は styles/themes.css の [data-theme] にある。ID の一覧は shared/theme */
+export { DEFAULT_THEME, isThemeId, THEME_IDS, type ThemeId } from "@shared/theme";
 
 type Tone = "light" | "dark";
 
@@ -60,6 +61,3 @@ export const THEMES: Record<ThemeId, ThemeMeta> = {
   },
 };
 
-export const DEFAULT_THEME: ThemeId = "aurora";
-
-export const isThemeId = (v: unknown): v is ThemeId => typeof v === "string" && (THEME_IDS as readonly string[]).includes(v);

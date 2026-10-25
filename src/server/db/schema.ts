@@ -1,4 +1,6 @@
 import { sql } from "drizzle-orm";
+import { LOCALES } from "../../shared/i18n";
+import { THEME_IDS } from "../../shared/theme";
 import { check, index, integer, primaryKey, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /*
@@ -15,6 +17,9 @@ export const users = sqliteTable("users", {
   email: text("email").notNull(),
   displayName: text("display_name").notNull(),
   avatarUrl: text("avatar_url"),
+  // 画面の言語とテーマ（アカウントに保存し、どの端末でも同じにする）
+  locale: text("locale", { enum: LOCALES }).notNull().default("en"),
+  theme: text("theme", { enum: THEME_IDS }).notNull().default("aurora"),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });

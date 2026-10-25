@@ -1,12 +1,26 @@
 import { Hono } from "hono";
+import { createDb } from "./db/client";
+import { originCheck } from "./middleware/origin-check";
 import { securityHeaders } from "./middleware/security-headers";
+import { session } from "./middleware/session";
+import { authRoutes } from "./routes/auth";
+import { meRoutes } from "./routes/me";
+import type { AppEnv } from "./types";
 
-export type AppEnv = { Bindings: Env };
+export type { AppEnv } from "./types";
 
 const app = new Hono<AppEnv>()
   .basePath("/api")
   .use("*", securityHeaders())
-  .get("/health", (c) => c.json({ ok: true }));
+  .use("*", originCheck())
+  .use("*", async (c, next) => {
+    c.set("db", createDb(c.env.DB));
+    await next();
+  })
+  .use("*", session())
+  .get("/health", (c) => c.json({ ok: true }))
+  .route("/auth", authRoutes)
+  .route("/me", meRoutes);
 
 app.notFound((c) => c.json({ code: "NOT_FOUND", message: "見つかりませんでした" }, 404));
 

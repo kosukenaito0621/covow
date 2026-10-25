@@ -152,6 +152,13 @@ export const en = {
   "amount.too_small": "Enter 1 yen or more.",
   "amount.too_large": "Enter 99,999,999 yen or less.",
   "insights.plansAdded": "{count} plans added",
+  "login.title": "Sign in",
+  "login.lead": "Share what to buy, what you spent, and a monthly budget — on your own, as a pair, or with up to 4.",
+  "login.google": "Sign in with Google",
+  "login.error.cancelled": "Sign-in was canceled.",
+  "login.error.expired": "Sign-in took too long. Please try again.",
+  "login.error.failed": "Couldn't sign in with Google. Please try again.",
+  "settings.signOutError": "Couldn't sign out. Check your connection and try again.",
 } as const;
 
 export type MessageKey = keyof typeof en;

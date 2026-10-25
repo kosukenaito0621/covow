@@ -150,4 +150,11 @@ export const ja = {
   "amount.too_small": "1円以上で入力してください",
   "amount.too_large": "99,999,999円以下で入力してください",
   "insights.plansAdded": "予定 {count}件",
+  "login.title": "ログイン",
+  "login.lead": "買う予定・使ったお金・月の予算を、ひとりでも、ふたりでも、4人までのグループでも",
+  "login.google": "Google でログイン",
+  "login.error.cancelled": "ログインをキャンセルしました",
+  "login.error.expired": "時間がたったため、ログインできませんでした。もう一度お試しください",
+  "login.error.failed": "Google でログインできませんでした。もう一度お試しください",
+  "settings.signOutError": "ログアウトできませんでした。通信状況を確認して、もう一度お試しください",
 } as const satisfies Record<MessageKey, string>;
