@@ -18,6 +18,13 @@ export default tseslint.config(
     languageOptions: { globals: globals.node },
   },
   {
+    // Playwright で実行し、一部はページ内（ブラウザ）で動くスクリプト
+    files: ["scripts/measure-contrast.js"],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+    // ファイル全体が「page を受け取る関数式」なので、式だけの文を許可する
+    rules: { "@typescript-eslint/no-unused-expressions": "off" },
+  },
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       // ログに金額やトークンを出さないため、console.log は使わない（error/warn だけ許可）

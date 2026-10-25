@@ -1,0 +1,204 @@
+/*
+ * ガラス表現（指示書 4.3）
+ * 背後がほぼ無地なので、ガラスらしさはカードの内側に描き込む：
+ * メッシュ光（radial-gradient）＋縁の光（inset shadow）＋外側の影1つ＋静止したグレイン。
+ * カードには backdrop-filter / filter: blur を使わない。
+ */
+
+/* ---------- ページの背景（霧） ---------- */
+.frost-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--frost-base);
+  pointer-events: none;
+}
+.frost-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(40% 35% at 15% 10%, rgb(228 227 242 / 0.95), transparent 70%),
+    radial-gradient(45% 40% at 90% 30%, rgb(189 239 255 / 0.45), transparent 70%),
+    radial-gradient(50% 40% at 50% 95%, rgb(242 166 222 / 0.18), transparent 70%);
+  animation: mist-drift 40s ease-in-out infinite alternate;
+}
+.frost-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: var(--grain-opacity-page);
+}
+@keyframes mist-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-4%, 3%, 0);
+  }
+}
+
+/* ---------- 共通：グレインを重ねる ---------- */
+.has-grain {
+  position: relative;
+  isolation: isolate;
+}
+.has-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--grain);
+  opacity: var(--grain-opacity-card);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 0;
+}
+.has-grain > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- ヒーローカード（暗いスモークガラス） ---------- */
+.hero-glass {
+  border-radius: var(--radius-hero);
+  color: var(--on-dark);
+  border: var(--border-glass);
+  background:
+    radial-gradient(70% 60% at 0% 100%, rgb(114 229 245 / 0.34), transparent 70%),
+    radial-gradient(55% 70% at 105% 70%, rgb(242 166 222 / 0.3), transparent 70%),
+    radial-gradient(50% 55% at 90% 0%, rgb(169 165 245 / 0.3), transparent 72%),
+    linear-gradient(180deg, var(--smoke-mid) 0%, var(--smoke-deep) 100%);
+  box-shadow: var(--edge-light), var(--shadow-float);
+}
+
+/* ---------- ピル型のメトリクスカード ---------- */
+.metric-pill {
+  border-radius: var(--radius-full);
+  border: var(--border-glass);
+  box-shadow: var(--edge-light), var(--shadow-float);
+}
+/* 内側の点線の枠 */
+.metric-pill::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  border: 1px dashed var(--pill-dash, rgb(255 255 255 / 0.32));
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* aurora：ピンクの光が上から差し、暗いプラムへ沈む（予算使用率） */
+.pill-aurora {
+  color: var(--on-dark);
+  background:
+    radial-gradient(75% 115% at 88% -35%, rgb(242 166 222 / 0.95), rgb(242 166 222 / 0.22) 55%, transparent 75%),
+    linear-gradient(180deg, #5f3a59 0%, var(--plum) 70%);
+}
+/* indigo：深いインディゴからラベンダー、氷の色へ（未購入の予定） */
+.pill-indigo {
+  color: var(--on-dark);
+  background:
+    radial-gradient(70% 120% at 108% 115%, rgb(189 239 255 / 0.85), rgb(169 165 245 / 0.55) 45%, transparent 75%),
+    linear-gradient(160deg, var(--indigo-deep) 0%, #353a86 60%, #4c4fae 100%);
+}
+/* ember：コーラルからアンバー（今月の実支出）。明るいので濃い文字にする */
+.pill-ember {
+  color: var(--ink);
+  --pill-dash: rgb(17 24 39 / 0.28);
+  background:
+    radial-gradient(80% 120% at 0% 0%, rgb(255 255 255 / 0.28), transparent 60%),
+    linear-gradient(135deg, var(--glow-coral) 0%, #ffb889 55%, var(--glow-amber) 100%);
+}
+
+/* ---------- 白い不透明のピル（主要操作） ---------- */
+.solid-pill {
+  border-radius: var(--radius-full);
+  background: var(--surface-solid);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px rgb(17 24 39 / 0.06), var(--shadow-float);
+}
+
+/* ---------- 重なる要素だけのガラス（ナビ・シート・ダイアログ・ヘッダー） ---------- */
+.overlay-glass-dark {
+  color: var(--on-dark);
+  background: rgb(17 24 39 / 0.78);
+  border: var(--border-glass);
+  box-shadow: var(--edge-light), var(--shadow-nav);
+  -webkit-backdrop-filter: blur(var(--blur-overlay)) saturate(1.4);
+  backdrop-filter: blur(var(--blur-overlay)) saturate(1.4);
+}
+.overlay-glass-light {
+  color: var(--ink);
+  background: rgb(236 238 241 / 0.72);
+  border: 1px solid rgb(255 255 255 / 0.6);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), var(--shadow-nav);
+  -webkit-backdrop-filter: blur(var(--blur-overlay)) saturate(1.6);
+  backdrop-filter: blur(var(--blur-overlay)) saturate(1.6);
+}
+
+/* 非対応・透明度を下げる設定では、不透明な色にする（指示書 4.3-7） */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .overlay-glass-dark {
+    background: var(--smoke-deep);
+  }
+  .overlay-glass-light {
+    background: var(--frost-base);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .overlay-glass-dark {
+    background: var(--smoke-deep);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .overlay-glass-light {
+    background: var(--frost-base);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .dot-reflection-clip {
+    display: none;
+  }
+}
+
+/* ---------- ドット文字と映り込み ---------- */
+.dot-number {
+  font-family: var(--font-dot);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+/* 映り込みは数字のすぐ下の細い帯だけに出し、下の行の文字に重ねない */
+.dot-reflection-clip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 7px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.dot-reflection {
+  transform: scaleY(-1);
+  line-height: 1;
+  opacity: 0.3;
+  filter: blur(1px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 70%, rgb(0 0 0 / 0.9));
+  mask-image: linear-gradient(to bottom, transparent 70%, rgb(0 0 0 / 0.9));
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frost-backdrop::before {
+    animation: none;
+  }
+  .dot-reflection-clip {
+    display: none;
+  }
+}

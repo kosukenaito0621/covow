@@ -1,0 +1,98 @@
+/*
+ * COVOW デザイントークン — Luminous Liquid Glass
+ * 色・余白・角丸・影・ぼかし・グレインはすべてここで管理する。
+ * v1 はライトのみ（ダークモードは作らない）。
+ */
+:root {
+  color-scheme: light;
+
+  /* 色（指示書 4.2） */
+  --frost-base: #eceef1;
+  --frost-mist: #e4e3f2;
+  --ink: #111827;
+  --ink-muted: #4b5563;
+  --smoke-deep: #111827;
+  --smoke-mid: #17243a;
+  --glow-cyan: #72e5f5;
+  --glow-ice: #bdefff;
+  --glow-lavender: #a9a5f5;
+  --glow-pink: #f2a6de;
+  --glow-coral: #ff9c8c;
+  --glow-amber: #ffd18b;
+  --on-dark: #ffffff;
+  --on-dark-muted: rgb(255 255 255 / 0.78);
+
+  /* ピルの色テーマ用の深い色 */
+  --plum: #3b2a3f;
+  --indigo-deep: #2b2f6b;
+
+  /* 注意（赤は使わない）。明るい背景の上では濃いアンバーの文字にする */
+  --attention: var(--glow-amber);
+  --attention-ink: #7a4b00;
+
+  /* 面 */
+  --surface-solid: #ffffff;
+  --surface-card: rgb(255 255 255 / 0.72);
+  --line-light: rgb(17 24 39 / 0.12);
+  --line-dark: rgb(255 255 255 / 0.16);
+
+  /* 角丸（指示書 4.3-8） */
+  --radius-hero: 32px;
+  --radius-sheet: 32px;
+  --radius-card: 24px;
+  --radius-field: 16px;
+  --radius-full: 9999px;
+
+  /* 余白（4px 単位） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --gutter: 16px;
+
+  /* 影：柔らかく大きい影を1つだけ（ネイビー系で薄く） */
+  --shadow-float: 0 28px 56px -28px rgb(23 36 58 / 0.42);
+  --shadow-nav: 0 16px 40px -18px rgb(23 36 58 / 0.45);
+
+  /* 縁の光（inset）。上辺を少し強く */
+  --edge-light: inset 0 1px 0 rgb(255 255 255 / 0.28), inset 0 0 0 1px rgb(255 255 255 / 0.1),
+    inset 0 -12px 24px -18px rgb(255 255 255 / 0.18);
+  --border-glass: 1px solid rgb(255 255 255 / 0.14);
+
+  /* ぼかし：スクロールする内容の上に重なる要素だけに使う */
+  --blur-overlay: 20px;
+
+  /* グレイン（静止画。アニメーションさせない） */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-opacity-card: 0.06;
+  --grain-opacity-page: 0.035;
+
+  /* フォーカス：明るい面でも暗いガラスでも見える二重リング */
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4.5px var(--ink);
+
+  /* 文字 */
+  --font-ja: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif;
+  --font-ui: "Inter Variable", var(--font-ja);
+  --font-dot: "Doto", "Inter Variable", var(--font-ja);
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-body: 15px;
+  --text-md: 17px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-hero: 44px;
+
+  /* 動き */
+  --dur-fast: 150ms;
+  --dur: 250ms;
+  --dur-slow: 400ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* レイアウト */
+  --app-max: 480px;
+  --nav-height: 76px;
+}
