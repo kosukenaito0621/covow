@@ -2,6 +2,7 @@ import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query
 import type { IsoDate, YearMonth } from "@shared/date/jst";
 import type { MonthSummary, PlanStatus } from "@shared/money/summary";
 import { type TourEvent, tourEvent } from "../tour/missions";
+import type { InsightsData } from "../screens/InsightsScreen";
 import { api } from "./client";
 
 /*
@@ -84,12 +85,19 @@ export const budgetsQuery = (from: YearMonth, to: YearMonth) =>
     queryFn: async () => (await api<{ budgets: { yearMonth: YearMonth; amount: number }[] }>(`/budgets?from=${from}&to=${to}`)).budgets,
   });
 
+export type Insights = Omit<InsightsData, "categories"> & {
+  categories: (InsightsData["categories"][number] & { categoryId: string | null })[];
+  memberCount: number;
+};
+export const insightsQuery = (month: YearMonth) =>
+  queryOptions({ queryKey: ["insights", month], queryFn: () => api<Insights>(`/insights?month=${month}`) });
+
 /** お金に関わる一覧と集計を、まとめて取り直す */
 function useRefreshMoney() {
   const qc = useQueryClient();
   return () =>
     Promise.all(
-      ["plans", "summary", "daily", "expenses", "budgets", "categories"].map((k) => qc.invalidateQueries({ queryKey: [k] })),
+      ["plans", "summary", "daily", "expenses", "budgets", "categories", "insights"].map((k) => qc.invalidateQueries({ queryKey: [k] })),
     );
 }
 

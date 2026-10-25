@@ -51,17 +51,26 @@ export function InsightsScreen({
   onPrevMonth,
   onNextMonth,
   nextDisabled,
+  showMembers = true,
+  onTabChange,
 }: {
   data: InsightsData;
   initialTab?: InsightsTab;
   onPrevMonth?: () => void;
   onNextMonth?: () => void;
   nextDisabled?: boolean;
+  /** メンバー別のタブを出すか（一人のときは出さない） */
+  showMembers?: boolean;
+  onTabChange?: (tab: InsightsTab) => void;
 }) {
   const { t, locale } = useT();
   const { theme } = useTheme();
   const [tab, setTab] = useState<InsightsTab>(initialTab);
-  const tabs: InsightsTab[] = ["overview", "category", "trend", "members"];
+  const tabs: InsightsTab[] = showMembers ? ["overview", "category", "trend", "members"] : ["overview", "category", "trend"];
+  const changeTab = (v: InsightsTab) => {
+    setTab(v);
+    onTabChange?.(v);
+  };
 
   return (
     <>
@@ -81,14 +90,16 @@ export function InsightsScreen({
         </div>
       </header>
 
-      <TabChips
-        label={t("insights.view")}
-        value={tab}
-        onChange={setTab}
-        tone={theme.tone.page}
-        idPrefix="insights"
-        options={tabs.map((v) => ({ value: v, label: t(`insights.${v}`) }))}
-      />
+      <div data-tour="insights-tabs">
+        <TabChips
+          label={t("insights.view")}
+          value={tab}
+          onChange={changeTab}
+          tone={theme.tone.page}
+          idPrefix="insights"
+          options={tabs.map((v) => ({ value: v, label: t(`insights.${v}`) }))}
+        />
+      </div>
 
       <motion.div
         key={tab}

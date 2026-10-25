@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categoryBreakdown, dailySpend, memberBreakdown, monthlyTrend, trendStats } from "./analytics";
+import { categoryBreakdown, dailySpend, memberBreakdown, monthlyTrend, shareOf, trendStats } from "./analytics";
 import type { ExpenseLike } from "./summary";
 
 const e = (id: string, amount: number, spentAt: string, extra: Partial<ExpenseLike> = {}): ExpenseLike => ({
@@ -102,5 +102,12 @@ describe("trendStats", () => {
   });
   it("終わった月がなければ平均は null", () => {
     expect(trendStats([trend[2]!], "2026-10")).toEqual({ average: null, overCount: 1 });
+  });
+});
+
+describe("shareOf", () => {
+  it("割合。合計が 0 なら 0", () => {
+    expect(shareOf(250, 1000)).toBe(0.25);
+    expect(shareOf(0, 0)).toBe(0);
   });
 });

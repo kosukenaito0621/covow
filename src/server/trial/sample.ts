@@ -89,19 +89,19 @@ export function sampleStatements({ d1, locale, today, now, youId, partnerId, spa
     );
   });
 
-  // 予算：4か月前から来月まで
+  // 予算：5か月前から来月まで（3か月前だけ控えめにして、予算オーバーの月を1つ見せる）
   const month = yearMonthOf(today);
-  for (let i = -4; i <= 1; i++) {
+  for (let i = -5; i <= 1; i++) {
     out.push(
       d1
         .prepare("INSERT INTO budgets (id, space_id, year_month, budget_amount, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-        .bind(crypto.randomUUID(), spaceId, addMonths(month, i), i === -2 ? 200000 : 180000, now, now),
+        .bind(crypto.randomUUID(), spaceId, addMonths(month, i), i === -3 ? 60000 : i === -2 ? 200000 : 180000, now, now),
     );
   }
 
-  // 支出：3か月前の1日から今日まで、2日に1回くらい
+  // 支出：5か月前の1日から今日まで、2日に1回くらい（分析の推移が6か月そろうように）
   const r = rng(11);
-  const start = `${addMonths(month, -3)}-01`;
+  const start = `${addMonths(month, -5)}-01`;
   for (let d = start; d <= today; d = addDays(d, 1)) {
     if (r() < 0.45) continue;
     const item = EXPENSE_ITEMS[Math.floor(r() * EXPENSE_ITEMS.length)]!;

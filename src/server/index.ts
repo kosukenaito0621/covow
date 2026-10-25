@@ -7,6 +7,7 @@ import { session } from "./middleware/session";
 import { authRoutes } from "./routes/auth";
 import { dataRoutes } from "./routes/data";
 import { meRoutes } from "./routes/me";
+import { insightsRoutes } from "./routes/insights";
 import { inviteRoutes, spaceRoutes } from "./routes/space";
 import { trialRoutes } from "./routes/trial";
 import { purgeExpiredGuests } from "./trial/trial";
@@ -34,6 +35,7 @@ const app = new Hono<AppEnv>()
   .route("/space", spaceRoutes)
   .route("/invites", inviteRoutes)
   .route("/trial", trialRoutes)
+  .route("/insights", insightsRoutes)
   .route("/", dataRoutes);
 
 app.notFound((c) => c.json({ code: "NOT_FOUND", message: "見つかりませんでした" }, 404));

@@ -11,6 +11,7 @@ export type TourEvent =
   | "day-selected"
   | "budget-saved"
   | "partner-visited"
+  | "insights-switched"
   | "theme-changed";
 
 export interface Mission {
@@ -18,7 +19,7 @@ export interface Mission {
   title: string;
   body: string;
   /** 「始める」で移る画面 */
-  to: "/" | "/plans" | "/expenses" | "/settings";
+  to: "/" | "/plans" | "/expenses" | "/settings" | "/analytics";
   /** 画面ごとに光らせる場所（最初に見つかったもの） */
   targets: string[];
   event: TourEvent;
@@ -68,6 +69,14 @@ export const MISSIONS: readonly Mission[] = [
     to: "/settings",
     targets: ["budget-submit", "budget-row"],
     event: "budget-saved",
+  },
+  {
+    id: "insights",
+    title: "分析を切り替えましょう",
+    body: "分析では、概要・カテゴリ・推移を切り替えて、お金の使い方を振り返ります。上のタブを押してください。",
+    to: "/analytics",
+    targets: ["insights-tabs"],
+    event: "insights-switched",
   },
   {
     id: "partner",

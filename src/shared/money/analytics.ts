@@ -130,3 +130,6 @@ export const trendStats = (
     overCount: trend.filter((m) => m.budget !== null && m.actual > m.budget).length,
   };
 };
+
+/** 全体に占める割合（0〜1）。合計が 0 なら 0 */
+export const shareOf = (amount: number, total: number): number => (total === 0 ? 0 : amount / total);
