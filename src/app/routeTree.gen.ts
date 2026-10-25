@@ -13,13 +13,15 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAnalyticsRouteImport } from './routes/_app/analytics'
-import { Route as AppPlansRouteImport } from './routes/_app/plans'
+import { Route as AppExpensesRouteImport } from './routes/_app/expenses'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevLogoRouteImport } from './routes/dev.logo'
 import { Route as DevScreensRouteImport } from './routes/dev.screens'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
 import { Route as OnboardingSpaceRouteImport } from './routes/onboarding/space'
+import { Route as AppPlansIndexRouteImport } from './routes/_app/plans.index'
+import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans.$planId'
 
 const AppRoute = AppRouteImport.update({
   id: '/_app',
@@ -40,9 +42,9 @@ const AppAnalyticsRoute = AppAnalyticsRouteImport.update({
   path: '/analytics',
   getParentRoute: () => AppRoute,
 } as any)
-const AppPlansRoute = AppPlansRouteImport.update({
-  id: '/plans',
-  path: '/plans',
+const AppExpensesRoute = AppExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -75,23 +77,35 @@ const OnboardingSpaceRoute = OnboardingSpaceRouteImport.update({
   path: '/onboarding/space',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
+  id: '/plans/',
+  path: '/plans/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPlansPlanIdRoute = AppPlansPlanIdRouteImport.update({
+  id: '/plans/$planId',
+  path: '/plans/$planId',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/analytics': typeof AppAnalyticsRoute
-  '/plans': typeof AppPlansRoute
+  '/expenses': typeof AppExpensesRoute
   '/settings': typeof AppSettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
   '/dev/screens': typeof DevScreensRoute
   '/invite/$token': typeof InviteTokenRoute
   '/onboarding/space': typeof OnboardingSpaceRoute
+  '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/analytics': typeof AppAnalyticsRoute
-  '/plans': typeof AppPlansRoute
+  '/expenses': typeof AppExpensesRoute
   '/settings': typeof AppSettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
@@ -99,13 +113,15 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/onboarding/space': typeof OnboardingSpaceRoute
   '/': typeof AppIndexRoute
+  '/plans/$planId': typeof AppPlansPlanIdRoute
+  '/plans': typeof AppPlansIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/analytics': typeof AppAnalyticsRoute
-  '/_app/plans': typeof AppPlansRoute
+  '/_app/expenses': typeof AppExpensesRoute
   '/_app/settings': typeof AppSettingsRoute
   '/dev/components': typeof DevComponentsRoute
   '/dev/logo': typeof DevLogoRoute
@@ -113,6 +129,8 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/onboarding/space': typeof OnboardingSpaceRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/plans/$planId': typeof AppPlansPlanIdRoute
+  '/_app/plans/': typeof AppPlansIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,18 +138,20 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/analytics'
-    | '/plans'
+    | '/expenses'
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
     | '/dev/screens'
     | '/invite/$token'
     | '/onboarding/space'
+    | '/plans/$planId'
+    | '/plans/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/analytics'
-    | '/plans'
+    | '/expenses'
     | '/settings'
     | '/dev/components'
     | '/dev/logo'
@@ -139,12 +159,14 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/onboarding/space'
     | '/'
+    | '/plans/$planId'
+    | '/plans'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/_app/analytics'
-    | '/_app/plans'
+    | '/_app/expenses'
     | '/_app/settings'
     | '/dev/components'
     | '/dev/logo'
@@ -152,6 +174,8 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/onboarding/space'
     | '/_app/'
+    | '/_app/plans/$planId'
+    | '/_app/plans/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -194,11 +218,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnalyticsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/plans': {
-      id: '/_app/plans'
-      path: '/plans'
-      fullPath: '/plans'
-      preLoaderRoute: typeof AppPlansRouteImport
+    '/_app/expenses': {
+      id: '/_app/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof AppExpensesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/settings': {
@@ -243,21 +267,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingSpaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/plans/': {
+      id: '/_app/plans/'
+      path: '/plans'
+      fullPath: '/plans/'
+      preLoaderRoute: typeof AppPlansIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/plans/$planId': {
+      id: '/_app/plans/$planId'
+      path: '/plans/$planId'
+      fullPath: '/plans/$planId'
+      preLoaderRoute: typeof AppPlansPlanIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppAnalyticsRoute: typeof AppAnalyticsRoute
-  AppPlansRoute: typeof AppPlansRoute
+  AppExpensesRoute: typeof AppExpensesRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppPlansPlanIdRoute: typeof AppPlansPlanIdRoute
+  AppPlansIndexRoute: typeof AppPlansIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAnalyticsRoute: AppAnalyticsRoute,
-  AppPlansRoute: AppPlansRoute,
+  AppExpensesRoute: AppExpensesRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppPlansPlanIdRoute: AppPlansPlanIdRoute,
+  AppPlansIndexRoute: AppPlansIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

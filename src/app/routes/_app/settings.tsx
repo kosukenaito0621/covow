@@ -3,6 +3,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { INVITE_TTL_HOURS } from "@shared/constants";
 import type { MessageKey } from "@shared/i18n";
+import { addMonths, jstThisMonth } from "@shared/date/jst";
+import { budgetsQuery, categoriesQuery } from "../../api/data";
 import { meQuery, useLogout, useUpdateMe } from "../../api/me";
 import {
   errorKey,
@@ -17,10 +19,11 @@ import {
 } from "../../api/space";
 import { GlassCard } from "../../components/glass/GlassCard";
 import { ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/States";
+import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
+import { useCategorySheet } from "../../screens/forms/CategorySheet";
 import { SettingsScreen } from "../../screens/SettingsScreen";
 import type { InviteState, SpaceCardProps } from "../../screens/SpaceCard";
 
-// 予算・カテゴリの欄はフェーズ6で追加する
 export const Route = createFileRoute("/_app/settings")({
   component: Settings,
 });
@@ -31,6 +34,13 @@ function Settings() {
   const logout = useLogout();
   const navigate = useNavigate();
   const space = useSpaceCard();
+  // 予算は今月から3か月分を出す（それより先・過去はホームの月の切り替えから）
+  const thisMonth = jstThisMonth();
+  const months = [0, 1, 2].map((i) => addMonths(thisMonth, i));
+  const budgets = useQuery(budgetsQuery(months[0]!, months[2]!));
+  const categories = useQuery(categoriesQuery);
+  const budgetSheet = useBudgetSheet();
+  const categorySheet = useCategorySheet(categories.data ?? []);
   if (!me) return null;
   return (
     <main className="app-shell flex flex-col gap-5">
@@ -38,17 +48,21 @@ function Settings() {
         data={{
           me: { name: me.user.displayName, email: me.user.email },
           space: space.props,
-          budgets: null,
-          categories: null,
+          budgets: months.map((m) => ({ yearMonth: m, amount: budgets.data?.find((b) => b.yearMonth === m)?.amount ?? null })),
+          categories: categories.data ?? null,
         }}
         spaceFallback={space.fallback}
         actions={{
           onPreferenceChange: (patch) => update.mutate(patch),
+          onBudget: (ym, amount) => budgetSheet.open(ym, amount),
+          onCategory: (id) => categorySheet.open(id),
           onSignOut: () => logout.mutate(undefined, { onSuccess: () => void navigate({ to: "/login" }) }),
           signingOut: logout.isPending,
           signOutError: logout.isError,
         }}
       />
+      {budgetSheet.element}
+      {categorySheet.element}
     </main>
   );
 }

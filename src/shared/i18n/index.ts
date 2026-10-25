@@ -19,9 +19,14 @@ export const DEFAULT_LOCALE: Locale = "en";
 
 export type Params = Record<string, string | number>;
 
-/** 文言を取り出し、{name} の形のところに値を差し込む */
+/**
+ * 文言を取り出し、{name} の形のところに値を差し込む。
+ * 「単数|複数」の形（英語の 1 item / 2 items）は、count が 1 なら前、それ以外なら後ろを使う。
+ */
 export function translate(locale: Locale, key: MessageKey, params?: Params): string {
-  const text = DICTS[locale][key];
+  const raw = DICTS[locale][key];
+  const forms = raw.split("|");
+  const text = forms.length === 2 ? (params?.count === 1 ? forms[0]! : forms[1]!) : raw;
   if (!params) return text;
   return text.replace(/\{(\w+)\}/g, (m, name: string) => (name in params ? String(params[name]) : m));
 }

@@ -256,7 +256,7 @@ export default function ScreenPreviews() {
                 onRemoveMember: () => undefined,
               },
               budgets: [0, 1, 2].map((i) => ({ yearMonth: addMonths(YM, i), amount: budgetOf(addMonths(YM, i)) })),
-              categories: CATS.map((c) => c[locale]),
+              categories: CATS.map((c) => ({ id: c.id, name: c[locale] })),
             }}
           />
         )}

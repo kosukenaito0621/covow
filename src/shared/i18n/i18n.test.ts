@@ -10,7 +10,8 @@ describe("英語／日本語", () => {
   });
 
   it("差し込む値の名前が、英語と日本語でそろっている", () => {
-    const names = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+    // 「単数|複数」の形は同じ名前が2回出るので、重ねずに比べる
+    const names = (s: string) => [...new Set([...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))].sort();
     for (const k of Object.keys(en) as (keyof typeof en)[]) expect(names(ja[k]), k).toEqual(names(en[k]));
   });
 
@@ -21,6 +22,10 @@ describe("英語／日本語", () => {
   it("値を差し込む", () => {
     expect(translate("en", "metric.items", { count: 3 })).toBe("3 items");
     expect(translate("ja", "metric.items", { count: 3 })).toBe("3件");
+    // 英語は単数と複数を使い分ける
+    expect(translate("en", "metric.items", { count: 1 })).toBe("1 item");
+    expect(translate("en", "metric.items", { count: 0 })).toBe("0 items");
+    expect(translate("ja", "metric.items", { count: 1 })).toBe("1件");
     expect(translate("ja", "home.leftToSpend")).toBe("あと使える金額");
   });
 

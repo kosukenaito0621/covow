@@ -127,6 +127,11 @@ const CODE_MESSAGES: Partial<Record<string, MessageKey>> = {
   INVITE_USED: "invite.used",
   INVITE_REVOKED: "invite.revoked",
   VALIDATION: "error.validation",
+  ALREADY_PURCHASED: "error.ALREADY_PURCHASED",
+  STATE_CONFLICT: "error.STATE_CONFLICT",
+  FROM_PLAN: "expense.fromPlanNote",
+  CATEGORY_EXISTS: "error.CATEGORY_EXISTS",
+  INVALID_REFERENCE: "error.INVALID_REFERENCE",
 };
 
 /** API のエラーを、言語に合わせた文の鍵にする */

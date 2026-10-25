@@ -22,3 +22,28 @@ export interface MemberView {
   name: string;
   isMe?: boolean;
 }
+
+/** サーバーの予定（api/data の Plan）を、画面の部品に渡す形にする */
+export const toPlanView = (p: {
+  id: string;
+  title: string;
+  plannedAmount: number;
+  plannedDate: IsoDate | null;
+  status: PlanStatus;
+  createdByName: string;
+  categoryName: string | null;
+  memo: string | null;
+  productUrl: string | null;
+  expense: { actualAmount: number; spentAt: IsoDate } | null;
+}): PlanView => ({
+  id: p.id,
+  title: p.title,
+  plannedAmount: p.plannedAmount,
+  plannedDate: p.plannedDate,
+  status: p.status,
+  createdBy: p.createdByName,
+  category: p.categoryName,
+  memo: p.memo ?? undefined,
+  url: p.productUrl ?? undefined,
+  purchase: p.expense ? { amount: p.expense.actualAmount, date: p.expense.spentAt } : undefined,
+});

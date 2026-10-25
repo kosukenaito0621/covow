@@ -19,13 +19,17 @@ export interface SettingsData {
   /** スペース・予算・カテゴリは、まだ作っていない段階では null（その欄を出さない） */
   space: SpaceCardProps | null;
   budgets: readonly { yearMonth: YearMonth; amount: number | null }[] | null;
-  categories: readonly string[] | null;
+  categories: readonly { id: string; name: string }[] | null;
 }
 
 export interface SettingsActions {
   /** テーマ・言語を変えたとき（画面はすぐ切り替わる。アカウントへの保存はここで行う） */
   onPreferenceChange?: (patch: { theme?: ThemeId; locale?: Locale }) => void;
   onSignOut?: () => void;
+  /** 予算の行を押したとき（その月と、いまの金額） */
+  onBudget?: (yearMonth: YearMonth, amount: number | null) => void;
+  /** カテゴリを押したとき（null＝追加） */
+  onCategory?: (id: string | null) => void;
   signingOut?: boolean;
   signOutError?: boolean;
 }
@@ -113,6 +117,7 @@ export function SettingsScreen({
                   label={formatMonth(b.yearMonth, locale)}
                   value={b.amount === null ? <span className={muted}>{t("settings.notSet")}</span> : formatYen(b.amount)}
                   chevron
+                  onClick={() => actions.onBudget?.(b.yearMonth, b.amount)}
                 />
               </li>
             ))}
@@ -126,15 +131,20 @@ export function SettingsScreen({
         <GlassCard className="p-4">
           <ul className="flex flex-wrap gap-2">
             {d.categories.map((c) => (
-              <li key={c}>
-                <button type="button" className="inline-flex min-h-11 items-center rounded-full border border-current/25 px-4 text-[14px] font-medium">
-                  {c}
+              <li key={c.id}>
+                <button
+                  type="button"
+                  onClick={() => actions.onCategory?.(c.id)}
+                  className="inline-flex min-h-11 items-center rounded-full border border-current/25 px-4 text-[14px] font-medium"
+                >
+                  {c.name}
                 </button>
               </li>
             ))}
             <li>
               <button
                 type="button"
+                onClick={() => actions.onCategory?.(null)}
                 className="inline-flex min-h-11 items-center gap-1 rounded-full border border-dashed border-current/45 px-4 text-[14px] font-semibold"
               >
                 <Icon name="plus" size={16} />
@@ -170,9 +180,9 @@ function Block({ id, title, aside, children }: { id: string; title: string; asid
   );
 }
 
-function Row({ label, value, chevron }: { label: string; value: ReactNode; chevron?: boolean }) {
+function Row({ label, value, chevron, onClick }: { label: string; value: ReactNode; chevron?: boolean; onClick?: () => void }) {
   return (
-    <button type="button" className="flex min-h-13 w-full items-center justify-between gap-3 py-2 text-left">
+    <button type="button" onClick={onClick} className="flex min-h-13 w-full items-center justify-between gap-3 py-2 text-left">
       <span className="num text-[15px]">{label}</span>
       <span className="num flex items-center gap-1 text-[15px] font-semibold">
         {value}
