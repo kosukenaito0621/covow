@@ -9,7 +9,6 @@ import { AddPill } from "../components/glass/AddPill";
 import { DeltaBadge } from "../components/glass/DeltaBadge";
 import { FloatingNav } from "../components/glass/FloatingNav";
 import { TabChips } from "../components/glass/TabChips";
-import { UsageArc } from "../components/glass/UsageArc";
 import { DemoDataBanner } from "../components/ui/Badges";
 import { CircleIconButton } from "../components/ui/Buttons";
 import { HeroAmount } from "../components/ui/HeroAmount";
@@ -44,7 +43,9 @@ const TODAY = "2026-10-25";
 const WEEK = [3_200, 8_200, 0, 1_480, 5_600, 12_900, 2_300];
 const DATA = { budget: 180_000, actual: 63_480, planned: 41_200, plannedCount: 3 };
 const remaining = DATA.budget - DATA.actual - DATA.planned;
-const usage = (DATA.actual + DATA.planned) / DATA.budget;
+// ?used=0.05 などで使用率の見た目を確かめられる（開発用）
+const usedParam = Number(new URLSearchParams(window.location.search).get("used"));
+const usage = usedParam > 0 ? usedParam : (DATA.actual + DATA.planned) / DATA.budget;
 const UPCOMING = [
   { t: "ダイニングチェア（2脚）", a: 28_000, who: "Aoi", d: "Oct 27" },
   { t: "加湿器", a: 9_800, who: "Haru", d: "Oct 29" },
@@ -171,7 +172,6 @@ function Hero({ tone }: { tone: "light" | "dark" }) {
 
 const ariaActual = `Spent this month ${formatYen(DATA.actual)}, up 12% from the same day last month`;
 const ariaPlanned = `Planned ${formatYen(DATA.planned)}, ${DATA.plannedCount} items`;
-const ariaUsage = `Budget used ${Math.round(usage * 100)}%`;
 // 2列のピルの中で数字に使える幅
 const HALF = "((min(100vw, 480px) - 44px) / 2 - 52px)";
 
@@ -196,20 +196,46 @@ function Pills() {
         </span>
         <span className="num text-[12px] leading-none font-medium">{DATA.plannedCount} items</span>
       </div>
-      <div
-        role="group"
-        aria-label={ariaUsage}
-        className="lg lg-p3 col-span-2 flex h-[84px] items-center justify-between gap-3 rounded-full px-8"
-      >
-        <span className="flex flex-col gap-2">
-          <span className={LABEL}>Used</span>
-          <UsageArc rate={usage} />
+      <UsedBar rate={usage} />
+    </div>
+  );
+}
+
+/**
+ * 予算使用率。靄のかかった透明なガラスに、使った割合までテーマの色が満ちていく。
+ * 予算を超えたら、いっぱいに満ちて縁がアンバーに光り、⚠ も出す（色だけで伝えない）。
+ */
+function UsedBar({ rate }: { rate: number }) {
+  const pct = Math.round(rate * 100);
+  const over = rate > 1;
+  const used = Math.round(DATA.budget * rate);
+  return (
+    <div
+      role="meter"
+      aria-label="Budget used"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.min(pct, 100)}
+      aria-valuetext={`${pct}%、${formatYen(used)} / ${formatYen(DATA.budget)}${over ? "、予算を超えそうです" : ""}`}
+      data-full={rate >= 1}
+      data-over={over}
+      className="lg lg-card used col-span-2 flex h-[84px] items-center justify-between gap-3 rounded-full px-8"
+      style={{ ["--used" as string]: `${Math.min(rate, 1) * 100}%` }}
+    >
+      <span className="used-fill" aria-hidden="true" />
+      <span className="flex flex-col gap-1.5" aria-hidden="true">
+        <span className={LABEL}>Used</span>
+        <span className="num text-[12px] leading-none font-semibold">
+          {formatYen(used)} / {formatYen(DATA.budget)}
         </span>
-        <span aria-hidden="true" className="dot-number text-[30px]">
-          {Math.round(usage * 100)}
+      </span>
+      <span aria-hidden="true" className="flex items-center gap-1.5">
+        {over && <Icon name="attention" size={20} />}
+        <span className="dot-number text-[30px]">
+          {pct}
           <span className="font-ui text-[16px] font-bold">%</span>
         </span>
-      </div>
+      </span>
     </div>
   );
 }
