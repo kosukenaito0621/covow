@@ -1,5 +1,6 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { DEFAULT_LOCALE, htmlLang, isLocale, type Locale, type MessageKey, type Params, translate } from "@shared/i18n";
+import { phrase } from "./phrases";
 
 /*
  * 画面の言語。最初は英語で、設定で日本語に切り替えられる。
@@ -45,7 +46,8 @@ export function I18nProvider({ children, forceLocale }: { children: ReactNode; f
   }, []);
 
   const value = useMemo<I18nValue>(
-    () => ({ locale, setLocale, t: (key, params) => translate(locale, key, params) }),
+    // 日本語の文は文節の区切りでだけ改行する（phrases.ts）。英語の文には何もしない
+    () => ({ locale, setLocale, t: (key, params) => phrase(translate(locale, key, params)) }),
     [locale, setLocale],
   );
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;

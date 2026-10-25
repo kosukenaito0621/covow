@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { api } from "../api/client";
 import { Icon } from "../components/ui/Icon";
+import { phrase } from "../i18n/phrases";
 import { type Mission, tourEvent } from "./missions";
 import { useTour } from "./TourProvider";
 
@@ -84,7 +85,7 @@ export function Coach() {
                   >
                     {done ? <Icon name="check" size={14} /> : i + 1}
                   </span>
-                  <span className={done ? "text-white/80" : "font-medium"}>{m.title}</span>
+                  <span className={done ? "text-white/80" : "font-medium"}>{phrase(m.title)}</span>
                   <span className="sr-only">{done ? "（完了）" : ""}</span>
                 </button>
               </li>
@@ -98,7 +99,7 @@ export function Coach() {
       <>
         <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => tour.markCelebrated()} />
         <p className="mt-2 text-[17px] font-semibold">すべて完了しました</p>
-        <p className="mt-1 text-[14px] leading-relaxed text-white/90">基本の使い方はこれで以上です。設定からいつでも、もう一度ご覧いただけます。</p>
+        <p className="mt-1 text-[14px] leading-relaxed text-white/90">{phrase("基本の使い方はこれで以上です。設定からいつでも、もう一度ご覧いただけます。")}</p>
         <div className="mt-3 flex gap-2">
           <PrimaryCoachButton onClick={() => tour.markCelebrated()}>閉じる</PrimaryCoachButton>
         </div>
@@ -120,9 +121,10 @@ export function Coach() {
       <>
         <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => tour.hide()} />
         <p className="mt-2 flex items-center gap-2 text-[15px] font-semibold">
-          <Icon name="check" size={18} />「{justDone.title}」が完了しました
+          <Icon name="check" size={18} />
+          {phrase(`「${justDone.title}」が完了しました`)}
         </p>
-        {next && <p className="mt-1 text-[14px] text-white/90">次は「{next.title}」です。</p>}
+        {next && <p className="mt-1 text-[14px] text-white/90">{phrase(`次は「${next.title}」です。`)}</p>}
         <div className="mt-3 flex gap-2">
           {next && <PrimaryCoachButton onClick={() => begin(next)}>次へ</PrimaryCoachButton>}
           <SecondaryCoachButton onClick={() => tour.hide()}>あとで</SecondaryCoachButton>
@@ -134,12 +136,12 @@ export function Coach() {
     body = (
       <>
         <Header label={`Let's Try ${doneCount}/${total}`} onClose={() => tour.hide()} />
-        <p className="mt-2 text-[17px] font-semibold">{m.title}</p>
-        <p className="mt-1 text-[14px] leading-relaxed text-white/90">{m.body}</p>
+        <p className="mt-2 text-[17px] font-semibold">{phrase(m.title)}</p>
+        <p className="mt-1 text-[14px] leading-relaxed text-white/90">{phrase(m.body)}</p>
         {active && offscreen && (
           <p className="mt-2 flex items-center gap-1.5 text-[14px] font-semibold">
             <Icon name={offscreen === "down" ? "arrowDown" : "arrowUp"} size={16} />
-            {offscreen === "down" ? "下" : "上"}にスクロールすると、押す場所が表示されます
+            {phrase(`${offscreen === "down" ? "下" : "上"}にスクロールすると、押す場所が表示されます`)}
           </p>
         )}
         <div className="mt-3 flex flex-wrap gap-2">

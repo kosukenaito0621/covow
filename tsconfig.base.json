@@ -16,7 +16,10 @@
     "paths": {
       "@shared/*": ["./src/shared/*"],
       "@server/*": ["./src/server/*"],
-      "@app/*": ["./src/app/*"]
+      "@app/*": ["./src/app/*"],
+      // BudouX は本体（index）が Node 用の部品まで読み込むので、文節の解析と日本語のモデルだけを直接使う
+      "@budoux/parser": ["./node_modules/budoux/module/parser"],
+      "@budoux/ja": ["./node_modules/budoux/module/data/models/ja"]
     }
   }
 }

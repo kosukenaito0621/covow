@@ -109,3 +109,13 @@
     animation: none;
   }
 }
+
+/*
+ * 日本語は、文節の区切り（phrases.ts が入れる見えない印）と句読点・空白でだけ改行する。
+ * 1つの文節が行に入りきらないときだけ、途中で折り返す（はみ出さないように）。
+ */
+:lang(ja) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  line-break: strict;
+}

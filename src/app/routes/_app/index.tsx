@@ -23,6 +23,7 @@ import { Icon } from "../../components/ui/Icon";
 import { LABEL, mutedText } from "../../components/ui/SectionLabel";
 import { AttentionNote, EmptyState, ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/States";
 import { useT } from "../../i18n/I18nProvider";
+import { phrase } from "../../i18n/phrases";
 import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
 import { tourEvent } from "../../tour/missions";
 import { offerKey, useTour } from "../../tour/TourProvider";
@@ -255,7 +256,7 @@ function TourOffer() {
   return (
     <section lang="ja" aria-label="Let's Try" className="overlay-glass-dark flex flex-col gap-2 rounded-[24px] px-4 py-4 text-white">
       <p className="text-[17px] font-semibold">Let's Try（約3分）</p>
-      <p className="text-[14px] leading-relaxed text-white/90">登録から購入済みにするまでの基本操作を、実際の画面で順に案内します。</p>
+      <p className="text-[14px] leading-relaxed text-white/90">{phrase("登録から購入済みにするまでの基本操作を、実際の画面で順に案内します。")}</p>
       <div className="flex gap-2">
         <button
           type="button"
