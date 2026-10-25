@@ -49,7 +49,7 @@ export type AppType = typeof app;
 export default {
   fetch: app.fetch,
   // 毎日の定期処理（wrangler.jsonc の triggers.crons）：期限の過ぎた体験版を消す
-  async scheduled(_controller, env) {
+  async scheduled(_controller, env, _ctx) {
     const result = await purgeExpiredGuests(createDb(env.DB));
     console.warn("trial_purge", result.spaces, result.users);
   },
