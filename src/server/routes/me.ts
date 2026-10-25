@@ -5,6 +5,7 @@ import { LOCALES } from "../../shared/i18n";
 import { profileInputSchema } from "../../shared/schemas";
 import { THEME_IDS } from "../../shared/theme";
 import type { SessionUser } from "../auth/session";
+import { parseBody } from "../http";
 import { spaceMembers, spaces, users } from "../db/schema";
 import { currentUser, requireAuth } from "../middleware/session";
 import type { AppEnv } from "../types";
@@ -43,11 +44,8 @@ export const meRoutes = new Hono<AppEnv>()
   })
   .patch("/", async (c) => {
     const user = currentUser(c);
-    const body: unknown = await c.req.json().catch(() => null);
-    const parsed = mePatchSchema.safeParse(body);
-    if (!parsed.success) {
-      return c.json({ code: "VALIDATION", message: parsed.error.issues[0]?.message ?? "入力を確認してください" }, 400);
-    }
+    const parsed = await parseBody(c, mePatchSchema);
+    if (!parsed.ok) return parsed.res;
     const updated = await c.var.db
       .update(users)
       .set({ ...parsed.data, updatedAt: new Date().toISOString() })

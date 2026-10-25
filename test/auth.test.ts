@@ -152,7 +152,7 @@ describe("ログイン中の本人", () => {
     expect((await call("/api/me", { headers: { Cookie: "__Host-covow_session=not-a-real-token" } })).status).toBe(401);
   });
 
-  it("言語・テーマ・表示名を変えられる。決まった値以外は 400、別サイトからは 403", async () => {
+  it("言語・テーマ・表示名を変えられる。決まった値以外は 422、別サイトからは 403", async () => {
     const { session } = await login({ sub: "sub-prefs" });
     const headers = { Cookie: `__Host-covow_session=${session!.value}`, Origin: ORIGIN };
     const ok = await call("/api/me", { method: "PATCH", headers, body: JSON.stringify({ locale: "en", theme: "sakura" }) });
@@ -161,7 +161,7 @@ describe("ログイン中の本人", () => {
 
     for (const body of [{ theme: "neon" }, { locale: "fr" }, { displayName: "   " }, {}, { email: "x@example.com" }]) {
       const res = await call("/api/me", { method: "PATCH", headers, body: JSON.stringify(body) });
-      expect(res.status, JSON.stringify(body)).toBe(400);
+      expect(res.status, JSON.stringify(body)).toBe(422);
     }
     const cross = await call("/api/me", {
       method: "PATCH",

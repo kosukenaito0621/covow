@@ -8,6 +8,8 @@ export type AppEnv = {
     /** ログイン中なら本人（session ミドルウェアが入れる） */
     user: SessionUser | null;
     sessionId: string | null;
+    /** スペースのメンバーなら、そのスペースの ID（require-member ミドルウェアが入れる） */
+    spaceId: string | null;
   };
 };
 

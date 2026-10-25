@@ -9,7 +9,7 @@ describe("土台の確認", () => {
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
 
-  it("マイグレーションが適用され、2人上限のトリガーがある", async () => {
+  it("マイグレーションが適用され、4人上限のトリガーがある", async () => {
     const row = await env.DB.prepare(
       "SELECT name FROM sqlite_master WHERE type='trigger' AND name='space_members_limit'",
     ).first<{ name: string }>();

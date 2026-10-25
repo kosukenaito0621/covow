@@ -1,16 +1,13 @@
-/** スペース作成時に入れる初期カテゴリ（この順に並べる） */
-export const DEFAULT_CATEGORIES = [
-  "食費",
-  "日用品",
-  "家具・家電",
-  "衣服・美容",
-  "趣味・娯楽",
-  "交際",
-  "旅行・おでかけ",
-  "その他",
-] as const;
+import type { Locale } from "./i18n";
 
-export const MAX_SPACE_MEMBERS = 2;
+/** スペース作成時に入れる初期カテゴリ（この順に並べる）。作った人の言語で入れ、あとから名前を変えられる */
+export const DEFAULT_CATEGORIES: Record<Locale, readonly string[]> = {
+  en: ["Groceries", "Daily goods", "Home & appliances", "Clothing & beauty", "Hobbies & fun", "Social", "Travel & outings", "Other"],
+  ja: ["食費", "日用品", "家具・家電", "衣服・美容", "趣味・娯楽", "交際", "旅行・おでかけ", "その他"],
+};
+
+/** 1つのスペースの最大人数（DB のトリガー space_members_limit と同じ値） */
+export const MAX_SPACE_MEMBERS = 4;
 export const INVITE_TTL_HOURS = 72;
 export const SESSION_TTL_DAYS = 30;
 /** セッションの残りがこれを切ったときだけ期限を延ばす（毎回の書き込みを避ける） */

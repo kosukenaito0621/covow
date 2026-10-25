@@ -5,6 +5,7 @@ import { securityHeaders } from "./middleware/security-headers";
 import { session } from "./middleware/session";
 import { authRoutes } from "./routes/auth";
 import { meRoutes } from "./routes/me";
+import { inviteRoutes, spaceRoutes } from "./routes/space";
 import type { AppEnv } from "./types";
 
 export type { AppEnv } from "./types";
@@ -17,10 +18,16 @@ const app = new Hono<AppEnv>()
     c.set("db", createDb(c.env.DB));
     await next();
   })
+  .use("*", async (c, next) => {
+    c.set("spaceId", null);
+    await next();
+  })
   .use("*", session())
   .get("/health", (c) => c.json({ ok: true }))
   .route("/auth", authRoutes)
-  .route("/me", meRoutes);
+  .route("/me", meRoutes)
+  .route("/space", spaceRoutes)
+  .route("/invites", inviteRoutes);
 
 app.notFound((c) => c.json({ code: "NOT_FOUND", message: "見つかりませんでした" }, 404));
 
