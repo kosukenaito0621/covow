@@ -40,8 +40,12 @@ export function FromPlanBadge() {
 /** デモデータであることを画面上部に示す */
 export function DemoDataBanner() {
   return (
-    <div role="note" className="bg-amber px-4 py-1.5 text-center text-xs font-semibold text-ink">
-      デモデータを表示しています
+    <div
+      role="note"
+      aria-label="デモデータを表示しています"
+      className="bg-amber px-4 py-1 text-center text-[11px] font-semibold tracking-[0.12em] text-[#111827] uppercase"
+    >
+      Demo
     </div>
   );
 }

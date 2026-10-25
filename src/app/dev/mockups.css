@@ -74,6 +74,25 @@
   transform: rotate(-12deg);
   animation: ribbon-wave 30s ease-in-out infinite alternate;
 }
+/* 2本目の帯（オーロラのカーテンの下のピンクなど）。--ribbon2-opacity が 0 のテーマでは出さない */
+.aurora .ribbon2 {
+  inset: auto;
+  left: -20%;
+  top: 22%;
+  width: 150%;
+  height: 34vh;
+  border-radius: 55% 45% 40% 60% / 40% 60% 40% 60%;
+  background: linear-gradient(95deg, transparent 10%, var(--r4, transparent) 35%, var(--r5, transparent) 60%, transparent 90%);
+  filter: blur(46px);
+  opacity: var(--ribbon2-opacity, 0);
+  transform: rotate(8deg);
+  animation: ribbon-wave-2 36s ease-in-out infinite alternate;
+}
+@keyframes ribbon-wave-2 {
+  to {
+    transform: rotate(14deg) translate3d(-8%, 4vh, 0) scaleY(1.2);
+  }
+}
 .aurora::after {
   content: "";
   position: absolute;
@@ -258,53 +277,58 @@
   }
 }
 
-/* ============ テーマ ============ */
 
-/* Aurora：夜空の紺に、ティールとミントのオーロラ（#0A1422 #1A3553 #2AA3B8 #74F9D9 #FFFFFF） */
+/* ============ テーマ（全6種） ============ */
+
+/* Aurora：添付写真から抽出（夜空 #04060C・#082858、光 #16CEC6・#B794DB・#FC73A9、雪 #C1D5EA）
+   パレット：#060A18 #082858 #16CEC6 #B794DB #FC73A9 */
 .theme-aurora {
   color-scheme: dark;
-  --ink: #0a1422;
-  --ink-muted: #1a3553;
+  --ink: #060a18;
+  --ink-muted: #082858;
   --page-text: #ffffff;
-  --aurora-base: radial-gradient(120% 80% at 50% 0%, #1a3553, #0a1422 72%);
-  --a1: rgb(42 163 184 / 0.55);
-  --a2: rgb(116 249 217 / 0.32);
-  --a3: rgb(26 53 83 / 0.9);
-  --a4: rgb(42 163 184 / 0.4);
-  --r1: rgb(116 249 217 / 0.75);
-  --r2: rgb(42 163 184 / 0.75);
-  --r3: rgb(255 255 255 / 0.3);
-  --ribbon-opacity: 0.9;
-  --shadow: rgb(3 8 15 / 0.7);
+  --aurora-base: radial-gradient(130% 85% at 50% 0%, #0b2f66, #082858 30%, #060a18 75%);
+  --a1: rgb(22 206 198 / 0.5);
+  --a2: rgb(183 148 219 / 0.42);
+  --a3: rgb(14 112 180 / 0.55);
+  --a4: rgb(252 115 169 / 0.32);
+  --r1: rgb(22 206 198 / 0.85);
+  --r2: rgb(110 220 200 / 0.7);
+  --r3: rgb(183 148 219 / 0.8);
+  --r4: rgb(183 148 219 / 0.75);
+  --r5: rgb(252 115 169 / 0.7);
+  --ribbon-opacity: 0.95;
+  --ribbon2-opacity: 0.85;
+  --shadow: rgb(2 4 12 / 0.7);
   --hero-text: #ffffff;
   --hero-sheen: 0.12;
-  --hero-glow1: rgb(116 249 217 / 0.22);
-  --hero-glow2: rgb(42 163 184 / 0.3);
-  --hero-top: rgb(26 53 83 / 0.74);
-  --hero-bottom: rgb(10 20 34 / 0.84);
-  --hero-solid: #10203a;
+  --hero-glow1: rgb(22 206 198 / 0.24);
+  --hero-glow2: rgb(183 148 219 / 0.3);
+  --hero-top: rgb(8 40 88 / 0.72);
+  --hero-bottom: rgb(6 10 24 / 0.84);
+  --hero-solid: #0a1a3a;
   --card-text: #ffffff;
   --card-sheen: 0.1;
   --card-inner: 0.15;
-  --card-a: rgb(26 53 83 / 0.66);
-  --card-b: rgb(10 20 34 / 0.72);
-  --card-solid: #12233b;
-  --p1-text: #0a1422;
-  --p1-a: rgb(116 249 217 / 0.9);
-  --p1-b: rgb(42 163 184 / 0.82);
+  --card-a: rgb(8 40 88 / 0.62);
+  --card-b: rgb(6 10 24 / 0.72);
+  --card-solid: #0b1a36;
+  --p1-text: #060a18;
+  --p1-a: rgb(22 206 198 / 0.9);
+  --p1-b: rgb(140 230 215 / 0.82);
   --p1-glow: rgb(255 255 255 / 0.35);
   --p2-text: #ffffff;
-  --p2-a: rgb(26 53 83 / 0.92);
-  --p2-b: rgb(18 70 96 / 0.88);
-  --p2-glow: rgb(42 163 184 / 0.55);
+  --p2-a: rgb(56 40 120 / 0.92);
+  --p2-b: rgb(92 70 160 / 0.86);
+  --p2-glow: rgb(183 148 219 / 0.5);
   --p3-text: #ffffff;
-  --p3-a: rgb(10 20 34 / 0.88);
-  --p3-b: rgb(26 53 83 / 0.88);
-  --p3-glow: rgb(116 249 217 / 0.4);
-  --nav-bg: rgb(10 20 34 / 0.8);
-  --orb-mid: rgb(220 255 246 / 0.88);
-  --orb-edge: rgb(116 249 217 / 0.55);
-  --orb-glow: rgb(116 249 217 / 0.6);
+  --p3-a: rgb(80 24 74 / 0.92);
+  --p3-b: rgb(140 44 104 / 0.86);
+  --p3-glow: rgb(252 115 169 / 0.55);
+  --nav-bg: rgb(6 10 24 / 0.8);
+  --orb-mid: rgb(225 250 248 / 0.9);
+  --orb-edge: rgb(22 206 198 / 0.5);
+  --orb-glow: rgb(183 148 219 / 0.7);
 }
 
 /* Earthy：砂の明るさに、土・テラコッタ・オリーブ（#6C4A3A #9A6A4F #C6925A #DDC38A #7B8A6A） */
@@ -397,4 +421,144 @@
   --orb-mid: rgb(255 240 228 / 0.9);
   --orb-edge: rgb(245 156 142 / 0.45);
   --orb-glow: rgb(178 224 201 / 0.8);
+}
+
+/* Dusk：日没後の空。藍紫からローズ、夕陽のコーラルと金（#1E1B3A #4B2E6F #C2508A #FF8C69 #FFD39A） */
+.theme-dusk {
+  color-scheme: dark;
+  --ink: #1e1b3a;
+  --ink-muted: #4b2e6f;
+  --page-text: #ffffff;
+  --aurora-base: linear-gradient(180deg, #2b2252 0%, #1e1b3a 50%, #3b2146 100%);
+  --a1: rgb(194 80 138 / 0.5);
+  --a2: rgb(255 140 105 / 0.42);
+  --a3: rgb(75 46 111 / 0.85);
+  --a4: rgb(255 211 154 / 0.3);
+  --r1: rgb(255 211 154 / 0.6);
+  --r2: rgb(255 140 105 / 0.75);
+  --r3: rgb(194 80 138 / 0.8);
+  --ribbon-opacity: 0.8;
+  --shadow: rgb(10 6 25 / 0.65);
+  --hero-text: #ffffff;
+  --hero-sheen: 0.12;
+  --hero-glow1: rgb(255 140 105 / 0.26);
+  --hero-glow2: rgb(194 80 138 / 0.3);
+  --hero-top: rgb(75 46 111 / 0.74);
+  --hero-bottom: rgb(30 27 58 / 0.86);
+  --hero-solid: #2e2450;
+  --card-text: #ffffff;
+  --card-sheen: 0.1;
+  --card-inner: 0.15;
+  --card-a: rgb(75 46 111 / 0.6);
+  --card-b: rgb(30 27 58 / 0.72);
+  --card-solid: #2a2147;
+  --p1-text: #1e1b3a;
+  --p1-a: rgb(255 140 105 / 0.9);
+  --p1-b: rgb(255 211 154 / 0.84);
+  --p1-glow: rgb(255 240 210 / 0.45);
+  --p2-text: #ffffff;
+  --p2-a: rgb(60 36 92 / 0.92);
+  --p2-b: rgb(86 56 128 / 0.86);
+  --p2-glow: rgb(194 80 138 / 0.45);
+  --p3-text: #ffffff;
+  --p3-a: rgb(112 36 82 / 0.92);
+  --p3-b: rgb(150 56 108 / 0.86);
+  --p3-glow: rgb(255 140 105 / 0.5);
+  --nav-bg: rgb(30 27 58 / 0.82);
+  --orb-mid: rgb(255 238 220 / 0.9);
+  --orb-edge: rgb(255 140 105 / 0.5);
+  --orb-glow: rgb(194 80 138 / 0.65);
+}
+
+/* Sakura：春の朝の桜。白に近い桃色から、くすんだ梅色まで（#FFF4F6 #F7C9D4 #E89AB0 #B5677F #5A3645） */
+.theme-sakura {
+  --ink: #4a2c39;
+  --ink-muted: #6d4757;
+  --page-text: #4a2c39;
+  --aurora-base: linear-gradient(180deg, #fff4f6, #f9e8ee);
+  --a1: rgb(247 201 212 / 0.9);
+  --a2: rgb(232 154 176 / 0.6);
+  --a3: rgb(255 244 246 / 0.9);
+  --a4: rgb(181 103 127 / 0.35);
+  --r1: rgb(255 255 255 / 0.85);
+  --r2: rgb(247 201 212 / 0.9);
+  --r3: rgb(232 154 176 / 0.7);
+  --ribbon-opacity: 0.7;
+  --shadow: rgb(120 60 80 / 0.32);
+  --hero-text: #4a2c39;
+  --hero-sheen: 0.65;
+  --hero-glow1: rgb(232 154 176 / 0.3);
+  --hero-glow2: rgb(255 255 255 / 0.55);
+  --hero-top: rgb(255 255 255 / 0.58);
+  --hero-bottom: rgb(247 201 212 / 0.42);
+  --hero-solid: #fdf0f3;
+  --card-text: #4a2c39;
+  --card-sheen: 0.6;
+  --card-a: rgb(255 255 255 / 0.64);
+  --card-b: rgb(255 255 255 / 0.32);
+  --card-solid: #fff8fa;
+  --p1-text: #4a2c39;
+  --p1-a: rgb(232 154 176 / 0.88);
+  --p1-b: rgb(247 201 212 / 0.84);
+  --p1-glow: rgb(255 244 246 / 0.6);
+  --p2-text: #ffffff;
+  --p2-a: rgb(104 56 76 / 0.94);
+  --p2-b: rgb(128 72 94 / 0.9);
+  --p2-glow: rgb(247 201 212 / 0.4);
+  --p3-text: #4a2c39;
+  --p3-sheen: 0.45;
+  --p3-a: rgb(255 244 246 / 0.88);
+  --p3-b: rgb(247 201 212 / 0.84);
+  --p3-glow: rgb(232 154 176 / 0.55);
+  --nav-bg: rgb(90 54 69 / 0.84);
+  --orb-mid: rgb(255 240 244 / 0.9);
+  --orb-edge: rgb(232 154 176 / 0.5);
+  --orb-glow: rgb(247 201 212 / 0.85);
+}
+
+/* Frost：冬の朝の氷。銀白からスレートまで、色を抑えた静かなテーマ（#F4F7FA #DCE4EC #A9B7C6 #5E6E80 #26303B） */
+.theme-frost {
+  --ink: #26303b;
+  --ink-muted: #4a5868;
+  --page-text: #26303b;
+  --aurora-base: linear-gradient(180deg, #f4f7fa, #e6edf3);
+  --a1: rgb(220 228 236 / 0.95);
+  --a2: rgb(169 183 198 / 0.55);
+  --a3: rgb(200 225 245 / 0.7);
+  --a4: rgb(94 110 128 / 0.25);
+  --r1: rgb(255 255 255 / 0.9);
+  --r2: rgb(200 225 245 / 0.8);
+  --r3: rgb(169 183 198 / 0.6);
+  --ribbon-opacity: 0.6;
+  --shadow: rgb(38 48 59 / 0.32);
+  --hero-text: #ffffff;
+  --hero-sheen: 0.14;
+  --hero-glow1: rgb(200 225 245 / 0.25);
+  --hero-glow2: rgb(169 183 198 / 0.3);
+  --hero-top: rgb(52 64 78 / 0.9);
+  --hero-bottom: rgb(30 38 48 / 0.94);
+  --hero-solid: #36424f;
+  --card-text: #26303b;
+  --card-sheen: 0.65;
+  --card-a: rgb(255 255 255 / 0.66);
+  --card-b: rgb(255 255 255 / 0.34);
+  --card-solid: #f7f9fb;
+  --p1-text: #26303b;
+  --p1-sheen: 0.6;
+  --p1-a: rgb(255 255 255 / 0.85);
+  --p1-b: rgb(220 228 236 / 0.82);
+  --p1-glow: rgb(200 225 245 / 0.6);
+  --p2-text: #ffffff;
+  --p2-a: rgb(58 70 84 / 0.94);
+  --p2-b: rgb(74 88 104 / 0.9);
+  --p2-glow: rgb(200 225 245 / 0.35);
+  --p3-text: #26303b;
+  --p3-sheen: 0.45;
+  --p3-a: rgb(169 183 198 / 0.9);
+  --p3-b: rgb(200 212 224 / 0.86);
+  --p3-glow: rgb(255 255 255 / 0.55);
+  --nav-bg: rgb(38 48 59 / 0.84);
+  --orb-mid: rgb(245 248 252 / 0.92);
+  --orb-edge: rgb(169 183 198 / 0.5);
+  --orb-glow: rgb(200 225 245 / 0.85);
 }

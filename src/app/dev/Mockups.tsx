@@ -16,20 +16,29 @@ import { HeroAmount } from "../components/ui/HeroAmount";
 import { Icon } from "../components/ui/Icon";
 
 /*
- * デザイン案の比較（開発環境だけ）。?v=aurora | earthy | tropical で切り替え。数字はすべてサンプル。
- * 質感（透けるガラス・オーロラの背景）は共通で、色だけを変える。配置も共通にして色を比べやすくする。
- *  Aurora   #0A1422 #1A3553 #2AA3B8 #74F9D9 #FFFFFF（夜の紺。すべて暗いガラス）
- *  Earthy   #6C4A3A #9A6A4F #C6925A #DDC38A #7B8A6A（砂の明るさ。ヒーローは土色のガラス）
- *  Tropical #A6C4B0 #A3D1BF #B2E0C9 #F8DAB9 #F59C8E（明るい砂浜。ヒーローも明るいガラス）
+ * テーマの比較（開発環境だけ）。?v=<テーマ名> で切り替え。数字はすべてサンプル。
+ * 質感（透けるガラス・オーロラの背景）と配置は共通で、色だけを変える。文言は短い英語。
+ *  Aurora   #060A18 #082858 #16CEC6 #B794DB #FC73A9（添付写真から抽出した夜のオーロラ）
+ *  Earthy   #6C4A3A #9A6A4F #C6925A #DDC38A #7B8A6A
+ *  Tropical #A6C4B0 #A3D1BF #B2E0C9 #F8DAB9 #F59C8E
+ *  Dusk     #1E1B3A #4B2E6F #C2508A #FF8C69 #FFD39A（日没後の空）
+ *  Sakura   #FFF4F6 #F7C9D4 #E89AB0 #B5677F #5A3645（春の朝の桜）
+ *  Frost    #F4F7FA #DCE4EC #A9B7C6 #5E6E80 #26303B（冬の朝の氷）
  */
 
-type Variant = "aurora" | "earthy" | "tropical";
+type Variant = "aurora" | "earthy" | "tropical" | "dusk" | "sakura" | "frost";
 
 const THEMES: Record<Variant, { label: string; page: "light" | "dark"; hero: "light" | "dark"; card: "light" | "dark" }> = {
   aurora: { label: "Aurora", page: "dark", hero: "dark", card: "dark" },
   earthy: { label: "Earthy", page: "light", hero: "dark", card: "light" },
   tropical: { label: "Tropical", page: "light", hero: "light", card: "light" },
+  dusk: { label: "Dusk", page: "dark", hero: "dark", card: "dark" },
+  sakura: { label: "Sakura", page: "light", hero: "light", card: "light" },
+  frost: { label: "Frost", page: "light", hero: "dark", card: "light" },
 };
+
+// 小さな英字ラベル（すべて大文字・字間を少し広げる）
+const LABEL = "text-[12px] leading-none font-semibold tracking-[0.08em] uppercase";
 
 const TODAY = "2026-10-25";
 const WEEK = [3_200, 8_200, 0, 1_480, 5_600, 12_900, 2_300];
@@ -37,9 +46,9 @@ const DATA = { budget: 180_000, actual: 63_480, planned: 41_200, plannedCount: 3
 const remaining = DATA.budget - DATA.actual - DATA.planned;
 const usage = (DATA.actual + DATA.planned) / DATA.budget;
 const UPCOMING = [
-  { t: "ダイニングチェア（2脚）", a: 28_000, who: "あおい", d: "10/27" },
-  { t: "加湿器", a: 9_800, who: "はる", d: "10/29" },
-  { t: "冬用のラグ", a: 3_400, who: "あおい", d: "11/2" },
+  { t: "ダイニングチェア（2脚）", a: 28_000, who: "Aoi", d: "Oct 27" },
+  { t: "加湿器", a: 9_800, who: "Haru", d: "Oct 29" },
+  { t: "冬用のラグ", a: 3_400, who: "Aoi", d: "Nov 2" },
 ];
 
 /** 金額をすべての桁で表示する（¥ は通常の書体、数字はドット文字）。桁が増えたら文字を小さくする */
@@ -66,11 +75,12 @@ export default function Mockups() {
         <span className="b3" />
         <span className="b4" />
         <span className="ribbon" />
+        <span className="ribbon2" />
       </div>
       <DemoDataBanner />
       <main className="app-shell flex flex-col gap-5">
         <TabChips
-          label="デザイン案"
+          label="Theme"
           value={v}
           onChange={setV}
           tone={t.page}
@@ -99,14 +109,14 @@ function Header({ tone }: { tone: "light" | "dark" }) {
       <div>
         <p className="text-[20px] font-bold tracking-tight">COVOW</p>
         <div className="mt-0.5 flex items-center gap-1">
-          <CircleIconButton tone={tone} icon="chevronLeft" label="前の月" />
-          <h1 className="num text-[15px] font-semibold">2026年10月</h1>
-          <CircleIconButton tone={tone} icon="chevronRight" label="次の月" />
+          <CircleIconButton tone={tone} icon="chevronLeft" label="Previous month" />
+          <h1 className="num text-[15px] font-semibold">Oct 2026</h1>
+          <CircleIconButton tone={tone} icon="chevronRight" label="Next month" />
         </div>
       </div>
-      <div className="flex -space-x-2 text-[#1f2937]" aria-label="メンバー：あおい、はる">
-        <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">あ</span>
-        <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">は</span>
+      <div className="flex -space-x-2 text-[#1f2937]" aria-label="Members: Aoi, Haru">
+        <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">A</span>
+        <span className="add-orb inline-flex size-10 items-center justify-center rounded-full text-[14px] font-semibold">H</span>
       </div>
     </header>
   );
@@ -123,22 +133,22 @@ function Hero({ tone }: { tone: "light" | "dark" }) {
   return (
     <section aria-labelledby="hero-label" className="lg lg-hero rounded-[32px] p-5">
       <div className="flex items-center justify-between gap-3">
-        <p id="hero-label" className="text-[15px] font-medium">
-          今月、あといくら使える？
+        <p id="hero-label" className={LABEL}>
+          Left to spend
         </p>
-        <CircleIconButton tone={tone} icon="arrowUpRight" label="分析を見る" />
+        <CircleIconButton tone={tone} icon="arrowUpRight" label="Insights" />
       </div>
       <HeroAmount value={remaining} />
       <p className={`num mt-1 flex flex-wrap gap-x-3 text-[13px] ${muted}`}>
-        <span className="whitespace-nowrap">予算 {formatYen(DATA.budget)}</span>
-        <span className="whitespace-nowrap">実支出 {formatYen(DATA.actual)}</span>
-        <span className="whitespace-nowrap">予定 {formatYen(DATA.planned)}</span>
+        <span className="whitespace-nowrap">Budget {formatYen(DATA.budget)}</span>
+        <span className="whitespace-nowrap">Spent {formatYen(DATA.actual)}</span>
+        <span className="whitespace-nowrap">Planned {formatYen(DATA.planned)}</span>
       </p>
       <div className="mt-4">
         <SpendCurve
           points={dates.map((d, i) => ({ key: d, amount: amounts[i] ?? 0 }))}
           selectedIndex={sel}
-          baseline={{ value: Math.round(amounts.reduce((a, b) => a + b, 0) / 7), label: "1日の平均" }}
+          baseline={{ value: Math.round(amounts.reduce((a, b) => a + b, 0) / 7), label: "Avg / day" }}
           summary={`今週の支出は${["月", "火", "水", "木", "金", "土", "日"][peak]}曜が最も多く ${formatYen(amounts[peak] ?? 0)}`}
         />
       </div>
@@ -159,9 +169,9 @@ function Hero({ tone }: { tone: "light" | "dark" }) {
   );
 }
 
-const ariaActual = `今月の実支出 ${formatYen(DATA.actual)}、先月の同じ日までより12%多い`;
-const ariaPlanned = `未購入の予定 ${formatYen(DATA.planned)}、${DATA.plannedCount}件`;
-const ariaUsage = `予算使用率 ${Math.round(usage * 100)}%`;
+const ariaActual = `Spent this month ${formatYen(DATA.actual)}, up 12% from the same day last month`;
+const ariaPlanned = `Planned ${formatYen(DATA.planned)}, ${DATA.plannedCount} items`;
+const ariaUsage = `Budget used ${Math.round(usage * 100)}%`;
 // 2列のピルの中で数字に使える幅
 const HALF = "((min(100vw, 480px) - 44px) / 2 - 52px)";
 
@@ -171,7 +181,7 @@ function Pills() {
   return (
     <div className="grid grid-cols-2 gap-3">
       <div role="group" aria-label={ariaActual} className={`${half} lg-p1`}>
-        <span className="text-[13px] leading-none font-semibold">今月の実支出</span>
+        <span className={LABEL}>Spent</span>
         <span aria-hidden="true">
           <DotAmount value={DATA.actual} max={24} room={HALF} />
         </span>
@@ -180,11 +190,11 @@ function Pills() {
         </span>
       </div>
       <div role="group" aria-label={ariaPlanned} className={`${half} lg-p2`}>
-        <span className="text-[13px] leading-none font-semibold">未購入の予定</span>
+        <span className={LABEL}>Planned</span>
         <span aria-hidden="true">
           <DotAmount value={DATA.planned} max={24} room={HALF} />
         </span>
-        <span className="text-[12px] leading-none font-medium">{DATA.plannedCount}件</span>
+        <span className="num text-[12px] leading-none font-medium">{DATA.plannedCount} items</span>
       </div>
       <div
         role="group"
@@ -192,7 +202,7 @@ function Pills() {
         className="lg lg-p3 col-span-2 flex h-[84px] items-center justify-between gap-3 rounded-full px-8"
       >
         <span className="flex flex-col gap-2">
-          <span className="text-[13px] leading-none font-semibold">予算使用率</span>
+          <span className={LABEL}>Used</span>
           <UsageArc rate={usage} />
         </span>
         <span aria-hidden="true" className="dot-number text-[30px]">
@@ -209,12 +219,12 @@ function Upcoming({ tone }: { tone: "light" | "dark" }) {
   return (
     <section aria-labelledby="upcoming" className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between">
-        <h2 id="upcoming" className="text-[17px] font-semibold">
-          直近の購入予定
+        <h2 id="upcoming" className={LABEL}>
+          Upcoming
         </h2>
-        <a href="#" className="inline-flex min-h-11 items-center gap-1 text-[14px] font-semibold">
-          すべて
-          <Icon name="chevronRight" size={16} />
+        <a href="#" className={`inline-flex min-h-11 items-center gap-1 ${LABEL}`}>
+          All
+          <Icon name="chevronRight" size={14} />
         </a>
       </div>
       {UPCOMING.map((p) => (

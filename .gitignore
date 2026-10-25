@@ -9,3 +9,6 @@ dev-dist/
 coverage/
 .DS_Store
 Thumbs.db
+
+# 参考画像（コミットしない）
+.ref/
