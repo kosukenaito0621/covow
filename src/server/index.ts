@@ -4,6 +4,7 @@ import { originCheck } from "./middleware/origin-check";
 import { securityHeaders } from "./middleware/security-headers";
 import { session } from "./middleware/session";
 import { authRoutes } from "./routes/auth";
+import { dataRoutes } from "./routes/data";
 import { meRoutes } from "./routes/me";
 import { inviteRoutes, spaceRoutes } from "./routes/space";
 import type { AppEnv } from "./types";
@@ -27,7 +28,8 @@ const app = new Hono<AppEnv>()
   .route("/auth", authRoutes)
   .route("/me", meRoutes)
   .route("/space", spaceRoutes)
-  .route("/invites", inviteRoutes);
+  .route("/invites", inviteRoutes)
+  .route("/", dataRoutes);
 
 app.notFound((c) => c.json({ code: "NOT_FOUND", message: "見つかりませんでした" }, 404));
 
