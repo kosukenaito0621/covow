@@ -1,6 +1,8 @@
 import { type KeyboardEvent, useRef } from "react";
 import { formatYen } from "@shared/money/amount";
 
+// 表示は英字1文字（月曜はじまりなので M T W T F S S）。読み上げは日本語の曜日
+const WEEKDAY_LETTERS = ["M", "T", "W", "T", "F", "S", "S"] as const;
 const WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"] as const;
 
 /**
@@ -13,7 +15,10 @@ export function DayChips({
   selectedIndex,
   onSelect,
   today,
+  tone = "dark",
 }: {
+  /** 置かれる面。dark＝スモークガラスの上 */
+  tone?: "light" | "dark";
   /** 月曜から日曜までの YYYY-MM-DD */
   dates: readonly string[];
   amounts: readonly number[];
@@ -49,14 +54,22 @@ export function DayChips({
             onClick={() => onSelect(i)}
             onKeyDown={(e) => onKey(e, i)}
             className={`relative inline-flex size-11 flex-col items-center justify-center rounded-full border text-[14px] font-semibold transition-colors duration-150 ${
-              selected ? "border-white bg-white text-ink" : "border-white/35 text-white hover:bg-white/10"
+              tone === "dark"
+                ? selected
+                  ? "border-white bg-white text-ink"
+                  : "border-white/35 text-white hover:bg-white/10"
+                : selected
+                  ? "border-ink bg-ink text-white"
+                  : "border-ink/25 text-ink hover:bg-ink/5"
             }`}
           >
-            {WEEKDAYS[i]}
+            <span aria-hidden="true">{WEEKDAY_LETTERS[i]}</span>
             {isToday && (
               <span
                 aria-hidden="true"
-                className={`absolute bottom-1 size-1 rounded-full ${selected ? "bg-ink" : "bg-white"}`}
+                className={`absolute bottom-1 size-1 rounded-full ${
+                  (tone === "dark") === selected ? "bg-ink" : "bg-white"
+                }`}
               />
             )}
           </button>

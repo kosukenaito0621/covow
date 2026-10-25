@@ -1,5 +1,5 @@
 import "@fontsource-variable/inter";
-import "@fontsource/doto/600.css";
+import "@fontsource/doto/800.css";
 import "./styles/app.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

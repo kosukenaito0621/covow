@@ -148,7 +148,7 @@ function HomePreview({ state }: { state: string }) {
           <MetricPill theme="ember" label="今月の実支出" value="0" ariaLabel="今月の実支出 0円" sub="先月の記録なし" />
           <MetricPill theme="indigo" label="未購入の予定" value="0" ariaLabel="未購入の予定 0円、0件" sub="0件" />
           <MetricPill theme="aurora" label="予算使用率" value="—" ariaLabel="予算使用率 予算が未設定です" sub="予算が未設定" />
-          <AddPill label="最初の購入予定を追加" onClick={() => undefined} />
+          <div className="flex items-center justify-center"><AddPill label="最初の購入予定を追加" onClick={() => undefined} /></div>
         </div>
       </>
     );
@@ -218,7 +218,7 @@ function HomePreview({ state }: { state: string }) {
           ariaLabel={`予算使用率 ${Math.round(((actual + planned) / budget) * 100)}%`}
           aside={<UsageArc rate={(actual + planned) / budget} />}
         />
-        <AddPill onClick={() => setSheet(true)} />
+        <div className="flex items-center justify-center"><AddPill onClick={() => setSheet(true)} /></div>
       </div>
 
       <section aria-labelledby="upcoming" className="flex flex-col gap-2">
@@ -239,7 +239,7 @@ function HomePreview({ state }: { state: string }) {
             <div className="min-w-0">
               <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{p.t}</p>
               <p className="text-[12px] text-ink-muted">
-                {p.who}が登録 ・ {p.d}
+                {p.who} ・ {p.d}
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1">
@@ -361,7 +361,7 @@ function PartsPreview() {
           <PrimaryButton loading>保存しています</PrimaryButton>
           <PrimaryButton disabled>無効</PrimaryButton>
           <CircleIconButton tone="light" icon="info" label="ヘルプ" />
-          <AddPill compact onClick={() => setConfirm(true)} />
+          <AddPill onClick={() => setConfirm(true)} />
         </div>
       </Section>
 

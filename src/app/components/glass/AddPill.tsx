@@ -1,35 +1,30 @@
 import { motion } from "motion/react";
 import { Icon } from "../ui/Icon";
 
-/** 主要操作の白い不透明のピル（ガラスにしない） */
+/**
+ * 購入予定を追加するボタン。見た目は「＋」だけで、ほかの丸いボタンと同じ 44px。
+ * 文字は出さないが、読み上げ用の名前（aria-label）は必ず付ける。
+ */
 export function AddPill({
   label = "購入予定を追加",
   onClick,
-  compact = false,
+  className,
 }: {
   label?: string;
   onClick: () => void;
-  /** 一覧画面の右下などに置く小さい版 */
-  compact?: boolean;
+  className?: string;
 }) {
   return (
     <motion.button
       type="button"
+      aria-label={label}
+      title={label}
       onClick={onClick}
-      whileTap={{ scale: 0.96 }}
+      whileTap={{ scale: 0.94 }}
       transition={{ duration: 0.15 }}
-      className={
-        compact
-          ? "solid-pill inline-flex min-h-14 items-center gap-2 px-5 text-[15px] font-semibold"
-          : "solid-pill flex h-[112px] w-full min-w-0 flex-col items-center justify-center gap-2 px-4 text-center"
-      }
+      className={`add-orb inline-flex size-11 shrink-0 items-center justify-center rounded-full ${className ?? ""}`}
     >
-      <span
-        className={`inline-flex shrink-0 items-center justify-center rounded-full bg-ink text-white ${compact ? "size-8" : "size-10"}`}
-      >
-        <Icon name="plus" size={compact ? 18 : 22} />
-      </span>
-      <span className={compact ? "" : "text-[14px] leading-tight font-semibold"}>{label}</span>
+      <Icon name="plus" size={22} strokeWidth={2} />
     </motion.button>
   );
 }

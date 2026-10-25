@@ -9,21 +9,24 @@ export function WeekNavigator({
   onPrev,
   onNext,
   nextDisabled,
+  tone = "dark",
 }: {
   start: string;
   end: string;
   onPrev: () => void;
   onNext: () => void;
   nextDisabled?: boolean;
+  tone?: "light" | "dark";
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <CircleIconButton icon="chevronLeft" label="前の週" onClick={onPrev} />
+      <CircleIconButton tone={tone} icon="chevronLeft" label="前の週" onClick={onPrev} />
       <p className="num text-[15px] font-semibold" aria-live="polite">
         <span className="sr-only">表示中の週 </span>
         {md(start)} – {md(end)}
       </p>
       <CircleIconButton
+        tone={tone}
         icon="chevronRight"
         label="次の週"
         onClick={onNext}

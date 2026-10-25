@@ -56,8 +56,8 @@ export function SpendCurve({
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={summary} className="block overflow-visible">
         <defs>
           <linearGradient id={gradId} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#ffffff" stopOpacity="0.16" />
-            <stop offset="1" stopColor="#ffffff" stopOpacity="0" />
+            <stop offset="0" stopColor="currentColor" stopOpacity="0.16" />
+            <stop offset="1" stopColor="currentColor" stopOpacity="0" />
           </linearGradient>
         </defs>
         {baseline && (
@@ -67,7 +67,7 @@ export function SpendCurve({
               x2={W - padX}
               y1={y(baseline.value)}
               y2={y(baseline.value)}
-              stroke="#ffffff"
+              stroke="currentColor"
               strokeOpacity="0.45"
               strokeWidth="1"
               strokeDasharray="2 4"
@@ -84,7 +84,7 @@ export function SpendCurve({
         <motion.path
           d={path}
           fill="none"
-          stroke="#ffffff"
+          stroke="currentColor"
           strokeWidth="1.75"
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
@@ -99,7 +99,7 @@ export function SpendCurve({
               y2={H - bottom}
               initial={false}
               animate={{ y1: sy }}
-              stroke="#ffffff"
+              stroke="currentColor"
               strokeOpacity="0.55"
               strokeDasharray="2 3"
               strokeWidth="1"
@@ -109,13 +109,13 @@ export function SpendCurve({
               cx={0}
               initial={false}
               animate={{ cy: sy }}
-              fill="#ffffff"
+              fill="currentColor"
               fillOpacity="0.12"
-              stroke="#ffffff"
+              stroke="currentColor"
               strokeOpacity="0.45"
               transition={{ type: "spring", stiffness: 380, damping: 34 }}
             />
-            <motion.circle r="4" cx={0} initial={false} animate={{ cy: sy }} fill="#ffffff" />
+            <motion.circle r="4" cx={0} initial={false} animate={{ cy: sy }} fill="currentColor" />
           </motion.g>
         )}
         {sel && (
@@ -126,7 +126,7 @@ export function SpendCurve({
             transition={{ type: "spring", stiffness: 380, damping: 34 }}
             aria-hidden="true"
           >
-            <rect x={-38} y={-12} width={76} height={24} rx={12} fill="#111827" fillOpacity="0.82" stroke="#ffffff" strokeOpacity="0.25" />
+            <rect x={-38} y={-12} width={76} height={24} rx={12} fill="#111827" fillOpacity="0.82" stroke="currentColor" strokeOpacity="0.25" />
             <text y={4.5} textAnchor="middle" fill="#ffffff" fontSize="13" fontWeight="600" className="num">
               {formatYen(sel.amount)}
             </text>
@@ -134,9 +134,9 @@ export function SpendCurve({
         )}
       </svg>
       {baseline && (
-        <figcaption className="mt-1 flex items-center gap-2 text-[12px] text-white/78">
+        <figcaption className="mt-1 flex items-center gap-2 text-[12px] opacity-80">
           <svg width="18" height="2" aria-hidden="true">
-            <line x1="0" x2="18" y1="1" y2="1" stroke="#fff" strokeOpacity="0.6" strokeDasharray="2 3" />
+            <line x1="0" x2="18" y1="1" y2="1" stroke="currentColor" strokeOpacity="0.6" strokeDasharray="2 3" />
           </svg>
           {baseline.label} <span className="num">{formatYen(baseline.value)}</span>
         </figcaption>
