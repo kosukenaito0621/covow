@@ -628,6 +628,7 @@
   transform: translateX(-50%);
   opacity: var(--sil-opacity, 0.5);
   pointer-events: none;
+  overflow: visible; /* 地面や水面は、横長の画面でも端が見えないよう viewBox の外まで描く */
 }
 /* 明るいテーマは黒ではなく、テーマの深い色の影にする（カードの文字を読みやすく保つ） */
 .theme-aurora {
