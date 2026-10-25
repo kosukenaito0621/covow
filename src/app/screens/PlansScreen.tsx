@@ -69,6 +69,7 @@ export function PlansScreen({
   }, [plans, filter, query, today]);
 
   const filters: Filter[] = ["all", "planned", "purchased", "canceled"];
+  const firstPlannedId = groups.flatMap((x) => x.items).find((p) => p.status === "planned")?.id;
   const filterLabel = (f: Filter) => (f === "all" ? t("home.all") : t(`status.${f}`));
 
   return (
@@ -118,7 +119,7 @@ export function PlansScreen({
                 <span className="num text-[12px] font-semibold opacity-85">{items.length}</span>
               </div>
               {items.map((p, i) => (
-                <PlanRow key={p.id} plan={p} index={i} overdue={g === "overdue"} onOpen={() => onOpen(p.id)} />
+                <PlanRow key={p.id} plan={p} index={i} overdue={g === "overdue"} onOpen={() => onOpen(p.id)} tourTarget={p.id === firstPlannedId} />
               ))}
             </section>
           ))
@@ -127,7 +128,7 @@ export function PlansScreen({
 
       <div
         data-fixed-overlay
-        className="fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px)] z-30"
+        className="fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px+var(--coach-h,0px))] z-30"
       >
         <AddPill onClick={onAdd} />
       </div>
@@ -135,7 +136,20 @@ export function PlansScreen({
   );
 }
 
-function PlanRow({ plan: p, index, overdue, onOpen }: { plan: PlanView; index: number; overdue: boolean; onOpen: () => void }) {
+function PlanRow({
+  plan: p,
+  index,
+  overdue,
+  onOpen,
+  tourTarget,
+}: {
+  plan: PlanView;
+  index: number;
+  overdue: boolean;
+  onOpen: () => void;
+  /** 伴走ガイドで光らせる行（未購入の先頭） */
+  tourTarget?: boolean;
+}) {
   const { t, locale } = useT();
   const { theme } = useTheme();
   const muted = mutedText(theme.tone.card);
@@ -147,7 +161,12 @@ function PlanRow({ plan: p, index, overdue, onOpen }: { plan: PlanView; index: n
       transition={{ duration: 0.25, delay: Math.min(index, 6) * 0.03 }}
     >
       <GlassCard>
-        <button type="button" onClick={onOpen} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+        <button
+          type="button"
+          onClick={onOpen}
+          data-tour={tourTarget ? "plan-row" : undefined}
+          className="flex w-full items-center gap-3 px-4 py-3 text-left"
+        >
           <div className="min-w-0 flex-1">
             <p className={`line-clamp-2 text-[15px] leading-snug font-semibold ${p.status === "canceled" ? "line-through decoration-1" : ""}`}>
               {p.title}

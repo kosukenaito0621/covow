@@ -19,6 +19,7 @@ export function ExpenseFormSheet({
   open,
   onClose,
   expense,
+  sample,
   today,
   categories,
   onSubmit,
@@ -29,6 +30,8 @@ export function ExpenseFormSheet({
   open: boolean;
   onClose: () => void;
   expense: Expense | null;
+  /** 新しく記録するときの見本の値（伴走ガイドで使う） */
+  sample?: { title: string; amount: number } | null;
   today: IsoDate;
   categories: readonly { id: string; name: string }[];
   onSubmit: (body: ExpenseBody) => void;
@@ -38,8 +41,8 @@ export function ExpenseFormSheet({
 }) {
   const { t } = useT();
   // 入力の初期値は、編集する支出の値（新規なら空・今日）。呼び出し側が開くたびに key を変えて作り直す
-  const [title, setTitle] = useState(expense?.title ?? "");
-  const [amount, setAmount] = useState(expense ? formatNumber(expense.actualAmount) : "");
+  const [title, setTitle] = useState(expense?.title ?? sample?.title ?? "");
+  const [amount, setAmount] = useState(expense ? formatNumber(expense.actualAmount) : sample ? formatNumber(sample.amount) : "");
   const [date, setDate] = useState(expense?.spentAt ?? today);
   const [categoryId, setCategoryId] = useState<string | null>(expense?.categoryId ?? null);
   const [memo, setMemo] = useState(expense?.memo ?? "");
@@ -65,7 +68,7 @@ export function ExpenseFormSheet({
               {t(error)}
             </p>
           )}
-          <PrimaryButton tone="dark" fullWidth loading={pending} onClick={submit}>
+          <PrimaryButton tone="dark" fullWidth loading={pending} onClick={submit} data-tour="expense-submit">
             {expense ? t("common.save") : t("expense.add")}
           </PrimaryButton>
           {expense && !fromPlan && onDelete && (

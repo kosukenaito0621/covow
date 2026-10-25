@@ -22,6 +22,7 @@ import { ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/Sta
 import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
 import { useCategorySheet } from "../../screens/forms/CategorySheet";
 import { SettingsScreen } from "../../screens/SettingsScreen";
+import { useTour } from "../../tour/TourProvider";
 import type { InviteState, SpaceCardProps } from "../../screens/SpaceCard";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -33,7 +34,8 @@ function Settings() {
   const update = useUpdateMe();
   const logout = useLogout();
   const navigate = useNavigate();
-  const space = useSpaceCard();
+  const tour = useTour();
+  const space = useSpaceCard(!!me?.user.isGuest);
   // 予算は今月から3か月分を出す（それより先・過去はホームの月の切り替えから）
   const thisMonth = jstThisMonth();
   const months = [0, 1, 2].map((i) => addMonths(thisMonth, i));
@@ -56,6 +58,8 @@ function Settings() {
           onPreferenceChange: (patch) => update.mutate(patch),
           onBudget: (ym, amount) => budgetSheet.open(ym, amount),
           onCategory: (id) => categorySheet.open(id),
+          onTour: () => tour.reset(),
+          isGuest: me.user.isGuest,
           onSignOut: () => logout.mutate(undefined, { onSuccess: () => void navigate({ to: "/login" }) }),
           signingOut: logout.isPending,
           signOutError: logout.isError,
@@ -68,7 +72,7 @@ function Settings() {
 }
 
 /** スペースの欄に渡す値と操作。読み込み中・失敗のときは代わりの表示（fallback）を返す */
-function useSpaceCard(): { props: SpaceCardProps | null; fallback: ReactNode } {
+function useSpaceCard(isGuest: boolean): { props: SpaceCardProps | null; fallback: ReactNode } {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const space = useQuery(spaceQuery);
@@ -126,6 +130,7 @@ function useSpaceCard(): { props: SpaceCardProps | null; fallback: ReactNode } {
       members: space.data.members.map((m) => ({ id: m.id, name: m.displayName, isMe: m.isMe })),
       max: space.data.maxMembers,
       invite: inviteState,
+      locked: isGuest,
       inviteHours: INVITE_TTL_HOURS,
       error,
       busy: create.isPending || remove.isPending || leave.isPending,
@@ -140,7 +145,7 @@ function useSpaceCard(): { props: SpaceCardProps | null; fallback: ReactNode } {
         run(
           leave
             .mutateAsync()
-            .then(() => navigate({ to: "/onboarding/space" }))
+            .then(() => navigate({ to: "/onboarding" }))
             .then(() => forgetSpaceData(qc)),
         ),
     },

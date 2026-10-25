@@ -5,6 +5,7 @@ import { addDays, addMonths, isYearMonth, jstThisMonth, weekDates, weekStartOf, 
 import { formatMonth, formatShortDate, weekdayName } from "@shared/i18n";
 import { formatYen } from "@shared/money/amount";
 import { dailyQuery, summaryQuery } from "../../api/data";
+import { meQuery } from "../../api/me";
 import { spaceQuery } from "../../api/space";
 import { DayChips } from "../../components/charts/DayChips";
 import { SpendCurve } from "../../components/charts/SpendCurve";
@@ -23,6 +24,8 @@ import { LABEL, mutedText } from "../../components/ui/SectionLabel";
 import { AttentionNote, EmptyState, ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/States";
 import { useT } from "../../i18n/I18nProvider";
 import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
+import { tourEvent } from "../../tour/missions";
+import { offerKey, useTour } from "../../tour/TourProvider";
 import { useExpenseForm, usePlanForm } from "../../screens/forms/useForms";
 import { useTheme } from "../../theme/ThemeProvider";
 
@@ -210,10 +213,12 @@ function Home() {
   return (
     <main className="app-shell flex flex-col gap-5">
       {header}
+      <TourOffer />
       {body}
       <div
         data-fixed-overlay
-        className="fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px)] z-30"
+        data-tour="add-plan"
+        className="rounded-full fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px+var(--coach-h,0px))] z-30"
       >
         <AddPill onClick={() => planForm.open()} />
       </div>
@@ -221,6 +226,52 @@ function Home() {
       {expenseForm.element}
       {budgetSheet.element}
     </main>
+  );
+}
+
+/**
+ * 初期設定を終えた人に、一度だけ「やってみましょう」を勧めるカード（案内は日本語だけ）。
+ * 体験版の人には最初からコーチが出るので、ここでは出さない。
+ */
+function TourOffer() {
+  const { data: me } = useQuery(meQuery);
+  const tour = useTour();
+  const [offered, setOffered] = useState(() => {
+    try {
+      return !!me && localStorage.getItem(offerKey(me.user.id)) === "1";
+    } catch {
+      return false;
+    }
+  });
+  if (!me || me.user.isGuest || !offered || tour.state.open) return null;
+  const dismiss = () => {
+    try {
+      localStorage.removeItem(offerKey(me.user.id));
+    } catch {
+      // 消せなくても、この画面の間は閉じる
+    }
+    setOffered(false);
+  };
+  return (
+    <section lang="ja" aria-label="やってみましょう" className="overlay-glass-dark flex flex-col gap-2 rounded-[24px] px-4 py-4 text-white">
+      <p className="text-[17px] font-semibold">やってみましょう（約3分）</p>
+      <p className="text-[14px] leading-relaxed text-white/90">登録から購入済みにするまでの基本操作を、実際の画面で順に案内します。</p>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            dismiss();
+            tour.reset();
+          }}
+          className="inline-flex min-h-11 items-center rounded-full bg-white px-5 text-[14px] font-semibold text-[#111827]"
+        >
+          始める
+        </button>
+        <button type="button" onClick={dismiss} className="inline-flex min-h-11 items-center rounded-full border border-white/35 px-5 text-[14px] font-semibold">
+          今はしない
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -250,8 +301,18 @@ function WeekSpend({ month, today }: { month: string; today: string }) {
           summary={t("home.weekPeak", { weekday: weekdayName(peak, locale), amount: formatYen(amounts[peak] ?? 0) })}
         />
       </div>
-      <div className="mt-3">
-        <DayChips tone={tone} dates={dates} amounts={amounts} selectedIndex={sel} onSelect={setSel} today={today} />
+      <div className="mt-3" data-tour="day-chips">
+        <DayChips
+          tone={tone}
+          dates={dates}
+          amounts={amounts}
+          selectedIndex={sel}
+          onSelect={(i) => {
+            setSel(i);
+            tourEvent("day-selected");
+          }}
+          today={today}
+        />
       </div>
       <div className="mt-3">
         <WeekNavigator

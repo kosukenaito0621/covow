@@ -135,7 +135,7 @@ export function PlanDetailScreen({
           </p>
         )}
         {p.status === "planned" && (
-          <PrimaryButton tone={theme.tone.page} icon="check" fullWidth onClick={() => setSheet(true)}>
+          <PrimaryButton tone={theme.tone.page} icon="check" fullWidth onClick={() => setSheet(true)} data-tour="mark-bought">
             {t("plan.markBought")}
           </PrimaryButton>
         )}
@@ -187,6 +187,7 @@ export function PlanDetailScreen({
               fullWidth
               disabled={!parsed.ok}
               loading={actions.pending}
+              data-tour="purchase-submit"
               onClick={async () => {
                 if (!parsed.ok) return;
                 if (!actions.onPurchase || (await actions.onPurchase(parsed.value, date))) setSheet(false);

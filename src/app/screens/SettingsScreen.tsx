@@ -12,6 +12,7 @@ import { mutedText, SectionLabel } from "../components/ui/SectionLabel";
 import { ErrorMessage } from "../components/ui/States";
 import { useT } from "../i18n/I18nProvider";
 import { useTheme } from "../theme/ThemeProvider";
+import { tourEvent } from "../tour/missions";
 import { SpaceCard, type SpaceCardProps } from "./SpaceCard";
 
 export interface SettingsData {
@@ -26,6 +27,10 @@ export interface SettingsActions {
   /** テーマ・言語を変えたとき（画面はすぐ切り替わる。アカウントへの保存はここで行う） */
   onPreferenceChange?: (patch: { theme?: ThemeId; locale?: Locale }) => void;
   onSignOut?: () => void;
+  /** 「使い方ガイドをもう一度」 */
+  onTour?: () => void;
+  /** 体験版：アカウント削除を出さない */
+  isGuest?: boolean;
   /** 予算の行を押したとき（その月と、いまの金額） */
   onBudget?: (yearMonth: YearMonth, amount: number | null) => void;
   /** カテゴリを押したとき（null＝追加） */
@@ -52,6 +57,7 @@ export function SettingsScreen({
   const changeTheme = (id: ThemeId) => {
     setTheme(id);
     actions.onPreferenceChange?.({ theme: id });
+    tourEvent("theme-changed");
   };
   const changeLocale = (l: Locale) => {
     setLocale(l);
@@ -73,7 +79,7 @@ export function SettingsScreen({
       </GlassCard>
 
       <Block id="set-theme" title={t("settings.theme")}>
-        <GlassCard className="p-4">
+        <GlassCard className="p-4" data-tour="theme-picker">
           <ThemePicker label={t("settings.theme")} value={theme.id} onChange={changeTheme} />
         </GlassCard>
       </Block>
@@ -111,8 +117,8 @@ export function SettingsScreen({
       <Block id="set-budget" title={t("settings.budget")}>
         <GlassCard className="px-4 py-1">
           <ul className="divide-y divide-current/10">
-            {d.budgets.map((b) => (
-              <li key={b.yearMonth}>
+            {d.budgets.map((b, i) => (
+              <li key={b.yearMonth} data-tour={i === 0 ? "budget-row" : undefined}>
                 <Row
                   label={formatMonth(b.yearMonth, locale)}
                   value={b.amount === null ? <span className={muted}>{t("settings.notSet")}</span> : formatYen(b.amount)}
@@ -158,9 +164,9 @@ export function SettingsScreen({
 
       <Block id="set-account" title={t("settings.account")}>
         <GlassCard className="px-2 py-1">
-          <ActionRow icon="info" label={t("settings.tour")} />
+          <ActionRow icon="info" label={t("settings.tour")} onClick={actions.onTour} />
           <ActionRow icon="arrowUpRight" label={t("settings.signOut")} onClick={actions.onSignOut} busy={actions.signingOut} />
-          <ActionRow icon="trash" label={t("settings.deleteAccount")} danger />
+          {!actions.isGuest && <ActionRow icon="trash" label={t("settings.deleteAccount")} danger />}
         </GlassCard>
         {actions.signOutError && <ErrorMessage tone={theme.tone.page} message={t("settings.signOutError")} />}
       </Block>

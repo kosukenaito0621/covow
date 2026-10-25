@@ -11,6 +11,9 @@ export interface Me {
     avatarUrl: string | null;
     locale: Locale;
     theme: ThemeId;
+    /** 体験版の仮のアカウントか（guestExpiresAt で消える） */
+    isGuest: boolean;
+    guestExpiresAt: string | null;
   };
   space: { id: string; name: string } | null;
 }
@@ -54,3 +57,12 @@ export function useLogout() {
 /** Google ログインを始める URL。ログイン前の言語とテーマも渡し、はじめての人のアカウントに引き継ぐ */
 export const googleLoginUrl = (next: string, locale: Locale, theme: ThemeId) =>
   `/api/auth/google?${new URLSearchParams({ next, lang: locale, theme })}`;
+
+/** 体験版を始める（24時間の仮のアカウントと見本のスペース）。ログインの Cookie はサーバーが付ける */
+export function useStartTrial() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (prefs: { lang: Locale; theme: ThemeId }) => api<{ expiresAt: string }>("/trial", { method: "POST", body: prefs }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: meQuery.queryKey, refetchType: "all" }),
+  });
+}

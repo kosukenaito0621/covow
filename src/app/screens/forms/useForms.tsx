@@ -17,6 +17,7 @@ import {
 import { errorKey, spaceQuery } from "../../api/space";
 import { ConfirmDialog } from "../../components/glass/ConfirmDialog";
 import { useT } from "../../i18n/I18nProvider";
+import { useTour } from "../../tour/TourProvider";
 import { ExpenseFormSheet } from "./ExpenseFormSheet";
 import { PlanFormSheet } from "./PlanFormSheet";
 
@@ -24,7 +25,15 @@ import { PlanFormSheet } from "./PlanFormSheet";
  * 予定の登録・編集シートを開く仕組み（ホーム・予定一覧・予定の詳細で共通）。
  * 「いまの残額 → 登録後」は今月の集計と shared/money の関数で出す（予定日が別の月なら今月は変わらない）。
  */
+/** 伴走ガイドで入れておく見本（データの言語は画面の言語に合わせる） */
+const SAMPLES = {
+  plan: { en: { title: "Humidifier", amount: 9800 }, ja: { title: "加湿器", amount: 9800 } },
+  expense: { en: { title: "Lunch", amount: 1200 }, ja: { title: "ランチ", amount: 1200 } },
+} as const;
+
 export function usePlanForm(onSaved?: (plan: Plan) => void) {
+  const { locale } = useT();
+  const tour = useTour();
   const [state, setState] = useState<{ open: boolean; plan: Plan | null; key: number }>({ open: false, plan: null, key: 0 });
   const [error, setError] = useState<MessageKey | null>(null);
   const month = jstThisMonth();
@@ -46,6 +55,7 @@ export function usePlanForm(onSaved?: (plan: Plan) => void) {
       open={state.open}
       onClose={close}
       plan={state.plan}
+      sample={!state.plan && tour.active?.id === "add-plan" ? SAMPLES.plan[locale] : null}
       categories={categories.data ?? []}
       members={(space.data?.members ?? []).map((m) => ({ id: m.id, name: m.displayName }))}
       previewRemaining={(amount, date) => {
@@ -81,7 +91,8 @@ export function usePlanForm(onSaved?: (plan: Plan) => void) {
 
 /** 支出の記録・編集シート（ホーム・支出一覧で共通）。削除は確認してから */
 export function useExpenseForm() {
-  const { t } = useT();
+  const { t, locale } = useT();
+  const tour = useTour();
   const [state, setState] = useState<{ open: boolean; expense: Expense | null; key: number }>({ open: false, expense: null, key: 0 });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<MessageKey | null>(null);
@@ -104,6 +115,7 @@ export function useExpenseForm() {
         open={state.open && !confirmDelete}
         onClose={close}
         expense={state.expense}
+        sample={!state.expense && tour.active?.id === "expense" ? SAMPLES.expense[locale] : null}
         today={jstToday()}
         categories={categories.data ?? []}
         pending={create.isPending || update.isPending}

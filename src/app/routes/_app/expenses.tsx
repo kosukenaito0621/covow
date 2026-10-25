@@ -103,7 +103,8 @@ function Expenses() {
 
       <div
         data-fixed-overlay
-        className="fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px)] z-30"
+        data-tour="add-expense"
+        className="rounded-full fixed right-[max(16px,calc((100vw-480px)/2+16px))] bottom-[calc(env(safe-area-inset-bottom)+100px+var(--coach-h,0px))] z-30"
       >
         <AddPill onClick={() => form.open()} label={t("expense.add")} />
       </div>

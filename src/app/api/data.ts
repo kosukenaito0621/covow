@@ -1,6 +1,7 @@
 import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { IsoDate, YearMonth } from "@shared/date/jst";
 import type { MonthSummary, PlanStatus } from "@shared/money/summary";
+import { type TourEvent, tourEvent } from "../tour/missions";
 import { api } from "./client";
 
 /*
@@ -109,18 +110,26 @@ export interface ExpenseBody {
   memo: string | null;
 }
 
-/** 書き込みをまとめて作る。onSuccess で一覧と集計を取り直す */
-function useMoneyMutation<V, R>(fn: (v: V) => Promise<R>) {
+/** 書き込みをまとめて作る。onSuccess で一覧と集計を取り直し、伴走ガイドに合図を送る */
+function useMoneyMutation<V, R>(fn: (v: V) => Promise<R>, event?: TourEvent) {
   const refresh = useRefreshMoney();
-  return useMutation({ mutationFn: fn, onSuccess: refresh });
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: async () => {
+      await refresh();
+      if (event) tourEvent(event);
+    },
+  });
 }
 
-export const useCreatePlan = () => useMoneyMutation((b: PlanBody) => api<{ plan: Plan }>("/plans", { method: "POST", body: b }));
+export const useCreatePlan = () =>
+  useMoneyMutation((b: PlanBody) => api<{ plan: Plan }>("/plans", { method: "POST", body: b }), "plan-created");
 export const useUpdatePlan = () =>
   useMoneyMutation(({ id, ...b }: PlanBody & { id: string }) => api<{ plan: Plan }>(`/plans/${id}`, { method: "PATCH", body: b }));
 export const usePurchasePlan = () =>
   useMoneyMutation(({ id, ...b }: { id: string; actualAmount: string | number; spentAt: IsoDate }) =>
     api<{ plan: Plan }>(`/plans/${id}/purchase`, { method: "POST", body: b }),
+  "plan-purchased",
   );
 export const usePlanAction = () =>
   useMoneyMutation(({ id, action }: { id: string; action: "unpurchase" | "cancel" | "restore" }) =>
@@ -129,7 +138,7 @@ export const usePlanAction = () =>
 export const useDeletePlan = () => useMoneyMutation((id: string) => api<void>(`/plans/${id}`, { method: "DELETE" }));
 
 export const useCreateExpense = () =>
-  useMoneyMutation((b: ExpenseBody) => api<{ expense: Expense }>("/expenses", { method: "POST", body: b }));
+  useMoneyMutation((b: ExpenseBody) => api<{ expense: Expense }>("/expenses", { method: "POST", body: b }), "expense-created");
 export const useUpdateExpense = () =>
   useMoneyMutation(({ id, ...b }: ExpenseBody & { id: string }) =>
     api<{ expense: Expense }>(`/expenses/${id}`, { method: "PATCH", body: b }),
@@ -139,6 +148,7 @@ export const useDeleteExpense = () => useMoneyMutation((id: string) => api<void>
 export const usePutBudget = () =>
   useMoneyMutation(({ yearMonth, ...b }: { yearMonth: YearMonth; amount: string | number; applyToFuture: boolean }) =>
     api(`/budgets/${yearMonth}`, { method: "PUT", body: b }),
+  "budget-saved",
   );
 
 export const useCreateCategory = () => useMoneyMutation((name: string) => api("/categories", { method: "POST", body: { name } }));

@@ -21,6 +21,7 @@ export function PlanFormSheet({
   open,
   onClose,
   plan,
+  sample,
   categories,
   members,
   previewRemaining,
@@ -32,6 +33,8 @@ export function PlanFormSheet({
   onClose: () => void;
   /** 編集する予定（null なら新しく登録） */
   plan: Plan | null;
+  /** 新しく登録するときの見本の値（伴走ガイドで使う） */
+  sample?: { title: string; amount: number } | null;
   categories: readonly { id: string; name: string }[];
   /** 買う人の候補（1人だけなら欄を出さない） */
   members: readonly { id: string; name: string }[];
@@ -42,8 +45,8 @@ export function PlanFormSheet({
 }) {
   const { t } = useT();
   // 入力の初期値は、編集する予定の値（新規なら空）。呼び出し側が開くたびに key を変えて作り直す
-  const [title, setTitle] = useState(plan?.title ?? "");
-  const [amount, setAmount] = useState(plan ? formatNumber(plan.plannedAmount) : "");
+  const [title, setTitle] = useState(plan?.title ?? sample?.title ?? "");
+  const [amount, setAmount] = useState(plan ? formatNumber(plan.plannedAmount) : sample ? formatNumber(sample.amount) : "");
   const [date, setDate] = useState(plan?.plannedDate ?? "");
   const [categoryId, setCategoryId] = useState<string | null>(plan?.categoryId ?? null);
   const [assignee, setAssignee] = useState(plan?.assigneeUserId ?? ANYONE);
@@ -92,7 +95,7 @@ export function PlanFormSheet({
               {t(error)}
             </p>
           )}
-          <PrimaryButton tone="dark" fullWidth loading={pending} onClick={submit}>
+          <PrimaryButton tone="dark" fullWidth loading={pending} onClick={submit} data-tour="plan-submit">
             {plan ? t("common.save") : t("plan.add")}
           </PrimaryButton>
         </div>

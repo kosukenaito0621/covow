@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { DEFAULT_CATEGORIES, INVITE_TTL_HOURS, MAX_SPACE_MEMBERS } from "../../shared/constants";
 import type { Locale } from "../../shared/i18n";
 import { randomToken, sha256Hex } from "../auth/tokens";
@@ -63,7 +63,8 @@ export async function getSpace(db: Db, spaceId: string) {
     .from(spaceMembers)
     .innerJoin(users, eq(users.id, spaceMembers.userId))
     .where(eq(spaceMembers.spaceId, spaceId))
-    .orderBy(asc(spaceMembers.joinedAt))
+    // 参加した順。同じ時刻なら作った人（owner）を先に、そのあとは ID の順で、いつも同じ並びにする
+    .orderBy(asc(spaceMembers.joinedAt), sql`${spaceMembers.role} != 'owner'`, asc(users.id))
     .all();
   return { ...space, members, maxMembers: MAX_SPACE_MEMBERS };
 }

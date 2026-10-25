@@ -26,6 +26,8 @@ export interface SpaceCardProps {
   max: number;
   invite: InviteState;
   inviteHours: number;
+  /** 体験版：招待・メンバーを外す・抜けるをお休みにする */
+  locked?: boolean;
   /** 直前の操作の失敗（言語に合わせた文の鍵） */
   error?: MessageKey | null;
   busy?: boolean;
@@ -79,7 +81,8 @@ export function SpaceCard(p: SpaceCardProps) {
               {m.isMe ? (
                 <span className="rounded-full border border-current/25 px-2 py-0.5 text-[12px] font-semibold">{t("settings.you")}</span>
               ) : (
-                p.onRemoveMember && (
+                p.onRemoveMember &&
+                !p.locked && (
                   <button
                     type="button"
                     onClick={() => setRemoving(m)}
@@ -108,7 +111,9 @@ export function SpaceCard(p: SpaceCardProps) {
             <Icon name="share" size={18} />
             {t("settings.invite")}
           </p>
-          {full ? (
+          {p.locked ? (
+            <p className={`text-[13px] ${muted}`}>{t("trial.locked")}</p>
+          ) : full ? (
             <p className={`text-[13px] ${muted}`}>{t("settings.inviteFull")}</p>
           ) : p.invite.kind === "fresh" ? (
             <>
@@ -164,7 +169,7 @@ export function SpaceCard(p: SpaceCardProps) {
               </PrimaryButton>
             </>
           )}
-          {!full && p.invite.kind !== "none" && p.onRevokeInvite && (
+          {!p.locked && !full && p.invite.kind !== "none" && p.onRevokeInvite && (
             <button type="button" onClick={p.onRevokeInvite} className="min-h-11 self-start text-[14px] font-semibold underline underline-offset-4">
               {t("settings.cancelLink")}
             </button>
@@ -182,7 +187,7 @@ export function SpaceCard(p: SpaceCardProps) {
           <SecondaryButton
             tone={tone}
             icon="arrowLeft"
-            disabled={alone}
+            disabled={alone || p.locked}
             fullWidth
             aria-describedby={alone ? "leave-note" : undefined}
             onClick={() => setLeaving(true)}

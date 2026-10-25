@@ -132,6 +132,8 @@ const CODE_MESSAGES: Partial<Record<string, MessageKey>> = {
   FROM_PLAN: "expense.fromPlanNote",
   CATEGORY_EXISTS: "error.CATEGORY_EXISTS",
   INVALID_REFERENCE: "error.INVALID_REFERENCE",
+  TRIAL_LOCKED: "error.TRIAL_LOCKED",
+  TRIAL_LIMIT: "trial.limit",
 };
 
 /** API のエラーを、言語に合わせた文の鍵にする */

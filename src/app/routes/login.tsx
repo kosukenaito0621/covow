@@ -1,7 +1,8 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import type { MessageKey } from "@shared/i18n";
-import { googleLoginUrl, meQuery } from "../api/me";
+import { googleLoginUrl, meQuery, useStartTrial } from "../api/me";
+import { errorKey } from "../api/space";
 import { TabChips } from "../components/glass/TabChips";
 import { GoogleMark } from "../components/ui/GoogleMark";
 import { Icon } from "../components/ui/Icon";
@@ -38,6 +39,8 @@ function Login() {
   const { t, locale, setLocale } = useT();
   const { theme } = useTheme();
   const muted = theme.tone.page === "light" ? "text-current/85" : "text-white/90";
+  const navigate = useNavigate();
+  const trial = useStartTrial();
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-[var(--app-max)] flex-col px-[var(--gutter)] pt-6 pb-[calc(env(safe-area-inset-bottom)+32px)]">
@@ -85,6 +88,23 @@ function Login() {
             <GoogleMark />
             {t("login.google")}
           </a>
+          {/* 体験版：24時間だけ使える見本のスペース。ログインは要らない */}
+          <div className="flex flex-col items-center gap-1 pt-1">
+            <button
+              type="button"
+              disabled={trial.isPending}
+              onClick={() => trial.mutate({ lang: locale, theme: theme.id }, { onSuccess: () => void navigate({ to: "/" }) })}
+              className="min-h-11 text-[15px] font-semibold underline underline-offset-4 disabled:opacity-60"
+            >
+              {t("trial.try")}
+            </button>
+            <p className={`text-center text-[12px] ${theme.tone.card === "light" ? "text-current/85" : "text-white/90"}`}>{t("trial.tryNote")}</p>
+            {trial.isError && (
+              <p role="alert" className="text-center text-[13px] font-medium">
+                {t(errorKey(trial.error))}
+              </p>
+            )}
+          </div>
         </div>
       </motion.section>
     </main>

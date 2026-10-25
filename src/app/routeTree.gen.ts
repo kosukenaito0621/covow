@@ -19,7 +19,7 @@ import { Route as DevComponentsRouteImport } from './routes/dev.components'
 import { Route as DevLogoRouteImport } from './routes/dev.logo'
 import { Route as DevScreensRouteImport } from './routes/dev.screens'
 import { Route as InviteTokenRouteImport } from './routes/invite/$token'
-import { Route as OnboardingSpaceRouteImport } from './routes/onboarding/space'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as AppPlansIndexRouteImport } from './routes/_app/plans.index'
 import { Route as AppPlansPlanIdRouteImport } from './routes/_app/plans.$planId'
 
@@ -72,9 +72,9 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
   path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingSpaceRoute = OnboardingSpaceRouteImport.update({
-  id: '/onboarding/space',
-  path: '/onboarding/space',
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppPlansIndexRoute = AppPlansIndexRouteImport.update({
@@ -98,7 +98,7 @@ export interface FileRoutesByFullPath {
   '/dev/logo': typeof DevLogoRoute
   '/dev/screens': typeof DevScreensRoute
   '/invite/$token': typeof InviteTokenRoute
-  '/onboarding/space': typeof OnboardingSpaceRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
   '/plans/': typeof AppPlansIndexRoute
 }
@@ -111,8 +111,8 @@ export interface FileRoutesByTo {
   '/dev/logo': typeof DevLogoRoute
   '/dev/screens': typeof DevScreensRoute
   '/invite/$token': typeof InviteTokenRoute
-  '/onboarding/space': typeof OnboardingSpaceRoute
   '/': typeof AppIndexRoute
+  '/onboarding': typeof OnboardingIndexRoute
   '/plans/$planId': typeof AppPlansPlanIdRoute
   '/plans': typeof AppPlansIndexRoute
 }
@@ -127,8 +127,8 @@ export interface FileRoutesById {
   '/dev/logo': typeof DevLogoRoute
   '/dev/screens': typeof DevScreensRoute
   '/invite/$token': typeof InviteTokenRoute
-  '/onboarding/space': typeof OnboardingSpaceRoute
   '/_app/': typeof AppIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
   '/_app/plans/$planId': typeof AppPlansPlanIdRoute
   '/_app/plans/': typeof AppPlansIndexRoute
 }
@@ -144,7 +144,7 @@ export interface FileRouteTypes {
     | '/dev/logo'
     | '/dev/screens'
     | '/invite/$token'
-    | '/onboarding/space'
+    | '/onboarding/'
     | '/plans/$planId'
     | '/plans/'
   fileRoutesByTo: FileRoutesByTo
@@ -157,8 +157,8 @@ export interface FileRouteTypes {
     | '/dev/logo'
     | '/dev/screens'
     | '/invite/$token'
-    | '/onboarding/space'
     | '/'
+    | '/onboarding'
     | '/plans/$planId'
     | '/plans'
   id:
@@ -172,8 +172,8 @@ export interface FileRouteTypes {
     | '/dev/logo'
     | '/dev/screens'
     | '/invite/$token'
-    | '/onboarding/space'
     | '/_app/'
+    | '/onboarding/'
     | '/_app/plans/$planId'
     | '/_app/plans/'
   fileRoutesById: FileRoutesById
@@ -185,7 +185,7 @@ export interface RootRouteChildren {
   DevLogoRoute: typeof DevLogoRoute
   DevScreensRoute: typeof DevScreensRoute
   InviteTokenRoute: typeof InviteTokenRoute
-  OnboardingSpaceRoute: typeof OnboardingSpaceRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -260,11 +260,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding/space': {
-      id: '/onboarding/space'
-      path: '/onboarding/space'
-      fullPath: '/onboarding/space'
-      preLoaderRoute: typeof OnboardingSpaceRouteImport
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/plans/': {
@@ -311,7 +311,7 @@ const rootRouteChildren: RootRouteChildren = {
   DevLogoRoute: DevLogoRoute,
   DevScreensRoute: DevScreensRoute,
   InviteTokenRoute: InviteTokenRoute,
-  OnboardingSpaceRoute: OnboardingSpaceRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -47,7 +47,7 @@ function BudgetSheet({
               {t(errorKey(put.error))}
             </p>
           )}
-          <PrimaryButton tone="dark" fullWidth loading={put.isPending} onClick={submit}>
+          <PrimaryButton tone="dark" fullWidth loading={put.isPending} onClick={submit} data-tour="budget-submit">
             {t("common.save")}
           </PrimaryButton>
         </div>
