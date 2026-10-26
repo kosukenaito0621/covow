@@ -26,12 +26,12 @@
       // 環境の名前を付けない（URL を https://covow.<サブドメイン>.workers.dev にする）
       "name": "covow",
       "triggers": { "crons": ["0 18 * * *"] },
-      // フェーズ9で本番 D1 を作成してから database_id を設定する
+      // 本番の D1（2026-10-26 作成・APAC）
       "d1_databases": [
         {
           "binding": "DB",
           "database_name": "covow-db",
-          "database_id": "REPLACE_IN_PHASE_9",
+          "database_id": "4b95af0b-3917-428f-9597-b45fc23555ed",
           "migrations_dir": "migrations"
         }
       ]
