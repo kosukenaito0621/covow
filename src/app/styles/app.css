@@ -118,12 +118,14 @@
  * そこで、ガラスの面（.lg）と、ガラスを含まない一番外側の要素にだけ、それぞれ付ける。
  */
 .reveal :is(.lg:not(.lg *), :not(.lg *):not(.lg):not(:has(.lg)):is(.reveal > *, :has(.lg) > *)) {
-  animation: reveal-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  /* 0.28 秒では気づきにくかったので、ゆっくり・強めに（2026-10-26 オーナーの確認） */
+  animation: reveal-in 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
 }
 @keyframes reveal-in {
   from {
     opacity: 0;
-    filter: blur(8px);
+    filter: blur(16px);
+    transform: scale(0.98);
   }
 }
 .stale-area :is(.lg:not(.lg *), :not(.lg *):not(.lg):not(:has(.lg)):is(.stale-area > *, :has(.lg) > *)) {
