@@ -17,7 +17,11 @@
 
 - workers.dev のサブドメインがメール名と同じだったため、オーナーが `sukeo-appslab` に変更（同じアカウントの kajirima・kondate-app・sukeo-dougubako の URL も変わった）
 - （許可を得て）本番の Secrets 3つを登録。本番の URL は https://covow.sukeo-appslab.workers.dev
-- 残り：Google Cloud Console に本番のリダイレクト URI と Test users を追加（オーナーの手作業）
+- オーナーが Google Cloud Console に本番のリダイレクト URI と Test users を追加
+- （許可を得て）デプロイ。https://covow.sukeo-appslab.workers.dev で公開中。プレビュー URL は無効（workers_dev: true, preview_urls: false）
+  - 1回目は Cloudflare 側の一時的なエラー（code 10013）で失敗、再実行で成功
+  - 確認：/api/health OK、画面と直接 URL（/plans）200、セキュリティヘッダー、未ログイン 401、別サイトからの POST 403、Google ログインの戻り先が本番 URL、体験版でホーム・分析が表示、Cron（毎日 3:00）登録済み
+  - 未確認：本物の Google ログイン（オーナーが試す）
 
 ### 次にやること（1つずつ許可を取る）
 1. ~~GitHub に公開リポジトリを作って push~~（済）

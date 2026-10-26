@@ -6,6 +6,9 @@
   "compatibility_flags": ["nodejs_compat"],
   "upload_source_maps": true,
   "observability": { "enabled": true },
+  // workers.dev の URL だけで公開する（版ごとのプレビュー URL は作らない）
+  "workers_dev": true,
+  "preview_urls": false,
   // 毎日 3:00（日本時間）に、期限の過ぎた体験版のアカウントとデータを消す（Cron は UTC で書く）
   "triggers": { "crons": ["0 18 * * *"] },
   "assets": {
