@@ -166,7 +166,7 @@ function Onboarding() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-[var(--app-max)] flex-col justify-end gap-6 px-[var(--gutter)] pt-10 pb-[calc(env(safe-area-inset-bottom)+32px)]">
+    <main className="mx-auto flex min-h-[calc(100dvh-env(safe-area-inset-top))] max-w-[var(--app-max)] flex-col justify-end gap-6 px-[var(--gutter)] pt-10 pb-[calc(env(safe-area-inset-bottom)+32px)]">
       <motion.div key={step} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
         <div className="flex gap-1.5" role="progressbar" aria-valuemin={1} aria-valuemax={TOTAL} aria-valuenow={step} aria-label={t("onboarding.step", { n: step, total: TOTAL })}>
           {Array.from({ length: TOTAL }, (_, i) => (

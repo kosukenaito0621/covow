@@ -43,7 +43,7 @@ function Login() {
   const trial = useStartTrial();
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-[var(--app-max)] flex-col px-[var(--gutter)] pt-6 pb-[calc(env(safe-area-inset-bottom)+32px)]">
+    <main className="mx-auto flex min-h-[calc(100dvh-env(safe-area-inset-top))] max-w-[var(--app-max)] flex-col px-[var(--gutter)] pt-6 pb-[calc(env(safe-area-inset-bottom)+32px)]">
       <div className="flex justify-end">
         <TabChips
           label={t("settings.language")}

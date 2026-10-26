@@ -95,7 +95,7 @@ function InvitePage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-[var(--app-max)] flex-col justify-end px-[var(--gutter)] pt-10 pb-[calc(env(safe-area-inset-bottom)+32px)]">
+    <main className="mx-auto flex min-h-[calc(100dvh-env(safe-area-inset-top))] max-w-[var(--app-max)] flex-col justify-end px-[var(--gutter)] pt-10 pb-[calc(env(safe-area-inset-bottom)+32px)]">
       <p className="mb-6 text-[20px] font-bold tracking-tight">COVOW</p>
       <motion.section
         initial={{ opacity: 0, y: 12 }}

@@ -34,6 +34,8 @@
   body {
     margin: 0;
     min-height: 100dvh;
+    /* iPhone のホーム画面アプリでは画面のいちばん上まで描くので、時計などの下から中身を始める */
+    padding-top: env(safe-area-inset-top);
     /* 背景の色と文字の色はテーマで決まる（背景の光は AuroraBackdrop） */
     background: var(--aurora-base, var(--frost-base));
     color: var(--page-text, var(--ink));
