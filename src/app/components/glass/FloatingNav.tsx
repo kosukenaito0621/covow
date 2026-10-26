@@ -13,7 +13,7 @@ const ITEMS: { to: "/" | "/plans" | "/analytics" | "/settings"; label: MessageKe
 ];
 
 /** 下部に浮かぶガラスのピル型ナビ。選択中の項目だけ白い円になる */
-export function FloatingNav({ currentPath }: { currentPath?: string }) {
+export function FloatingNav({ currentPath, settingsBadge }: { currentPath?: string; settingsBadge?: string }) {
   const { t } = useT();
   const routerPath = useRouterState({ select: (s) => s.location.pathname });
   const path = currentPath ?? routerPath;
@@ -27,11 +27,12 @@ export function FloatingNav({ currentPath }: { currentPath?: string }) {
       <ul className="overlay-glass-dark pointer-events-auto flex w-full max-w-[300px] items-center justify-between rounded-full px-2 py-2">
         {ITEMS.map((item) => {
           const active = isActive(item.to);
+          const badge = item.to === "/settings" ? settingsBadge : undefined;
           return (
             <li key={item.to}>
               <Link
                 to={item.to}
-                aria-label={t(item.label)}
+                aria-label={badge ? `${t(item.label)}, ${badge}` : t(item.label)}
                 title={t(item.label)}
                 aria-current={active ? "page" : undefined}
                 className="relative flex size-12 items-center justify-center rounded-full"
@@ -44,6 +45,7 @@ export function FloatingNav({ currentPath }: { currentPath?: string }) {
                   />
                 )}
                 <Icon name={item.icon} size={22} className={`relative ${active ? "text-[#111827]" : "text-white"}`} />
+                {badge && <span aria-hidden="true" className="absolute top-2 right-2 size-2.5 rounded-full bg-[#ff6b5e] ring-2 ring-[#1f2937]" />}
               </Link>
             </li>
           );

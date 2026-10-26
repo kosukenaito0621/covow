@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { meQuery } from "../api/me";
 import { FloatingNav } from "../components/glass/FloatingNav";
+import { useT } from "../i18n/I18nProvider";
+import { useNews } from "../news/useNews";
 import { PreferencesSync } from "../components/PreferencesSync";
 import { TrialBanner } from "../components/TrialBanner";
 import { Coach } from "../tour/Coach";
@@ -24,13 +26,16 @@ export const Route = createFileRoute("/_app")({
 
 function AppLayout() {
   const { data: me } = useQuery(meQuery);
+  const { t } = useT();
+  // 未読のお知らせがあれば、設定のアイコンに点を付ける
+  const news = useNews(me?.user.id ?? null);
   return (
     <TourProvider userId={me?.user.id ?? null} isGuest={!!me?.user.isGuest}>
       {me && <PreferencesSync me={me} />}
       {me?.user.isGuest && me.user.guestExpiresAt && <TrialBanner expiresAt={me.user.guestExpiresAt} />}
       <Outlet />
       <Coach />
-      <FloatingNav />
+      <FloatingNav settingsBadge={news.unread ? t("news.unread", { count: news.unread }) : undefined} />
     </TourProvider>
   );
 }

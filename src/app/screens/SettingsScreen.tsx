@@ -27,6 +27,10 @@ export interface SettingsActions {
   /** テーマ・言語を変えたとき（画面はすぐ切り替わる。アカウントへの保存はここで行う） */
   onPreferenceChange?: (patch: { theme?: ThemeId; locale?: Locale }) => void;
   onSignOut?: () => void;
+  /** 「お知らせ」を押したとき */
+  onNews?: () => void;
+  /** まだ読んでいないお知らせの数（0 なら印を出さない） */
+  newsUnread?: number;
   /** 「使い方ガイドをもう一度」 */
   onTour?: () => void;
   /** 体験版：アカウント削除を出さない */
@@ -166,6 +170,12 @@ export function SettingsScreen({
 
       <Block id="set-account" title={t("settings.account")}>
         <GlassCard className="px-2 py-1">
+          <ActionRow
+            icon="bell"
+            label={t("settings.news")}
+            onClick={actions.onNews}
+            badge={actions.newsUnread ? t("news.unread", { count: actions.newsUnread }) : undefined}
+          />
           <ActionRow icon="info" label={t("settings.tour")} onClick={actions.onTour} />
           <ActionRow icon="arrowUpRight" label={t("settings.signOut")} onClick={actions.onSignOut} busy={actions.signingOut} />
           {!actions.isGuest && <ActionRow icon="trash" label={t("settings.deleteAccount")} danger />}
@@ -214,12 +224,15 @@ function ActionRow({
   danger,
   onClick,
   busy,
+  badge,
 }: {
   icon: IconName;
   label: string;
   danger?: boolean;
   onClick?: () => void;
   busy?: boolean;
+  /** 未読などの印（読み上げ用の文。見た目は点） */
+  badge?: string;
 }) {
   const { theme } = useTheme();
   const dangerColor = theme.tone.card === "light" ? "text-[#86200f]" : "text-[#ffb4a8]";
@@ -233,6 +246,12 @@ function ActionRow({
     >
       <Icon name={icon} size={20} />
       {label}
+      {badge && (
+        <span className="ml-auto flex items-center">
+          <span aria-hidden="true" className="size-2.5 rounded-full bg-[#ff6b5e] ring-2 ring-white/70" />
+          <span className="sr-only">{badge}</span>
+        </span>
+      )}
     </button>
   );
 }

@@ -84,6 +84,12 @@ export const formatShortDate = (date: string, locale: Locale): string =>
     ? `${Number(date.slice(5, 7))}/${Number(date.slice(8, 10))}`
     : new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(parseDate(date));
 
+/** 年月日（お知らせの日付など）。ja は 2026年10月26日、en・Mix は Oct 26, 2026 */
+export const formatLongDate = (date: string, locale: Locale): string =>
+  dateLocale(locale) === "ja"
+    ? `${Number(date.slice(0, 4))}年${Number(date.slice(5, 7))}月${Number(date.slice(8, 10))}日`
+    : new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }).format(parseDate(date));
+
 const WEEKDAY_LETTERS: Record<BaseLocale, readonly string[]> = {
   // 月曜はじまり
   en: ["M", "T", "W", "T", "F", "S", "S"],

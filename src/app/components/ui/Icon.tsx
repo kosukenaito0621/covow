@@ -14,6 +14,7 @@ const paths = {
   arrowUpRight: "M7 17 17 7M8 7h9v9",
   arrowUp: "M12 19V5M6 11l6-6 6 6",
   arrowDown: "M12 5v14M6 13l6 6 6-6",
+  bell: "M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 1.5h-15zM10 20.5h4",
   info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 11v5M12 8h.01",
   check: "M5 12.5 10 17l9-10",
   close: "M6 6l12 12M18 6 6 18",

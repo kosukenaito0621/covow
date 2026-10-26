@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { en } from "./en";
-import { dataLocale, DEFAULT_LOCALE, formatMonth, htmlLang, MIX_JA_KEYS, textLocale, formatMonthShort, formatShortDate, spokenDate, translate, weekdayLetter } from "./index";
+import { dataLocale, DEFAULT_LOCALE, formatMonth, htmlLang, MIX_JA_KEYS, textLocale, formatMonthShort, formatLongDate, formatShortDate, spokenDate, translate, weekdayLetter } from "./index";
 import { ja } from "./ja";
 
 describe("英語／日本語", () => {
@@ -36,6 +36,9 @@ describe("英語／日本語", () => {
     expect(formatMonthShort("2026-05", "ja")).toBe("5月");
     expect(formatShortDate("2026-10-27", "en")).toBe("Oct 27");
     expect(formatShortDate("2026-10-27", "ja")).toBe("10/27");
+    expect(formatLongDate("2026-10-26", "en")).toBe("Oct 26, 2026");
+    expect(formatLongDate("2026-10-26", "mix")).toBe("Oct 26, 2026");
+    expect(formatLongDate("2026-01-05", "ja")).toBe("2026年1月5日");
     expect(weekdayLetter(6, "en")).toBe("S");
     expect(weekdayLetter(6, "ja")).toBe("日");
     expect(spokenDate("2026-10-19", 0, "en")).toBe("Monday, October 19");

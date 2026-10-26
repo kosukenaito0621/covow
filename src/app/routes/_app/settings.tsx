@@ -23,6 +23,8 @@ import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
 import { useCategorySheet } from "../../screens/forms/CategorySheet";
 import { SettingsScreen } from "../../screens/SettingsScreen";
 import { useTour } from "../../tour/TourProvider";
+import { useNews } from "../../news/useNews";
+import { NewsSheet } from "../../screens/NewsSheet";
 import type { InviteState, SpaceCardProps } from "../../screens/SpaceCard";
 
 export const Route = createFileRoute("/_app/settings")({
@@ -43,6 +45,9 @@ function Settings() {
   const categories = useQuery(categoriesQuery);
   const budgetSheet = useBudgetSheet();
   const categorySheet = useCategorySheet(categories.data ?? []);
+  const news = useNews(me?.user.id ?? null);
+  // 開いた時点で読んでいなかったもの（一覧の「New」の印）。開いたら全部読んだことにする
+  const [newsOpen, setNewsOpen] = useState<ReadonlySet<string> | null>(null);
   if (!me) return null;
   return (
     <main className="app-shell flex flex-col gap-5">
@@ -58,6 +63,11 @@ function Settings() {
           onPreferenceChange: (patch) => update.mutate(patch),
           onBudget: (ym, amount) => budgetSheet.open(ym, amount),
           onCategory: (id) => categorySheet.open(id),
+          onNews: () => {
+            setNewsOpen(news.unreadIds);
+            news.markAllRead();
+          },
+          newsUnread: news.unread,
           onTour: () => tour.reset(),
           isGuest: me.user.isGuest,
           onSignOut: () => logout.mutate(undefined, { onSuccess: () => void navigate({ to: "/login" }) }),
@@ -67,6 +77,7 @@ function Settings() {
       />
       {budgetSheet.element}
       {categorySheet.element}
+      <NewsSheet open={newsOpen !== null} onClose={() => setNewsOpen(null)} items={news.items} unreadIds={newsOpen ?? new Set()} />
     </main>
   );
 }
