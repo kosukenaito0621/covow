@@ -28,6 +28,8 @@ export interface SettingsActions {
   /** テーマ・言語を変えたとき（画面はすぐ切り替わる。アカウントへの保存はここで行う） */
   onPreferenceChange?: (patch: { theme?: ThemeId; locale?: Locale }) => void;
   onSignOut?: () => void;
+  /** 名前の横の鉛筆を押したとき */
+  onEditName?: () => void;
   /** 「お知らせ」を押したとき */
   onNews?: () => void;
   /** まだ読んでいないお知らせの数（0 なら印を出さない） */
@@ -86,7 +88,7 @@ export function SettingsScreen({
           {!actions.isGuest && <p className={`truncate text-[13px] ${muted}`}>{d.me.email}</p>}
           <p className={`text-[12px] ${muted}`}>{actions.isGuest ? t("trial.account") : t("settings.signedIn")}</p>
         </div>
-        <RowIcon icon="edit" label={t("settings.displayName")} />
+        <RowIcon icon="edit" label={t("settings.displayName")} onClick={actions.onEditName} />
       </GlassCard>
 
       <Block id="set-theme" title={t("settings.theme")}>
@@ -231,9 +233,9 @@ function Row({ label, value, chevron, onClick }: { label: string; value: ReactNo
   );
 }
 
-function RowIcon({ icon, label }: { icon: IconName; label: string }) {
+function RowIcon({ icon, label, onClick }: { icon: IconName; label: string; onClick?: () => void }) {
   return (
-    <button type="button" aria-label={label} title={label} className="inline-flex size-11 items-center justify-center rounded-full border border-current/20">
+    <button type="button" onClick={onClick} aria-label={label} title={label} className="inline-flex size-11 items-center justify-center rounded-full border border-current/20">
       <Icon name={icon} size={18} />
     </button>
   );

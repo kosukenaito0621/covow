@@ -21,6 +21,7 @@ import { GlassCard } from "../../components/glass/GlassCard";
 import { ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/States";
 import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
 import { useCategorySheet } from "../../screens/forms/CategorySheet";
+import { useProfileSheet } from "../../screens/forms/ProfileSheet";
 import { SettingsScreen } from "../../screens/SettingsScreen";
 import { useT } from "../../i18n/I18nProvider";
 import { useTour } from "../../tour/TourProvider";
@@ -47,6 +48,7 @@ function Settings() {
   const budgetSheet = useBudgetSheet();
   const categorySheet = useCategorySheet(categories.data ?? []);
   const localize = useLocalizeCategories();
+  const profileSheet = useProfileSheet(me?.user.displayName ?? "");
   const { locale } = useT();
   const news = useNews(me?.user.id ?? null);
   // 開いた時点で読んでいなかったもの（一覧の「New」の印）。開いたら全部読んだことにする
@@ -65,6 +67,7 @@ function Settings() {
         actions={{
           onPreferenceChange: (patch) => update.mutate(patch),
           onBudget: (ym, amount) => budgetSheet.open(ym, amount),
+          onEditName: () => profileSheet.open(),
           onCategory: (id) => categorySheet.open(id),
           onLocalizeCategories: () => localize.mutate(dataLocale(locale)),
           localizingCategories: localize.isPending,
@@ -82,6 +85,7 @@ function Settings() {
       />
       {budgetSheet.element}
       {categorySheet.element}
+      {profileSheet.element}
       <NewsSheet open={newsOpen !== null} onClose={() => setNewsOpen(null)} items={news.items} unreadIds={newsOpen ?? new Set()} />
     </main>
   );
