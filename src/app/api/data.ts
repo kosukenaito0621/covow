@@ -165,6 +165,9 @@ export const usePutBudget = () =>
 export const useCreateCategory = () => useMoneyMutation((name: string) => api("/categories", { method: "POST", body: { name } }));
 export const useRenameCategory = () =>
   useMoneyMutation(({ id, name }: { id: string; name: string }) => api(`/categories/${id}`, { method: "PATCH", body: { name } }));
+/** 初期カテゴリの名前を、指定した言語にそろえる */
+export const useLocalizeCategories = () =>
+  useMoneyMutation((locale: "en" | "ja") => api<{ renamed: number }>("/categories/localize", { method: "POST", body: { locale } }));
 export const useDeleteCategory = () => useMoneyMutation((id: string) => api(`/categories/${id}`, { method: "DELETE" }));
 export const useReorderCategories = () =>
   useMoneyMutation((ids: string[]) => api("/categories/order", { method: "PUT", body: { ids } }));

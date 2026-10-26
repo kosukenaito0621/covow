@@ -132,5 +132,7 @@ export const budgetInputSchema = z.object({
 
 export const categoryInputSchema = z.object({ name: requiredText("カテゴリ名", LIMITS.categoryName) });
 export const categoryOrderSchema = z.object({ ids: z.array(idSchema).min(1).max(100) });
+/** 初期カテゴリの名前を、どちらの言語にそろえるか */
+export const categoryLocalizeSchema = z.object({ locale: z.enum(["en", "ja"]) });
 export const profileInputSchema = z.object({ displayName: requiredText("表示名", LIMITS.displayName) });
 export const spaceInputSchema = z.object({ name: requiredText("スペース名", LIMITS.spaceName) });

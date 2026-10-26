@@ -1,4 +1,4 @@
-import { DEFAULT_CATEGORIES } from "../../shared/constants";
+import { CATEGORY_PRESETS, type CategoryPresetKey } from "../../shared/constants";
 import { addDays, addMonths, type IsoDate, yearMonthOf } from "../../shared/date/jst";
 import type { BaseLocale } from "../../shared/i18n";
 
@@ -15,24 +15,24 @@ export const SAMPLE_NAMES = {
   space: { en: "Our home", ja: "ふたりの家" },
 } satisfies Record<string, Text>;
 
-// カテゴリは DEFAULT_CATEGORIES と同じ並び（0 食費 1 日用品 2 家具・家電 3 衣服・美容 4 趣味・娯楽 5 交際 6 旅行・おでかけ 7 その他）
-const EXPENSE_ITEMS: { cat: number; min: number; max: number; text: Text }[] = [
-  { cat: 0, min: 1800, max: 6800, text: { en: "Groceries", ja: "スーパーで買い物" } },
-  { cat: 0, min: 900, max: 2400, text: { en: "Bakery", ja: "パン屋" } },
-  { cat: 0, min: 2400, max: 7800, text: { en: "Dinner out", ja: "外食" } },
-  { cat: 1, min: 600, max: 3200, text: { en: "Household supplies", ja: "日用品のまとめ買い" } },
-  { cat: 1, min: 400, max: 1600, text: { en: "Drugstore", ja: "ドラッグストア" } },
-  { cat: 3, min: 3000, max: 9800, text: { en: "Haircut", ja: "美容院" } },
-  { cat: 4, min: 1200, max: 4800, text: { en: "Books", ja: "本" } },
-  { cat: 4, min: 1800, max: 3600, text: { en: "Movie", ja: "映画" } },
-  { cat: 5, min: 3000, max: 8000, text: { en: "Gift for a friend", ja: "友人へのプレゼント" } },
-  { cat: 6, min: 2000, max: 12000, text: { en: "Day trip", ja: "日帰りのおでかけ" } },
+// カテゴリは初期カテゴリの key で指す（shared/constants の CATEGORY_PRESETS）
+const EXPENSE_ITEMS: { cat: CategoryPresetKey; min: number; max: number; text: Text }[] = [
+  { cat: "food", min: 1800, max: 6800, text: { en: "Groceries", ja: "スーパーで買い物" } },
+  { cat: "food", min: 900, max: 2400, text: { en: "Bakery", ja: "パン屋" } },
+  { cat: "eatingOut", min: 2400, max: 7800, text: { en: "Dinner out", ja: "外食" } },
+  { cat: "daily", min: 600, max: 3200, text: { en: "Household supplies", ja: "日用品のまとめ買い" } },
+  { cat: "daily", min: 400, max: 1600, text: { en: "Drugstore", ja: "ドラッグストア" } },
+  { cat: "beauty", min: 3000, max: 9800, text: { en: "Haircut", ja: "美容院" } },
+  { cat: "hobby", min: 1200, max: 4800, text: { en: "Books", ja: "本" } },
+  { cat: "hobby", min: 1800, max: 3600, text: { en: "Movie", ja: "映画" } },
+  { cat: "social", min: 3000, max: 8000, text: { en: "Gift for a friend", ja: "友人へのプレゼント" } },
+  { cat: "travel", min: 2000, max: 12000, text: { en: "Day trip", ja: "日帰りのおでかけ" } },
 ];
 
 interface SamplePlan {
   text: Text;
   amount: number;
-  cat: number;
+  cat: CategoryPresetKey;
   /** 今日からの日数（null＝日付なし） */
   dayOffset: number | null;
   status: "planned" | "purchased" | "canceled";
@@ -43,20 +43,20 @@ interface SamplePlan {
 }
 
 const PLANS: SamplePlan[] = [
-  { text: { en: "Dining chairs (pair)", ja: "ダイニングチェア（2脚）" }, amount: 28000, cat: 2, dayOffset: 3, status: "planned", memo: { en: "Oak, the lighter finish.", ja: "オーク材の明るい色" } },
-  { text: { en: "Humidifier", ja: "加湿器" }, amount: 9800, cat: 2, dayOffset: 6, status: "planned", byPartner: true },
-  { text: { en: "Winter rug", ja: "冬用のラグ" }, amount: 12800, cat: 2, dayOffset: null, status: "planned" },
-  { text: { en: "Birthday gift for Mom", ja: "母の誕生日プレゼント" }, amount: 8000, cat: 5, dayOffset: -40, status: "planned", byPartner: true },
-  { text: { en: "Coffee grinder", ja: "コーヒーミル" }, amount: 12000, cat: 1, dayOffset: -12, status: "purchased", paid: 10780, byPartner: true },
-  { text: { en: "Bookshelf", ja: "本棚" }, amount: 15000, cat: 2, dayOffset: -20, status: "purchased", paid: 16480 },
-  { text: { en: "Second monitor", ja: "サブモニター" }, amount: 32000, cat: 4, dayOffset: -8, status: "canceled" },
+  { text: { en: "Dining chairs (pair)", ja: "ダイニングチェア（2脚）" }, amount: 28000, cat: "home", dayOffset: 3, status: "planned", memo: { en: "Oak, the lighter finish.", ja: "オーク材の明るい色" } },
+  { text: { en: "Humidifier", ja: "加湿器" }, amount: 9800, cat: "home", dayOffset: 6, status: "planned", byPartner: true },
+  { text: { en: "Winter rug", ja: "冬用のラグ" }, amount: 12800, cat: "home", dayOffset: null, status: "planned" },
+  { text: { en: "Birthday gift for Mom", ja: "母の誕生日プレゼント" }, amount: 8000, cat: "social", dayOffset: -40, status: "planned", byPartner: true },
+  { text: { en: "Coffee grinder", ja: "コーヒーミル" }, amount: 12000, cat: "daily", dayOffset: -12, status: "purchased", paid: 10780, byPartner: true },
+  { text: { en: "Bookshelf", ja: "本棚" }, amount: 15000, cat: "home", dayOffset: -20, status: "purchased", paid: 16480 },
+  { text: { en: "Second monitor", ja: "サブモニター" }, amount: 32000, cat: "hobby", dayOffset: -8, status: "canceled" },
 ];
 
 /** 「メンバー役を呼ぶ」で、はるさんが追加しに来る予定 */
 export const PARTNER_VISIT_PLAN = {
   text: { en: "Bath towels", ja: "バスタオル" } satisfies Text,
   amount: 4800,
-  cat: 1,
+  cat: "daily" as CategoryPresetKey,
   dayOffset: 4,
 };
 
@@ -80,12 +80,12 @@ export interface SampleInput {
 /** 見本のスペースを作る SQL（カテゴリ・予算・支出・予定）。users と spaces・space_members は呼び出し側で作る */
 export function sampleStatements({ d1, locale, today, now, youId, partnerId, spaceId }: SampleInput): D1PreparedStatement[] {
   const out: D1PreparedStatement[] = [];
-  const catIds = DEFAULT_CATEGORIES[locale].map(() => crypto.randomUUID());
-  DEFAULT_CATEGORIES[locale].forEach((name, i) => {
+  const catIds = Object.fromEntries(CATEGORY_PRESETS.map((p) => [p.key, crypto.randomUUID()])) as Record<CategoryPresetKey, string>;
+  CATEGORY_PRESETS.forEach((preset, i) => {
     out.push(
       d1
         .prepare("INSERT INTO categories (id, space_id, name, sort_order, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-        .bind(catIds[i], spaceId, name, i, now, now),
+        .bind(catIds[preset.key], spaceId, preset[locale], i, now, now),
     );
   });
 
@@ -108,7 +108,7 @@ export function sampleStatements({ d1, locale, today, now, youId, partnerId, spa
     const amount = Math.round((item.min + r() * (item.max - item.min)) / 10) * 10;
     // 3か月前の月はやや多め（予算オーバーの月が1つある見本にする）
     const boost = yearMonthOf(d) === addMonths(month, -3) ? 1.35 : 1;
-    out.push(expense(d1, { spaceId, by: r() < 0.55 ? youId : partnerId, title: item.text[locale], amount: Math.round(amount * boost), catId: catIds[item.cat]!, date: d, now }));
+    out.push(expense(d1, { spaceId, by: r() < 0.55 ? youId : partnerId, title: item.text[locale], amount: Math.round(amount * boost), catId: catIds[item.cat], date: d, now }));
   }
 
   // 予定（購入済みのものには支出を付ける）
@@ -125,7 +125,7 @@ export function sampleStatements({ d1, locale, today, now, youId, partnerId, spa
         .bind(id, spaceId, by, p.text[locale], p.amount, catIds[p.cat], date, p.memo?.[locale] ?? null, p.status, now, now),
     );
     if (p.status === "purchased" && date) {
-      out.push(expense(d1, { spaceId, by, title: p.text[locale], amount: p.paid ?? p.amount, catId: catIds[p.cat]!, date, now, planId: id }));
+      out.push(expense(d1, { spaceId, by, title: p.text[locale], amount: p.paid ?? p.amount, catId: catIds[p.cat], date, now, planId: id }));
     }
   }
   return out;

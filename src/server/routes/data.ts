@@ -6,6 +6,7 @@ import { isPlannedIn, monthOverMonth, overduePlannedCount, type PlanLike, summar
 import {
   budgetInputSchema,
   categoryInputSchema,
+  categoryLocalizeSchema,
   categoryOrderSchema,
   expenseInputSchema,
   planInputSchema,
@@ -20,6 +21,7 @@ import {
   createCategory,
   deleteCategory,
   listCategories,
+  localizePresetCategories,
   reorderCategories,
   renameCategory,
 } from "../repo/categories";
@@ -87,6 +89,14 @@ export const dataRoutes = base
       const parsed = await parseBody(c, categoryInputSchema);
       if (!parsed.ok) return parsed.res;
       return c.json({ category: await createCategory(c.var.db, currentSpaceId(c), parsed.data.name) }, 201);
+    }),
+  )
+  .post(
+    "/categories/localize",
+    guard(async (c) => {
+      const parsed = await parseBody(c, categoryLocalizeSchema);
+      if (!parsed.ok) return parsed.res;
+      return c.json({ renamed: await localizePresetCategories(c.var.db, currentSpaceId(c), parsed.data.locale) });
     }),
   )
   .put(

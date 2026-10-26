@@ -24,7 +24,7 @@ describe("スペースを作る", () => {
     const space = await makeSpace(a, "ふたりの家");
     const cats = await env.DB.prepare("SELECT name FROM categories WHERE space_id = ? ORDER BY sort_order").bind(space.id).all<{ name: string }>();
     expect(cats.results.map((r) => r.name)[0]).toBe("食費");
-    expect(cats.results).toHaveLength(8);
+    expect(cats.results).toHaveLength(10);
 
     const me = await (await a.call("/me")).json<{ space: { id: string } | null }>();
     expect(me.space?.id).toBe(space.id);

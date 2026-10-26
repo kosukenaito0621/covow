@@ -1,3 +1,4 @@
+import { presetIndex } from "../../shared/constants";
 import { jstToday } from "../../shared/date/jst";
 import { dataLocale, type Locale } from "../../shared/i18n";
 import type { ThemeId } from "../../shared/theme";
@@ -90,7 +91,7 @@ export async function partnerVisit(db: Db, input: { spaceId: string; youId: stri
   if (!partner) return null;
   const cat = await d1
     .prepare("SELECT id FROM categories WHERE space_id = ? ORDER BY sort_order LIMIT 1 OFFSET ?")
-    .bind(input.spaceId, PARTNER_VISIT_PLAN.cat)
+    .bind(input.spaceId, presetIndex(PARTNER_VISIT_PLAN.cat))
     .first<{ id: string }>();
   const id = crypto.randomUUID();
   const now = new Date().toISOString();

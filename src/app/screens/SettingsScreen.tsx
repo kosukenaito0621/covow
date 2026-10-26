@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { YearMonth } from "@shared/date/jst";
-import { formatMonth, type Locale } from "@shared/i18n";
+import { presetRenames } from "@shared/constants";
+import { dataLocale, formatMonth, type Locale } from "@shared/i18n";
 import type { ThemeId } from "@shared/theme";
 import { formatYen } from "@shared/money/amount";
 import { GlassCard } from "../components/glass/GlassCard";
@@ -37,6 +38,9 @@ export interface SettingsActions {
   isGuest?: boolean;
   /** 予算の行を押したとき（その月と、いまの金額） */
   onBudget?: (yearMonth: YearMonth, amount: number | null) => void;
+  /** 初期カテゴリの名前を、画面の言語にそろえる（英語で始めて日本語に切り替えた人向け） */
+  onLocalizeCategories?: () => void;
+  localizingCategories?: boolean;
   /** カテゴリを押したとき（null＝追加） */
   onCategory?: (id: string | null) => void;
   signingOut?: boolean;
@@ -58,6 +62,8 @@ export function SettingsScreen({
   const { theme, setTheme } = useTheme();
   const muted = mutedText(theme.tone.card);
   const space = d.space;
+  // 初期のままの名前が、画面の言語と違う言語で残っているときだけ「そろえる」ボタンを出す
+  const categoryLang = d.categories && presetRenames(d.categories.map((c) => c.name), dataLocale(locale)).length > 0 ? dataLocale(locale) : null;
   const changeTheme = (id: ThemeId) => {
     setTheme(id);
     actions.onPreferenceChange?.({ theme: id });
@@ -164,6 +170,21 @@ export function SettingsScreen({
               </button>
             </li>
           </ul>
+          {categoryLang && (
+            <div className="mt-4 flex flex-col items-start gap-2 border-t border-current/15 pt-4">
+              <p className={`text-[13px] ${muted}`}>{t("settings.localizeHint")}</p>
+              <button
+                type="button"
+                onClick={actions.onLocalizeCategories}
+                disabled={actions.localizingCategories}
+                aria-busy={actions.localizingCategories || undefined}
+                className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-current/45 px-4 text-[14px] font-semibold disabled:opacity-60"
+              >
+                <Icon name="refresh" size={16} />
+                {t(`settings.localizeCategories.${categoryLang}`)}
+              </button>
+            </div>
+          )}
         </GlassCard>
       </Block>
       )}

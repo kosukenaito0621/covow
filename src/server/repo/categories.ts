@@ -1,4 +1,6 @@
 import { and, asc, eq, sql } from "drizzle-orm";
+import { presetRenames } from "../../shared/constants";
+import type { BaseLocale } from "../../shared/i18n";
 import type { Db } from "../db/client";
 import { categories, expenses, purchasePlans } from "../db/schema";
 import { fromConstraint, RepoError } from "./errors";
@@ -58,6 +60,22 @@ export async function renameCategory(db: Db, spaceId: string, id: string, name: 
     throw fromConstraint(e) ?? e;
   }
   if (changed === 0) throw new RepoError("NOT_FOUND");
+}
+
+/**
+ * 初期カテゴリのままの名前を、指定した言語の名前にそろえる（自分で付けた名前はそのまま）。
+ * 英語で始めたあとに日本語へ切り替えた人向け。名前だけを変えるので、予定・支出のカテゴリはそのまま。変えた数を返す。
+ */
+export async function localizePresetCategories(db: Db, spaceId: string, to: BaseLocale): Promise<number> {
+  const renames = presetRenames((await listCategories(db, spaceId)).map((c) => c.name), to);
+  if (renames.length === 0) return 0;
+  const now = nowIso();
+  const d1 = db.$client;
+  // 読んだあとに名前が変わっていたら、その行は変えない（WHERE name = 元の名前）
+  const results = await d1.batch(
+    renames.map((r) => d1.prepare("UPDATE categories SET name = ?, updated_at = ? WHERE space_id = ? AND name = ?").bind(r.to, now, spaceId, r.from)),
+  );
+  return results.reduce((a, r) => a + r.meta.changes, 0);
 }
 
 /** 並べ替え。送られた ID がこのスペースのカテゴリとちょうど同じ集まりのときだけ受け付ける */

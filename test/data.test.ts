@@ -148,6 +148,22 @@ describe("カテゴリと予算", () => {
     expect((await (await a.call(`/plans/${p.id}`)).json<{ plan: Plan }>()).plan.categoryId).toBeNull();
   });
 
+  it("初期カテゴリのままの英語名だけを日本語にそろえる。自分で付けた名前・予定とのつながりはそのまま。2回目は何もしない", async () => {
+    const { a, cats } = await setup();
+    const groceries = cats.find((c) => c.name === "Groceries")!;
+    const p = await addPlan(a, { categoryId: groceries.id });
+    // 自分で付けた名前と、前の版の初期名（Clothing & beauty）
+    await a.call(`/categories/${cats.find((c) => c.name === "Social")!.id}`, { method: "PATCH", body: { name: "Dates" } });
+    await a.call(`/categories/${cats.find((c) => c.name === "Fashion & clothing")!.id}`, { method: "PATCH", body: { name: "Clothing & beauty" } });
+    const res = await a.call("/categories/localize", { method: "POST", body: { locale: "ja" } });
+    expect(await res.json()).toEqual({ renamed: 9 });
+    const names = (await (await a.call("/categories")).json<{ categories: { id: string; name: string }[] }>()).categories.map((c) => c.name);
+    expect(names).toEqual(["食費", "外食・カフェ", "日用品", "家具・家電", "ファッション・衣服", "コスメ・美容", "趣味・娯楽", "Dates", "旅行・おでかけ", "その他"]);
+    expect((await (await a.call(`/plans/${p.id}`)).json<{ plan: Plan }>()).plan.categoryId).toBe(groceries.id);
+    expect(await (await a.call("/categories/localize", { method: "POST", body: { locale: "ja" } })).json()).toEqual({ renamed: 0 });
+    expect((await a.call("/categories/localize", { method: "POST", body: { locale: "fr" } })).status).toBe(422);
+  });
+
   it("予算：その月だけ／翌月から12か月先まで同じ金額に。過去の月は変えない。0円も設定できる", async () => {
     const { a } = await setup();
     const prev = addMonths(MONTH, -1);
