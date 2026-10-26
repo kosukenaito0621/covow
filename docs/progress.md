@@ -21,7 +21,7 @@
 - （許可を得て）デプロイ。https://covow.sukeo-appslab.workers.dev で公開中。プレビュー URL は無効（workers_dev: true, preview_urls: false）
   - 1回目は Cloudflare 側の一時的なエラー（code 10013）で失敗、再実行で成功
   - 確認：/api/health OK、画面と直接 URL（/plans）200、セキュリティヘッダー、未ログイン 401、別サイトからの POST 403、Google ログインの戻り先が本番 URL、体験版でホーム・分析が表示、Cron（毎日 3:00）登録済み
-  - 未確認：本物の Google ログイン（オーナーが試す）
+  - オーナーが本番で Google ログインできたことを確認（本番の Google ユーザー1人）。次はスペース作成とパートナーの招待
 
 ### 次にやること（1つずつ許可を取る）
 1. ~~GitHub に公開リポジトリを作って push~~（済）
