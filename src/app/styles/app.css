@@ -113,19 +113,19 @@
 }
 
 /*
- * 読み込みが終わった中身を浮かび上がらせる（ブラーアップ）と、月の切り替え中に前の中身を薄くする表示。
+ * 読み込みが終わった中身をじわっと出す（フェード）と、月の切り替え中に前の中身を薄くする表示。
  * ガラスの面（.lg）そのものは動かさない。スケルトンも同じガラスの面なので、面はそのまま残り、中の文字やグラフだけが浮かび上がる。
  * - 親に opacity や filter を付けると、中のガラスの背景ぼかしが消える
  * - iPhone の Safari では、ガラスの面に filter の動きを付けると重く、カードが一瞬抜けてカクつく（2026-10-26 オーナーの録画で確認）
  * そこで「ガラスを含まない、いちばん外側の中身」にだけ付ける。
+ * ぼかし（ブラーアップ）は iPhone でまだ重かったため、透明からのフェードだけにした（2026-10-26 オーナーの判断）。
  */
 .reveal :not(.lg):not(:has(.lg)):is(.reveal > *, .lg > *, :has(.lg) > *) {
-  animation: reveal-in 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) backwards;
+  animation: reveal-in 0.45s ease-out backwards;
 }
 @keyframes reveal-in {
   from {
     opacity: 0;
-    filter: blur(12px);
   }
 }
 .stale-area :not(.lg):not(:has(.lg)):is(.stale-area > *, .lg > *, :has(.lg) > *) {

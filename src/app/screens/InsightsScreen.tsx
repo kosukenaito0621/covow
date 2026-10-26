@@ -67,7 +67,7 @@ export function InsightsScreen({
   const { theme } = useTheme();
   const [tab, setTab] = useState<InsightsTab>(initialTab);
   const tabs: InsightsTab[] = showMembers ? ["overview", "category", "trend", "members"] : ["overview", "category", "trend"];
-  // タブを切り替えたときだけ、中身を浮かび上がらせる（最初の表示は画面全体のブラーアップに任せる）
+  // タブを切り替えたときだけ、中身を浮かび上がらせる（最初の表示は画面全体のフェードに任せる）
   const [switched, setSwitched] = useState(false);
   const changeTab = (v: InsightsTab) => {
     setTab(v);

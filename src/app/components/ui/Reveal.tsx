@@ -1,8 +1,8 @@
 import { type ReactNode, useState } from "react";
 
 /**
- * 読み込みが終わった中身を、ぼかし＋透明からくっきり浮かび上がらせる（ブラーアップ。動きは app.css の .reveal）。
- * 動きを減らす設定の人には、ぼかさず短いフェードだけにする。
+ * 読み込みが終わった中身を、透明からじわっと出す（フェード。動きは app.css の .reveal）。
+ * 動きを減らす設定の人には、さらに短いフェードにする。
  * active が false なら動かさない（すでに手元にあるデータを出すときに、毎回ふわっとさせないため）。
  */
 export function Reveal({ children, className, active = true }: { children: ReactNode; className?: string; active?: boolean }) {
