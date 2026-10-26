@@ -15,6 +15,10 @@
 - （許可を得て）GitHub に公開：https://github.com/kosukenaito0621/covow 。GitHub 上の CI も成功
 - （許可を得て）本番の D1 `covow-db` を APAC に作成し、マイグレーション 0000〜0005 を適用。表10個・ユーザー0人を確認
 
+- workers.dev のサブドメインがメール名と同じだったため、オーナーが `sukeo-appslab` に変更（同じアカウントの kajirima・kondate-app・sukeo-dougubako の URL も変わった）
+- （許可を得て）本番の Secrets 3つを登録。本番の URL は https://covow.sukeo-appslab.workers.dev
+- 残り：Google Cloud Console に本番のリダイレクト URI と Test users を追加（オーナーの手作業）
+
 ### 次にやること（1つずつ許可を取る）
 1. ~~GitHub に公開リポジトリを作って push~~（済）
 2. ~~本番の D1 を作成 → database_id を設定 → マイグレーション~~（済）
