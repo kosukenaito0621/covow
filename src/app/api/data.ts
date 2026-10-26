@@ -1,4 +1,4 @@
-import { queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, queryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { IsoDate, YearMonth } from "@shared/date/jst";
 import type { MonthSummary, PlanStatus } from "@shared/money/summary";
 import { type TourEvent, tourEvent } from "../tour/missions";
@@ -68,15 +68,18 @@ export const categoriesQuery = queryOptions({
   staleTime: 5 * 60_000,
 });
 export const summaryQuery = (month: YearMonth) =>
-  queryOptions({ queryKey: ["summary", month], queryFn: () => api<Summary>(`/summary?month=${month}`) });
+  // 月・週を切り替えている間は前の中身を残す（灰色の仮の画面に戻さない）
+  queryOptions({ queryKey: ["summary", month], queryFn: () => api<Summary>(`/summary?month=${month}`), placeholderData: keepPreviousData });
 export const dailyQuery = (from: IsoDate, to: IsoDate) =>
   queryOptions({
     queryKey: ["daily", from, to],
+    placeholderData: keepPreviousData,
     queryFn: async () => (await api<{ days: { date: IsoDate; amount: number }[] }>(`/daily?from=${from}&to=${to}`)).days,
   });
 export const expensesQuery = (month: YearMonth) =>
   queryOptions({
     queryKey: ["expenses", month],
+    placeholderData: keepPreviousData,
     queryFn: async () => (await api<{ expenses: Expense[] }>(`/expenses?month=${month}`)).expenses,
   });
 export const budgetsQuery = (from: YearMonth, to: YearMonth) =>
@@ -90,7 +93,7 @@ export type Insights = Omit<InsightsData, "categories"> & {
   memberCount: number;
 };
 export const insightsQuery = (month: YearMonth) =>
-  queryOptions({ queryKey: ["insights", month], queryFn: () => api<Insights>(`/insights?month=${month}`) });
+  queryOptions({ queryKey: ["insights", month], queryFn: () => api<Insights>(`/insights?month=${month}`), placeholderData: keepPreviousData });
 
 /** お金に関わる一覧と集計を、まとめて取り直す */
 function useRefreshMoney() {

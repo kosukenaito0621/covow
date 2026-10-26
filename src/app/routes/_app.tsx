@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { meQuery } from "../api/me";
 import { FloatingNav } from "../components/glass/FloatingNav";
+import { AppPending } from "../components/loading/PageSkeletons";
 import { useT } from "../i18n/I18nProvider";
 import { useNews } from "../news/useNews";
 import { PreferencesSync } from "../components/PreferencesSync";
@@ -22,6 +23,10 @@ export const Route = createFileRoute("/_app")({
     if (!me.space) throw redirect({ to: "/onboarding" });
   },
   component: AppLayout,
+  // ログインの確認が少しでも長引いたら、開こうとしている画面の形を出す（一瞬で終わるときは出さない）
+  pendingComponent: AppPending,
+  pendingMs: 150,
+  pendingMinMs: 200,
 });
 
 function AppLayout() {

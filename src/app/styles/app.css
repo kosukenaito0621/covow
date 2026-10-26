@@ -113,6 +113,37 @@
 }
 
 /*
+ * 読み込みが終わった中身を浮かび上がらせる（ブラーアップ）と、月の切り替え中に前の中身を薄くする表示。
+ * 親に opacity や filter を付けると、中のガラス（backdrop-filter）の背景ぼかしが消えてしまう。
+ * そこで、ガラスの面（.lg）と、ガラスを含まない一番外側の要素にだけ、それぞれ付ける。
+ */
+.reveal :is(.lg:not(.lg *), :not(.lg *):not(.lg):not(:has(.lg)):is(.reveal > *, :has(.lg) > *)) {
+  animation: reveal-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+  }
+}
+.stale-area :is(.lg:not(.lg *), :not(.lg *):not(.lg):not(:has(.lg)):is(.stale-area > *, :has(.lg) > *)) {
+  transition: opacity 0.2s ease;
+}
+.stale-area.is-stale :is(.lg:not(.lg *), :not(.lg *):not(.lg):not(:has(.lg)):is(.stale-area > *, :has(.lg) > *)) {
+  opacity: 0.55;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal :is(.lg:not(.lg *), :not(.lg *):not(.lg):not(:has(.lg)):is(.reveal > *, :has(.lg) > *)) {
+    animation: reveal-fade 0.15s ease-out backwards;
+  }
+  @keyframes reveal-fade {
+    from {
+      opacity: 0;
+    }
+  }
+}
+
+/*
  * 日本語は、文節の区切り（phrases.ts が入れる見えない印）と句読点・空白でだけ改行する。
  * 1つの文節が行に入りきらないときだけ、途中で折り返す（はみ出さないように）。
  */

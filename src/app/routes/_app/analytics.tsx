@@ -2,7 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { addMonths, isYearMonth, jstThisMonth } from "@shared/date/jst";
 import { insightsQuery } from "../../api/data";
-import { ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/States";
+import { InsightsSkeleton } from "../../components/loading/PageSkeletons";
+import { Reveal, Stale, useStartedLoading } from "../../components/ui/Reveal";
+import { ErrorMessage } from "../../components/ui/States";
 import { useT } from "../../i18n/I18nProvider";
 import { InsightsScreen } from "../../screens/InsightsScreen";
 import { useTheme } from "../../theme/ThemeProvider";
@@ -26,31 +28,32 @@ function Analytics() {
   const { t } = useT();
   const { theme } = useTheme();
   const q = useQuery(insightsQuery(month));
+  const reveal = useStartedLoading(q.isPending);
   const setMonth = (m: string) => void navigate({ to: "/analytics", search: m === thisMonth ? {} : { month: m } });
 
   return (
     <main className="app-shell flex flex-col gap-5">
       {q.isPending ? (
-        <LoadingSkeleton>
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="mt-4 h-11 w-full rounded-full" />
-          <Skeleton className="mt-4 h-72 w-full rounded-[32px]" />
-        </LoadingSkeleton>
+        <InsightsSkeleton />
       ) : q.isError ? (
         <ErrorMessage tone={theme.tone.page} onRetry={() => void q.refetch()} />
       ) : (
-        <InsightsScreen
-          key={month}
-          data={{
-            ...q.data,
-            // 未分類は画面の言語の名前で出す
-            categories: q.data.categories.map((c) => (c.categoryId === null ? { ...c, name: t("badge.uncategorized") } : c)),
-          }}
-          showMembers={q.data.memberCount > 1 || q.data.members.some((m) => m.id === null)}
-          onPrevMonth={() => setMonth(addMonths(month, -1))}
-          onNextMonth={() => setMonth(addMonths(month, 1))}
-          onTabChange={() => tourEvent("insights-switched")}
-        />
+        <Reveal active={reveal} className="flex flex-col gap-5">
+          <Stale stale={q.isPlaceholderData} className="flex flex-col gap-5">
+            <InsightsScreen
+              key={month}
+              data={{
+                ...q.data,
+                // 未分類は画面の言語の名前で出す
+                categories: q.data.categories.map((c) => (c.categoryId === null ? { ...c, name: t("badge.uncategorized") } : c)),
+              }}
+              showMembers={q.data.memberCount > 1 || q.data.members.some((m) => m.id === null)}
+              onPrevMonth={() => setMonth(addMonths(month, -1))}
+              onNextMonth={() => setMonth(addMonths(month, 1))}
+              onTabChange={() => tourEvent("insights-switched")}
+            />
+          </Stale>
+        </Reveal>
       )}
     </main>
   );

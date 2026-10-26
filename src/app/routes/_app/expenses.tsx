@@ -10,7 +10,9 @@ import { CategoryBadge, FromPlanBadge } from "../../components/ui/Badges";
 import { CircleIconButton } from "../../components/ui/Buttons";
 import { Icon } from "../../components/ui/Icon";
 import { mutedText } from "../../components/ui/SectionLabel";
-import { EmptyState, ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/States";
+import { ExpensesListSkeleton } from "../../components/loading/PageSkeletons";
+import { Reveal, Stale, useStartedLoading } from "../../components/ui/Reveal";
+import { EmptyState, ErrorMessage, LoadingSkeleton } from "../../components/ui/States";
 import { useT } from "../../i18n/I18nProvider";
 import { useExpenseForm } from "../../screens/forms/useForms";
 import { useTheme } from "../../theme/ThemeProvider";
@@ -32,6 +34,7 @@ function Expenses() {
   const { t, locale } = useT();
   const { theme } = useTheme();
   const list = useQuery(expensesQuery(month));
+  const reveal = useStartedLoading(list.isPending);
   const form = useExpenseForm();
   const muted = mutedText(theme.tone.card);
   const thisMonth = jstThisMonth();
@@ -61,44 +64,48 @@ function Expenses() {
 
       {list.isPending ? (
         <LoadingSkeleton>
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="mt-3 h-[68px] w-full rounded-[24px]" />
-          ))}
+          <ExpensesListSkeleton />
         </LoadingSkeleton>
       ) : list.isError ? (
         <ErrorMessage tone={theme.tone.page} onRetry={() => void list.refetch()} />
-      ) : list.data.length === 0 ? (
-        <GlassCard>
-          <EmptyState
-            tone={theme.tone.card}
-            icon="receipt"
-            title={t("expenses.empty")}
-            body={t("expenses.emptyBody")}
-            action={{ label: t("expense.add"), onClick: () => form.open() }}
-          />
-        </GlassCard>
       ) : (
-        <ul className="flex flex-col gap-2.5">
-          {list.data.map((e) => (
-            <li key={e.id}>
+        <Reveal active={reveal}>
+          <Stale stale={list.isPlaceholderData}>
+            {list.data.length === 0 ? (
               <GlassCard>
-                <button type="button" onClick={() => form.open(e)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-                  <div className="min-w-0 flex-1">
-                    <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{e.title}</p>
-                    <p className={`num mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] ${muted}`}>
-                      <span>{e.recordedByName}</span>
-                      <span>・ {formatShortDate(e.spentAt, locale)}</span>
-                      <CategoryBadge name={e.categoryName} />
-                      {e.purchasePlanId && <FromPlanBadge />}
-                    </p>
-                  </div>
-                  <span className="num shrink-0 text-[15px] font-semibold">{formatYen(e.actualAmount)}</span>
-                  <Icon name="chevronRight" size={18} className="shrink-0 opacity-70" />
-                </button>
+                <EmptyState
+                  tone={theme.tone.card}
+                  icon="receipt"
+                  title={t("expenses.empty")}
+                  body={t("expenses.emptyBody")}
+                  action={{ label: t("expense.add"), onClick: () => form.open() }}
+                />
               </GlassCard>
-            </li>
-          ))}
-        </ul>
+            ) : (
+              <ul className="flex flex-col gap-2.5">
+                {list.data.map((e) => (
+                  <li key={e.id}>
+                    <GlassCard>
+                      <button type="button" onClick={() => form.open(e)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{e.title}</p>
+                          <p className={`num mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] ${muted}`}>
+                            <span>{e.recordedByName}</span>
+                            <span>・ {formatShortDate(e.spentAt, locale)}</span>
+                            <CategoryBadge name={e.categoryName} />
+                            {e.purchasePlanId && <FromPlanBadge />}
+                          </p>
+                        </div>
+                        <span className="num shrink-0 text-[15px] font-semibold">{formatYen(e.actualAmount)}</span>
+                        <Icon name="chevronRight" size={18} className="shrink-0 opacity-70" />
+                      </button>
+                    </GlassCard>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Stale>
+        </Reveal>
       )}
 
       <div

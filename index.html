@@ -4,7 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#060A18" />
+    <!-- 前回のテーマの色で最初から描く（CSS より先に読む） -->
+    <script src="/boot.js"></script>
     <meta name="description" content="COVOW — 一緒に決めて、もっとよく使う。ひとりでも、ふたりでも、みんなでも使える家計共有アプリ" />
+    <!-- 数字（Doto）と本文（Inter）の字体を先に取りに行く（届いた瞬間に字形が変わるのを防ぐ）。CSS が読むファイルと同じものになる -->
+    <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource/doto/files/doto-latin-800-normal.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

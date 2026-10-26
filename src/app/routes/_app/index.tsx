@@ -21,7 +21,9 @@ import { CircleIconButton, PrimaryButton, SecondaryButton } from "../../componen
 import { HeroAmount } from "../../components/ui/HeroAmount";
 import { Icon } from "../../components/ui/Icon";
 import { LABEL, mutedText } from "../../components/ui/SectionLabel";
-import { AttentionNote, EmptyState, ErrorMessage, LoadingSkeleton, Skeleton } from "../../components/ui/States";
+import { HomeBodySkeleton } from "../../components/loading/PageSkeletons";
+import { Reveal, Stale, useStartedLoading } from "../../components/ui/Reveal";
+import { AttentionNote, EmptyState, ErrorMessage, Skeleton } from "../../components/ui/States";
 import { useT } from "../../i18n/I18nProvider";
 import { phrase } from "../../i18n/phrases";
 import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
@@ -50,6 +52,7 @@ function Home() {
   const { t, locale } = useT();
   const { theme } = useTheme();
   const summary = useQuery(summaryQuery(month));
+  const reveal = useStartedLoading(summary.isPending);
   const space = useQuery(spaceQuery);
   const planForm = usePlanForm();
   const expenseForm = useExpenseForm();
@@ -82,19 +85,7 @@ function Home() {
 
   let body;
   if (summary.isPending) {
-    body = (
-      <LoadingSkeleton>
-        <div className="lg lg-hero flex flex-col gap-3 rounded-[32px] p-5">
-          <Skeleton tone={theme.tone.hero} className="h-4 w-40" />
-          <Skeleton tone={theme.tone.hero} className="h-12 w-56" />
-          <Skeleton tone={theme.tone.hero} className="mt-4 h-28 w-full" />
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <Skeleton className="h-[112px] rounded-full" />
-          <Skeleton className="h-[112px] rounded-full" />
-        </div>
-      </LoadingSkeleton>
-    );
+    body = <HomeBodySkeleton />;
   } else if (summary.isError) {
     body = <ErrorMessage tone={theme.tone.page} onRetry={() => void summary.refetch()} />;
   } else {
@@ -102,112 +93,114 @@ function Home() {
     const empty = s.actualTotal === 0 && s.plannedCount === 0;
     const muted = mutedText(theme.tone.hero);
     body = (
-      <>
-        <HeroGlassCard labelledBy="hero-label">
-          <p id="hero-label" className={LABEL}>
-            {t("home.leftToSpend")}
-          </p>
-          {s.remaining === null ? (
-            <>
-              <p className={`mt-3 text-[15px] ${muted}`}>{t("home.noBudget")}</p>
-              <PrimaryButton tone={theme.tone.hero} className="mt-3" onClick={() => budgetSheet.open(month, null)}>
-                {t("home.setBudget")}
-              </PrimaryButton>
-            </>
-          ) : (
-            <>
-              <HeroAmount value={s.remaining} />
-              <p className={`num mt-1 flex flex-wrap gap-x-3 text-[13px] ${muted}`}>
-                <button type="button" className="whitespace-nowrap underline-offset-4 hover:underline" onClick={() => budgetSheet.open(month, s.budget)}>
-                  {t("home.budget")} {formatYen(s.budget ?? 0)}
-                </button>
-                <span className="whitespace-nowrap">
-                  {t("home.spent")} {formatYen(s.actualTotal)}
-                </span>
-                <span className="whitespace-nowrap">
-                  {t("home.planned")} {formatYen(s.plannedTotal)}
-                </span>
-              </p>
-            </>
-          )}
-          <WeekSpend month={month} today={s.today} />
-        </HeroGlassCard>
+      <Reveal active={reveal} className="flex flex-col gap-5">
+        <Stale stale={summary.isPlaceholderData} className="flex flex-col gap-5">
+          <HeroGlassCard labelledBy="hero-label">
+            <p id="hero-label" className={LABEL}>
+              {t("home.leftToSpend")}
+            </p>
+            {s.remaining === null ? (
+              <>
+                <p className={`mt-3 text-[15px] ${muted}`}>{t("home.noBudget")}</p>
+                <PrimaryButton tone={theme.tone.hero} className="mt-3" onClick={() => budgetSheet.open(month, null)}>
+                  {t("home.setBudget")}
+                </PrimaryButton>
+              </>
+            ) : (
+              <>
+                <HeroAmount value={s.remaining} />
+                <p className={`num mt-1 flex flex-wrap gap-x-3 text-[13px] ${muted}`}>
+                  <button type="button" className="whitespace-nowrap underline-offset-4 hover:underline" onClick={() => budgetSheet.open(month, s.budget)}>
+                    {t("home.budget")} {formatYen(s.budget ?? 0)}
+                  </button>
+                  <span className="whitespace-nowrap">
+                    {t("home.spent")} {formatYen(s.actualTotal)}
+                  </span>
+                  <span className="whitespace-nowrap">
+                    {t("home.planned")} {formatYen(s.plannedTotal)}
+                  </span>
+                </p>
+              </>
+            )}
+            <WeekSpend month={month} today={s.today} />
+          </HeroGlassCard>
 
-        {s.overBudget && <AttentionNote>{t("attention.overBy", { amount: formatYen(s.overAmount) })}</AttentionNote>}
+          {s.overBudget && <AttentionNote>{t("attention.overBy", { amount: formatYen(s.overAmount) })}</AttentionNote>}
 
-        <div className="grid grid-cols-2 gap-3">
-          <MetricPill
-            tone="p1"
-            label={t("metric.spent")}
-            amount={s.actualTotal}
-            ariaLabel={t("metric.spentAria", { amount: formatYen(s.actualTotal) })}
-            foot={<DeltaBadge ratio={s.momRatio} />}
-            onClick={() => void navigate({ to: "/expenses", search: month === thisMonth ? {} : { month } })}
-          />
-          <MetricPill
-            tone="p2"
-            label={t("metric.planned")}
-            amount={s.plannedTotal}
-            ariaLabel={t("metric.plannedAria", { amount: formatYen(s.plannedTotal), count: s.plannedCount })}
-            foot={t("metric.items", { count: s.plannedCount })}
-            onClick={() => void navigate({ to: "/plans" })}
-          />
-          {s.usageRate !== null && s.budget !== null && (
-            <div className="col-span-2">
-              <UsedBar rate={s.usageRate} used={s.actualTotal + s.plannedTotal} budget={s.budget} />
-            </div>
-          )}
-        </div>
-
-        {s.overdueCount > 0 && (
-          <Link to="/plans" className="lg lg-card flex min-h-12 items-center gap-2 rounded-[20px] px-4 py-3 text-[14px] font-medium">
-            <Icon name="attention" size={18} className="shrink-0" />
-            <span className="flex-1">{t("home.overdue", { count: s.overdueCount })}</span>
-            <Icon name="chevronRight" size={16} />
-          </Link>
-        )}
-
-        <section aria-labelledby="upcoming" className="flex flex-col gap-2.5">
-          <div className="flex items-center justify-between">
-            <h2 id="upcoming" className={LABEL}>
-              {t("home.upcoming")}
-            </h2>
-            <Link to="/plans" className={`inline-flex min-h-11 items-center gap-1 ${LABEL}`}>
-              {t("home.all")}
-              <Icon name="chevronRight" size={14} />
-            </Link>
+          <div className="grid grid-cols-2 gap-3">
+            <MetricPill
+              tone="p1"
+              label={t("metric.spent")}
+              amount={s.actualTotal}
+              ariaLabel={t("metric.spentAria", { amount: formatYen(s.actualTotal) })}
+              foot={<DeltaBadge ratio={s.momRatio} />}
+              onClick={() => void navigate({ to: "/expenses", search: month === thisMonth ? {} : { month } })}
+            />
+            <MetricPill
+              tone="p2"
+              label={t("metric.planned")}
+              amount={s.plannedTotal}
+              ariaLabel={t("metric.plannedAria", { amount: formatYen(s.plannedTotal), count: s.plannedCount })}
+              foot={t("metric.items", { count: s.plannedCount })}
+              onClick={() => void navigate({ to: "/plans" })}
+            />
+            {s.usageRate !== null && s.budget !== null && (
+              <div className="col-span-2">
+                <UsedBar rate={s.usageRate} used={s.actualTotal + s.plannedTotal} budget={s.budget} />
+              </div>
+            )}
           </div>
-          {empty && s.upcoming.length === 0 ? (
-            <GlassCard>
-              <EmptyState
-                tone={theme.tone.card}
-                icon="plans"
-                title={t("home.noRecords")}
-                body={t("home.noRecordsBody")}
-                action={{ label: t("home.addFirst"), onClick: () => planForm.open() }}
-              />
-            </GlassCard>
-          ) : (
-            s.upcoming.map((p) => (
-              <Link key={p.id} to="/plans/$planId" params={{ planId: p.id }}>
-                <GlassCard className="flex items-center justify-between gap-3 px-4 py-3">
-                  <div className="min-w-0">
-                    <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{p.title}</p>
-                    <p className={`num text-[12px] ${mutedText(theme.tone.card)}`}>
-                      {p.createdByName}
-                      {p.plannedDate && ` ・ ${formatShortDate(p.plannedDate, locale)}`}
-                    </p>
-                  </div>
-                  <span className="num shrink-0 text-[15px] font-semibold">{formatYen(p.plannedAmount)}</span>
-                </GlassCard>
-              </Link>
-            ))
+
+          {s.overdueCount > 0 && (
+            <Link to="/plans" className="lg lg-card flex min-h-12 items-center gap-2 rounded-[20px] px-4 py-3 text-[14px] font-medium">
+              <Icon name="attention" size={18} className="shrink-0" />
+              <span className="flex-1">{t("home.overdue", { count: s.overdueCount })}</span>
+              <Icon name="chevronRight" size={16} />
+            </Link>
           )}
-          <SecondaryButton tone={theme.tone.page} icon="receipt" className="mt-1 self-start" onClick={() => expenseForm.open()}>
-            {t("expense.add")}
-          </SecondaryButton>
-        </section>
-      </>
+
+          <section aria-labelledby="upcoming" className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <h2 id="upcoming" className={LABEL}>
+                {t("home.upcoming")}
+              </h2>
+              <Link to="/plans" className={`inline-flex min-h-11 items-center gap-1 ${LABEL}`}>
+                {t("home.all")}
+                <Icon name="chevronRight" size={14} />
+              </Link>
+            </div>
+            {empty && s.upcoming.length === 0 ? (
+              <GlassCard>
+                <EmptyState
+                  tone={theme.tone.card}
+                  icon="plans"
+                  title={t("home.noRecords")}
+                  body={t("home.noRecordsBody")}
+                  action={{ label: t("home.addFirst"), onClick: () => planForm.open() }}
+                />
+              </GlassCard>
+            ) : (
+              s.upcoming.map((p) => (
+                <Link key={p.id} to="/plans/$planId" params={{ planId: p.id }}>
+                  <GlassCard className="flex items-center justify-between gap-3 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{p.title}</p>
+                      <p className={`num text-[12px] ${mutedText(theme.tone.card)}`}>
+                        {p.createdByName}
+                        {p.plannedDate && ` ・ ${formatShortDate(p.plannedDate, locale)}`}
+                      </p>
+                    </div>
+                    <span className="num shrink-0 text-[15px] font-semibold">{formatYen(p.plannedAmount)}</span>
+                  </GlassCard>
+                </Link>
+              ))
+            )}
+            <SecondaryButton tone={theme.tone.page} icon="receipt" className="mt-1 self-start" onClick={() => expenseForm.open()}>
+              {t("expense.add")}
+            </SecondaryButton>
+          </section>
+        </Stale>
+      </Reveal>
     );
   }
 
@@ -286,21 +279,36 @@ function WeekSpend({ month, today }: { month: string; today: string }) {
   const dates = weekDates(start);
   const todayIndex = dates.indexOf(today);
   const [sel, setSel] = useState(todayIndex >= 0 ? todayIndex : 0);
+  // 月を切り替えたら、その月の週に戻す（作り直さずに切り替えると、新しい週の数字が届くまで前の曲線を残せる）
+  const [forMonth, setForMonth] = useState(month);
+  if (forMonth !== month) {
+    const firstIndex = weekDates(initial).indexOf(today);
+    setForMonth(month);
+    setStart(initial);
+    setSel(firstIndex >= 0 ? firstIndex : 0);
+  }
   const daily = useQuery(dailyQuery(dates[0]!, dates[6]!));
-  const amounts = dates.map((d) => daily.data?.find((x) => x.date === d)?.amount ?? 0);
+  // 新しい週の数字を待つ間は、前の週の形を（日付ではなく曜日の順で）薄く残す
+  const prev = daily.isPlaceholderData ? [...(daily.data ?? [])].sort((x, y) => (x.date < y.date ? -1 : 1)) : null;
+  const amounts = dates.map((d, i) => (prev ? prev[i]?.amount : daily.data?.find((x) => x.date === d)?.amount) ?? 0);
   const peak = amounts.indexOf(Math.max(...amounts));
   const avg = Math.round(amounts.reduce((a, b) => a + b, 0) / 7);
   const latest = weekStartOf(today);
 
   return (
     <>
-      <div className="mt-4">
-        <SpendCurve
-          points={dates.map((date, i) => ({ key: date, amount: amounts[i] ?? 0 }))}
-          selectedIndex={sel}
-          baseline={{ value: avg, label: t("home.avgPerDay") }}
-          summary={t("home.weekPeak", { weekday: weekdayName(peak, textLocale(locale)), amount: formatYen(amounts[peak] ?? 0) })}
-        />
+      <div className={`mt-4 transition-opacity duration-200 ${daily.isPlaceholderData ? "opacity-55" : ""}`}>
+        {/* 最初の読み込みの間は、曲線と同じ高さの仮の形（0円の線が一瞬出て跳ね上がるのを防ぐ） */}
+        {daily.isPending ? (
+          <Skeleton tone={tone} className="h-[132px] w-full" />
+        ) : (
+          <SpendCurve
+            points={dates.map((date, i) => ({ key: date, amount: amounts[i] ?? 0 }))}
+            selectedIndex={sel}
+            baseline={{ value: avg, label: t("home.avgPerDay") }}
+            summary={t("home.weekPeak", { weekday: weekdayName(peak, textLocale(locale)), amount: formatYen(amounts[peak] ?? 0) })}
+          />
+        )}
       </div>
       <div className="mt-3" data-tour="day-chips">
         <DayChips
