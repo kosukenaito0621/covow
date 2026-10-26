@@ -12,9 +12,12 @@
 - 本番の Worker 名を covow に固定。ビルド結果に鍵が入らないことを確認（ローカル用の dist/covow/.dev.vars はデプロイされない）
 - 決めたこと：Google は Testing のまま（Test users だけがログイン可）、規約・ポリシーは今回作らない、無料の workers.dev
 
+- （許可を得て）GitHub に公開：https://github.com/kosukenaito0621/covow 。GitHub 上の CI も成功
+- （許可を得て）本番の D1 `covow-db` を APAC に作成し、マイグレーション 0000〜0005 を適用。表10個・ユーザー0人を確認
+
 ### 次にやること（1つずつ許可を取る）
-1. GitHub に公開リポジトリを作って push
-2. 本番の D1 を作成 → database_id を設定 → マイグレーション
+1. ~~GitHub に公開リポジトリを作って push~~（済）
+2. ~~本番の D1 を作成 → database_id を設定 → マイグレーション~~（済）
 3. Secrets（GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / APP_ORIGIN）を登録、Google 側に本番のリダイレクト URI と Test users を追加
 4. デプロイ → 動作確認 → 旧アプリのデータ移行
 
