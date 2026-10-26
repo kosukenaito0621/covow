@@ -67,8 +67,11 @@ export function InsightsScreen({
   const { theme } = useTheme();
   const [tab, setTab] = useState<InsightsTab>(initialTab);
   const tabs: InsightsTab[] = showMembers ? ["overview", "category", "trend", "members"] : ["overview", "category", "trend"];
+  // タブを切り替えたときだけ、中身を浮かび上がらせる（最初の表示は画面全体のブラーアップに任せる）
+  const [switched, setSwitched] = useState(false);
   const changeTab = (v: InsightsTab) => {
     setTab(v);
+    setSwitched(true);
     onTabChange?.(v);
   };
 
@@ -101,21 +104,19 @@ export function InsightsScreen({
         />
       </div>
 
-      <motion.div
+      {/* 親に opacity を付けるとガラスのぼかしが消えるので、動きは .reveal（ガラスの面ごと）で付ける */}
+      <div
         key={tab}
         id="insights-panel"
         role="tabpanel"
         aria-labelledby={`insights-tab-${tab}`}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25 }}
-        className="flex flex-col gap-4"
+        className={`flex flex-col gap-4 ${switched ? "reveal" : ""}`}
       >
         {tab === "overview" && <Overview d={d} />}
         {tab === "category" && <Category d={d} />}
         {tab === "trend" && <Trend d={d} />}
         {tab === "members" && <Members d={d} />}
-      </motion.div>
+      </div>
     </>
   );
 

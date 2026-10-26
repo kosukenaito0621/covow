@@ -155,43 +155,43 @@ function PlanRow({
   const muted = mutedText(theme.tone.card);
   const date = p.purchase?.date ?? p.plannedDate;
   return (
+    // 動きはガラスの面そのものに付ける（外側の箱に opacity を付けると、ガラスのぼかしが消えるため）
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: Math.min(index, 6) * 0.03 }}
+      className="lg lg-card rounded-[24px]"
     >
-      <GlassCard>
-        <button
-          type="button"
-          onClick={onOpen}
-          data-tour={tourTarget ? "plan-row" : undefined}
-          className="flex w-full items-center gap-3 px-4 py-3 text-left"
-        >
-          <div className="min-w-0 flex-1">
-            <p className={`line-clamp-2 text-[15px] leading-snug font-semibold ${p.status === "canceled" ? "line-through decoration-1" : ""}`}>
-              {p.title}
-            </p>
-            <p className={`num mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] ${muted}`}>
-              <span>{p.createdBy}</span>
-              {date && (
-                <span className={overdue ? "font-semibold" : ""}>
-                  ・ {formatShortDate(date, locale)}
-                </span>
-              )}
-              <CategoryBadge name={p.category} />
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
-            <span className="num text-[15px] font-semibold">{formatYen(p.purchase?.amount ?? p.plannedAmount)}</span>
-            {p.status === "planned" ? (
-              <span className="sr-only">{t("status.planned")}</span>
-            ) : (
-              <StatusBadge status={p.status} />
+      <button
+        type="button"
+        onClick={onOpen}
+        data-tour={tourTarget ? "plan-row" : undefined}
+        className="flex w-full items-center gap-3 px-4 py-3 text-left"
+      >
+        <div className="min-w-0 flex-1">
+          <p className={`line-clamp-2 text-[15px] leading-snug font-semibold ${p.status === "canceled" ? "line-through decoration-1" : ""}`}>
+            {p.title}
+          </p>
+          <p className={`num mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] ${muted}`}>
+            <span>{p.createdBy}</span>
+            {date && (
+              <span className={overdue ? "font-semibold" : ""}>
+                ・ {formatShortDate(date, locale)}
+              </span>
             )}
-          </div>
-          <Icon name="chevronRight" size={18} className="shrink-0 opacity-70" />
-        </button>
-      </GlassCard>
+            <CategoryBadge name={p.category} />
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span className="num text-[15px] font-semibold">{formatYen(p.purchase?.amount ?? p.plannedAmount)}</span>
+          {p.status === "planned" ? (
+            <span className="sr-only">{t("status.planned")}</span>
+          ) : (
+            <StatusBadge status={p.status} />
+          )}
+        </div>
+        <Icon name="chevronRight" size={18} className="shrink-0 opacity-70" />
+      </button>
     </motion.div>
   );
 }
