@@ -15,3 +15,8 @@ Thumbs.db
 
 # 公開しないメモ（実データの移行など）
 .private/
+
+# 開発の道具が作るもの・AI 用の内部メモ（公開しない）
+.tanstack/
+.claude/
+CLAUDE.md

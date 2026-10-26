@@ -4,7 +4,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "dev-dist", ".wrangler", "node_modules", "src/app/routeTree.gen.ts", "src/server/worker-configuration.d.ts"] },
+  { ignores: ["dist", "dev-dist", ".wrangler", ".private", ".claude", ".tanstack", "node_modules", "src/app/routeTree.gen.ts", "src/server/worker-configuration.d.ts"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

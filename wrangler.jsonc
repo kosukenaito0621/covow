@@ -23,6 +23,8 @@
   ],
   "env": {
     "production": {
+      // 環境の名前を付けない（URL を https://covow.<サブドメイン>.workers.dev にする）
+      "name": "covow",
       "triggers": { "crons": ["0 18 * * *"] },
       // フェーズ9で本番 D1 を作成してから database_id を設定する
       "d1_databases": [

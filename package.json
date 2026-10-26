@@ -18,9 +18,9 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply covow-db --local",
-    "db:seed:local": "node scripts/seed-local.mjs",
     "cf-typegen": "wrangler types src/server/worker-configuration.d.ts",
-    "check": "npm run typecheck && npm run lint && npm run test"
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "db:migrate:prod": "wrangler d1 migrations apply covow-db --remote --env production"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
