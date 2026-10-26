@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-10-26（フェーズ9：公開の準備。まだ何も公開していない）
+### 今日やったこと
+- 旧アプリ（僕らの宣言帳）の CSV を入れる道具 `scripts/import-legacy.mjs` と手順 `docs/LEGACY_IMPORT.md`（本番に入れるのは公開後・許可を取ってから）
+- Git の履歴を書き換え、個人のメールアドレスと名前を消した（作者は GitHub の noreply アドレス、文中の名前は「オーナー」）。書き換え前の履歴は `.private/` にバックアップ
+- README・LICENSE（MIT）・GitHub Actions（CI は push ごとにチェック、Deploy は手動ボタンのみ）・公開手順 `docs/DEPLOY.md`
+- 本番の Worker 名を covow に固定。ビルド結果に鍵が入らないことを確認（ローカル用の dist/covow/.dev.vars はデプロイされない）
+- 決めたこと：Google は Testing のまま（Test users だけがログイン可）、規約・ポリシーは今回作らない、無料の workers.dev
+
+### 次にやること（1つずつ許可を取る）
+1. GitHub に公開リポジトリを作って push
+2. 本番の D1 を作成 → database_id を設定 → マイグレーション
+3. Secrets（GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET / APP_ORIGIN）を登録、Google 側に本番のリダイレクト URI と Test users を追加
+4. デプロイ → 動作確認 → 旧アプリのデータ移行
+
 ## 2026-10-26（フェーズ8：仕上げ → ✋チェックポイント3）
 ### 現在地
 - フェーズ8が完了。**チェックポイント3（オーナーに全体を見てもらう）で止まっている**。次はフェーズ9（公開）だが、デプロイの前に必ず許可をもらう
