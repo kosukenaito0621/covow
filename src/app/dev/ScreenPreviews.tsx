@@ -162,7 +162,14 @@ export default function ScreenPreviews() {
     const cats = categoryBreakdown({ yearMonth: YM, expenses, categories: CATS.map((c) => ({ id: c.id, name: c[dl] })) });
     const trend = monthlyTrend({ endYearMonth: YM, months: 6, expenses, budgets: BUDGETS });
     const stats = trendStats(trend, YM);
-    const members = memberBreakdown({ yearMonth: YM, memberIds: [ME, HARU], expenses, plans: planLikes });
+    // 見本は割り勘なし（記録した人が 100%）
+    const solo = (id: string | undefined) => ({ payerUserId: id ?? ME, splitUserId: null, payerRatio: 100 });
+    const members = memberBreakdown({
+      yearMonth: YM,
+      memberIds: [ME, HARU],
+      expenses: expenses.map((e) => ({ ...e, ...solo(e.recordedBy) })),
+      plans: planLikes.map((p) => ({ ...p, ...solo(p.createdBy) })),
+    });
     return {
       yearMonth: YM,
       actual: summary.actualTotal,

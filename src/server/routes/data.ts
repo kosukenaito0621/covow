@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { addDays, addMonths, isIsoDate, isYearMonth, jstThisMonth, jstToday, yearMonthOf } from "../../shared/date/jst";
 import { dailySpend } from "../../shared/money/analytics";
+import { forUser, involves } from "../../shared/money/split";
 import { isPlannedIn, monthOverMonth, overduePlannedCount, type PlanLike, summarizeMonth } from "../../shared/money/summary";
 import {
   budgetInputSchema,
@@ -25,6 +26,7 @@ import {
   reorderCategories,
   renameCategory,
 } from "../repo/categories";
+import { resolveViewUser } from "../repo/members";
 import { createExpense, deleteExpense, listExpenses, listExpensesBetween, updateExpense } from "../repo/expenses";
 import {
   createPlan,
@@ -130,12 +132,17 @@ export const dataRoutes = base
   )
 
   // 予算
-  .get("/budgets", async (c) => {
-    const from = c.req.query("from");
-    const to = c.req.query("to");
-    if (!from || !to || !isYearMonth(from) || !isYearMonth(to) || from > to) return badQuery(c);
-    return c.json({ budgets: await listBudgets(c.var.db, currentSpaceId(c), currentUser(c).id, from, to) });
-  })
+  // 予算は人ごと。見るのは同じスペースのだれの分でも可（?user=、省けば自分）。変えられるのは自分の分だけ
+  .get(
+    "/budgets",
+    guard(async (c) => {
+      const from = c.req.query("from");
+      const to = c.req.query("to");
+      if (!from || !to || !isYearMonth(from) || !isYearMonth(to) || from > to) return badQuery(c);
+      const user = await resolveViewUser(c.var.db, currentSpaceId(c), currentUser(c).id, c.req.query("user"));
+      return c.json({ budgets: await listBudgets(c.var.db, currentSpaceId(c), user, from, to) });
+    }),
+  )
   .put("/budgets/:yearMonth", async (c) => {
     const ym = c.req.param("yearMonth");
     if (!isYearMonth(ym)) return badQuery(c);
@@ -225,37 +232,52 @@ export const dataRoutes = base
     }),
   )
 
-  // ホームの集計（予算・実支出・予定額・残額・使用率・先月比・未購入の予定・先月以前の未購入）
-  .get("/summary", async (c) => {
-    const ym = monthParam(c.req.query("month"));
-    if (!ym) return badQuery(c);
-    const spaceId = currentSpaceId(c);
-    const today = jstToday();
-    const prev = addMonths(ym, -1);
-    const [budget, plans, expenses] = await Promise.all([
-      getBudget(c.var.db, spaceId, currentUser(c).id, ym),
-      listPlans(c.var.db, spaceId),
-      listExpensesBetween(c.var.db, spaceId, `${prev}-01`, `${ym}-31`),
-    ]);
-    const planLikes = plans.map(toPlanLike);
-    const summary = summarizeMonth({ yearMonth: ym, budget, plans: planLikes, expenses });
-    const mom = monthOverMonth({ yearMonth: ym, today, expenses });
-    const upcoming = plans.filter((p) => isPlannedIn(toPlanLike(p), ym)).slice(0, 3);
-    return c.json({
-      ...summary,
-      today,
-      momRatio: mom.ratio,
-      overdueCount: yearMonthOf(today) === ym ? overduePlannedCount(planLikes, ym) : 0,
-      upcoming,
-    });
-  })
+  // ホームの集計（予算・実支出・予定額・残額・使用率・先月比・未購入の予定・先月以前の未購入）。
+  // 見ている人（?user=、省けば自分）の予算と、その人の分（割り勘は割合で分けた額）だけで計算する
+  .get(
+    "/summary",
+    guard(async (c) => {
+      const ym = monthParam(c.req.query("month"));
+      if (!ym) return badQuery(c);
+      const spaceId = currentSpaceId(c);
+      const user = await resolveViewUser(c.var.db, spaceId, currentUser(c).id, c.req.query("user"));
+      const today = jstToday();
+      const prev = addMonths(ym, -1);
+      const [budget, allPlans, allExpenses] = await Promise.all([
+        getBudget(c.var.db, spaceId, user, ym),
+        listPlans(c.var.db, spaceId),
+        listExpensesBetween(c.var.db, spaceId, `${prev}-01`, `${ym}-31`),
+      ]);
+      const plans = forUser(allPlans, user, "plannedAmount");
+      const expenses = forUser(allExpenses, user, "actualAmount");
+      const planLikes = plans.map(toPlanLike);
+      const summary = summarizeMonth({ yearMonth: ym, budget, plans: planLikes, expenses });
+      const mom = monthOverMonth({ yearMonth: ym, today, expenses });
+      // 一覧には品物の値段のまま出す（その人の分ではなく）
+      const upcoming = allPlans.filter((p) => involves(p, user) && isPlannedIn(toPlanLike(p), ym)).slice(0, 3);
+      return c.json({
+        ...summary,
+        userId: user,
+        today,
+        momRatio: mom.ratio,
+        overdueCount: yearMonthOf(today) === ym ? overduePlannedCount(planLikes, ym) : 0,
+        upcoming,
+      });
+    }),
+  )
 
   // 日ごとの実支出（最大31日）
-  .get("/daily", async (c) => {
-    const q = z.object({ from: z.string().refine(isIsoDate), to: z.string().refine(isIsoDate) }).safeParse(c.req.query());
-    if (!q.success || q.data.from > q.data.to || addDays(q.data.from, 30) < q.data.to) return badQuery(c);
-    const dates: string[] = [];
-    for (let d = q.data.from; d <= q.data.to; d = addDays(d, 1)) dates.push(d);
-    const expenses = await listExpensesBetween(c.var.db, currentSpaceId(c), q.data.from, q.data.to);
-    return c.json({ days: dailySpend({ dates, expenses }) });
-  });
+  .get(
+    "/daily",
+    guard(async (c) => {
+      const q = z
+        .object({ from: z.string().refine(isIsoDate), to: z.string().refine(isIsoDate), user: z.string().optional() })
+        .safeParse(c.req.query());
+      if (!q.success || q.data.from > q.data.to || addDays(q.data.from, 30) < q.data.to) return badQuery(c);
+      const user = await resolveViewUser(c.var.db, currentSpaceId(c), currentUser(c).id, q.data.user);
+      const dates: string[] = [];
+      for (let d = q.data.from; d <= q.data.to; d = addDays(d, 1)) dates.push(d);
+      const expenses = forUser(await listExpensesBetween(c.var.db, currentSpaceId(c), q.data.from, q.data.to), user, "actualAmount");
+      return c.json({ days: dailySpend({ dates, expenses }) });
+    }),
+  );

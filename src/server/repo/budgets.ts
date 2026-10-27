@@ -13,6 +13,16 @@ export const listBudgets = (db: Db, spaceId: string, userId: string, from: YearM
     .orderBy(asc(budgets.yearMonth))
     .all();
 
+/** その月の、スペースの人ごとの予算（userId → 金額。未設定の人は入らない） */
+export async function memberBudgets(db: Db, spaceId: string, ym: YearMonth): Promise<Map<string, number>> {
+  const rows = await db
+    .select({ userId: budgets.userId, amount: budgets.budgetAmount })
+    .from(budgets)
+    .where(and(eq(budgets.spaceId, spaceId), eq(budgets.yearMonth, ym)))
+    .all();
+  return new Map(rows.map((r) => [r.userId, r.amount]));
+}
+
 export async function getBudget(db: Db, spaceId: string, userId: string, ym: YearMonth): Promise<number | null> {
   const row = await db
     .select({ amount: budgets.budgetAmount })

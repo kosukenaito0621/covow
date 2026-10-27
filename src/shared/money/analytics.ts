@@ -1,5 +1,6 @@
 import { addMonths, type IsoDate, type YearMonth } from "../date/jst";
 import { expenseMonth, planMonth } from "./month";
+import { type Split, splitAmounts } from "./split";
 import type { ExpenseLike, PlanLike } from "./summary";
 
 export const UNCATEGORIZED_LABEL = "未分類";
@@ -79,14 +80,14 @@ export const monthlyTrend = (input: {
 };
 
 /**
- * ふたり：記録した人ごとの実支出と、その月に登録した予定の数。
+ * メンバー別：払った人ごとの実支出（割り勘はそれぞれの分）と、その月に関わる予定の数（払う人・相手の両方に数える）。
  * いまのメンバー以外（外れた人）は userId: null の「元メンバー」にまとめる。
  */
 export const memberBreakdown = (input: {
   yearMonth: YearMonth;
   memberIds: readonly string[];
-  expenses: readonly ExpenseLike[];
-  plans: readonly PlanLike[];
+  expenses: readonly (ExpenseLike & Split)[];
+  plans: readonly (PlanLike & Split)[];
 }): { userId: string | null; amount: number; planCount: number }[] => {
   const key = (id: string | undefined) => (id && input.memberIds.includes(id) ? id : null);
   const rows = new Map<string | null, { amount: number; planCount: number }>(
@@ -98,10 +99,15 @@ export const memberBreakdown = (input: {
     return r;
   };
   for (const e of input.expenses) {
-    if (expenseMonth(e) === input.yearMonth) row(key(e.recordedBy)).amount += e.actualAmount;
+    if (expenseMonth(e) !== input.yearMonth) continue;
+    const { payer, other } = splitAmounts(e.actualAmount, e.splitUserId === null ? 100 : e.payerRatio);
+    row(key(e.payerUserId)).amount += payer;
+    if (e.splitUserId !== null) row(key(e.splitUserId)).amount += other;
   }
   for (const p of input.plans) {
-    if (planMonth(p) === input.yearMonth) row(key(p.createdBy)).planCount += 1;
+    if (planMonth(p) !== input.yearMonth) continue;
+    row(key(p.payerUserId)).planCount += 1;
+    if (p.splitUserId !== null) row(key(p.splitUserId)).planCount += 1;
   }
   return [...rows.entries()].map(([userId, r]) => ({ userId, ...r }));
 };

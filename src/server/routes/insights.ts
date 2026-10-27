@@ -9,14 +9,17 @@ import {
   shareOf,
   trendStats,
 } from "../../shared/money/analytics";
+import { forUser } from "../../shared/money/split";
 import { monthOverMonth, type PlanLike, summarizeMonth } from "../../shared/money/summary";
-import { listBudgets } from "../repo/budgets";
+import { listBudgets, memberBudgets } from "../repo/budgets";
 import { listCategories } from "../repo/categories";
+import { resolveViewUser } from "../repo/members";
 import { listExpensesBetween } from "../repo/expenses";
 import { listPlans } from "../repo/plans";
 import { getSpace } from "../repo/space";
 import { currentSpaceId, requireMember } from "../middleware/require-member";
 import { currentUser } from "../middleware/session";
+import { repoErrorResponse } from "../http";
 import type { AppEnv } from "../types";
 
 /** 推移で見る月数（表示中の月を含めて） */
@@ -25,6 +28,7 @@ export const TREND_MONTHS = 6;
 /*
  * 分析（概要・カテゴリ・推移・メンバー別）。4つのタブの値を1回で返す。
  * 取り出しは「その期間に入りうる行」を広めに取り、振り分けと計算はすべて shared/money の関数で行う。
+ * 概要・カテゴリ・推移は見ている人（?user=、省けば自分）の分。メンバー別は全員の分と、それぞれの予算。
  */
 export const insightsRoutes = new Hono<AppEnv>().get("/", requireMember(), async (c) => {
   const q = c.req.query("month");
@@ -35,13 +39,22 @@ export const insightsRoutes = new Hono<AppEnv>().get("/", requireMember(), async
   const db = c.var.db;
   const today = jstToday();
   const first = addMonths(ym, -(TREND_MONTHS - 1));
-  const [plans, expenses, budgets, categories, space] = await Promise.all([
+  let user: string;
+  try {
+    user = await resolveViewUser(db, spaceId, currentUser(c).id, c.req.query("user"));
+  } catch (e) {
+    return repoErrorResponse(c, e);
+  }
+  const [allPlans, allExpenses, budgets, categories, space, budgetsByMember] = await Promise.all([
     listPlans(db, spaceId),
     listExpensesBetween(db, spaceId, `${first}-01`, `${ym}-31`),
-    listBudgets(db, spaceId, currentUser(c).id, first, ym),
+    listBudgets(db, spaceId, user, first, ym),
     listCategories(db, spaceId),
     getSpace(db, spaceId),
+    memberBudgets(db, spaceId, ym),
   ]);
+  const plans = forUser(allPlans, user, "plannedAmount");
+  const expenses = forUser(allExpenses, user, "actualAmount");
   const planLikes: PlanLike[] = plans.map((p) => ({
     id: p.id,
     plannedAmount: p.plannedAmount,
@@ -67,7 +80,8 @@ export const insightsRoutes = new Hono<AppEnv>().get("/", requireMember(), async
   // 途中の月（今月）は平均から外す。過去の月を見ているときは外さない
   const stats = trendStats(trend, yearMonthOf(today) === ym ? ym : "");
   const names = new Map(space.members.map((m) => [m.id, m.displayName]));
-  const members = memberBreakdown({ yearMonth: ym, memberIds: space.members.map((m) => m.id), expenses, plans: planLikes });
+  const members = memberBreakdown({ yearMonth: ym, memberIds: space.members.map((m) => m.id), expenses: allExpenses, plans: allPlans });
+  const membersTotal = members.reduce((a, m) => a + m.amount, 0);
 
   return c.json({
     yearMonth: ym,
@@ -88,9 +102,11 @@ export const insightsRoutes = new Hono<AppEnv>().get("/", requireMember(), async
       id: m.userId,
       name: m.userId ? (names.get(m.userId) ?? "") : "",
       amount: m.amount,
-      ratio: shareOf(m.amount, summary.actualTotal),
+      ratio: shareOf(m.amount, membersTotal),
+      budget: m.userId ? (budgetsByMember.get(m.userId) ?? null) : null,
       planCount: m.planCount,
     })),
     memberCount: space.members.length,
+    userId: user,
   });
 });

@@ -52,25 +52,27 @@ describe("月別推移", () => {
   });
 });
 
+const solo = (id: string) => ({ payerUserId: id, splitUserId: null, payerRatio: 100 });
+
 describe("ふたり", () => {
-  it("記録した人ごとの実支出と、登録した予定の数。外れた人は「元メンバー」にまとめる", () => {
+  it("払った人ごとの実支出（割り勘はそれぞれの分）と、関わる予定の数。外れた人は「元メンバー」にまとめる", () => {
     const r = memberBreakdown({
       yearMonth: "2026-10",
       memberIds: ["u1", "u2"],
       expenses: [
-        e("1", 1_000, "2026-10-01", { recordedBy: "u1" }),
-        e("2", 2_000, "2026-10-02", { recordedBy: "u2" }),
-        e("3", 300, "2026-10-02", { recordedBy: "gone" }),
+        { ...e("1", 1_000, "2026-10-01"), ...solo("u1") },
+        { ...e("2", 2_000, "2026-10-02"), payerUserId: "u2", splitUserId: "u1", payerRatio: 70 },
+        { ...e("3", 300, "2026-10-02"), ...solo("gone") },
       ],
       plans: [
-        { id: "p1", plannedAmount: 1, plannedDate: "2026-10-05", createdAt: "2026-10-01T00:00:00.000Z", status: "planned", createdBy: "u1" },
-        { id: "p2", plannedAmount: 1, plannedDate: "2026-10-06", createdAt: "2026-10-01T00:00:00.000Z", status: "canceled", createdBy: "u1" },
-        { id: "p3", plannedAmount: 1, plannedDate: "2026-11-06", createdAt: "2026-10-01T00:00:00.000Z", status: "planned", createdBy: "u2" },
+        { id: "p1", plannedAmount: 1, plannedDate: "2026-10-05", createdAt: "2026-10-01T00:00:00.000Z", status: "planned", createdBy: "u1", payerUserId: "u1", splitUserId: "u2", payerRatio: 50 },
+        { id: "p2", plannedAmount: 1, plannedDate: "2026-10-06", createdAt: "2026-10-01T00:00:00.000Z", status: "canceled", createdBy: "u1", ...solo("u1") },
+        { id: "p3", plannedAmount: 1, plannedDate: "2026-11-06", createdAt: "2026-10-01T00:00:00.000Z", status: "planned", createdBy: "u2", ...solo("u2") },
       ],
     });
     expect(r).toEqual([
-      { userId: "u1", amount: 1_000, planCount: 2 },
-      { userId: "u2", amount: 2_000, planCount: 0 },
+      { userId: "u1", amount: 1_600, planCount: 2 },
+      { userId: "u2", amount: 1_400, planCount: 1 },
       { userId: null, amount: 300, planCount: 0 },
     ]);
   });
