@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { IsoDate } from "@shared/date/jst";
 import type { MessageKey } from "@shared/i18n";
 import { formatNumber, parseAmountInput } from "@shared/money/amount";
+import type { Split } from "@shared/money/split";
 import { LIMITS } from "@shared/schemas";
 import type { Expense, ExpenseBody } from "../../api/data";
 import { GlassSheet } from "../../components/glass/GlassSheet";
@@ -10,6 +11,7 @@ import { PrimaryButton, SecondaryButton } from "../../components/ui/Buttons";
 import { AmountInput, FormField, TextInput } from "../../components/ui/FormField";
 import { useT } from "../../i18n/I18nProvider";
 import { CategoryChoice, MemoInput } from "./fields";
+import { PayerField } from "./PayerField";
 
 /**
  * 支出の記録・編集のシート。
@@ -22,6 +24,8 @@ export function ExpenseFormSheet({
   sample,
   today,
   categories,
+  members,
+  me,
   onSubmit,
   onDelete,
   pending,
@@ -34,6 +38,9 @@ export function ExpenseFormSheet({
   sample?: { title: string; amount: number } | null;
   today: IsoDate;
   categories: readonly { id: string; name: string }[];
+  /** 払う人・分ける相手の候補（1人だけなら欄を出さない） */
+  members: readonly { id: string; name: string }[];
+  me: string;
   onSubmit: (body: ExpenseBody) => void;
   onDelete?: () => void;
   pending: boolean;
@@ -46,6 +53,11 @@ export function ExpenseFormSheet({
   const [date, setDate] = useState(expense?.spentAt ?? today);
   const [categoryId, setCategoryId] = useState<string | null>(expense?.categoryId ?? null);
   const [memo, setMemo] = useState(expense?.memo ?? "");
+  const [split, setSplit] = useState<Split>(
+    expense
+      ? { payerUserId: expense.payerUserId, splitUserId: expense.splitUserId, payerRatio: expense.payerRatio }
+      : { payerUserId: me, splitUserId: null, payerRatio: 100 },
+  );
   const [touched, setTouched] = useState(false);
 
   const parsed = parseAmountInput(amount);
@@ -53,7 +65,7 @@ export function ExpenseFormSheet({
   const submit = () => {
     setTouched(true);
     if (title.trim() === "" || !parsed.ok || !date) return;
-    onSubmit({ title: title.trim(), actualAmount: parsed.value, spentAt: date, categoryId, memo: memo.trim() || null });
+    onSubmit({ title: title.trim(), actualAmount: parsed.value, spentAt: date, categoryId, memo: memo.trim() || null, ...split });
   };
 
   return (
@@ -102,6 +114,7 @@ export function ExpenseFormSheet({
           {(f) => <TextInput {...f} type="date" value={date} onChange={(e) => setDate(e.target.value)} />}
         </FormField>
         <CategoryChoice value={categoryId} onChange={setCategoryId} categories={categories} />
+        <PayerField members={members} me={me} amount={parsed.ok ? parsed.value : null} value={split} onChange={setSplit} />
         <FormField label={t("plan.memo")}>{(f) => <MemoInput id={f.id} value={memo} onChange={setMemo} maxLength={LIMITS.memo} />}</FormField>
         {/* Enter で送信できるように（見えない・読み上げない送信ボタン） */}
         <button type="submit" hidden />

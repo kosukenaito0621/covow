@@ -24,6 +24,12 @@ export interface Plan {
   createdByName: string;
   assigneeUserId: string | null;
   assigneeName: string | null;
+  /** 割り勘：払う人・分ける相手（null＝分けない）・払う人の割合 */
+  payerUserId: string;
+  payerName: string;
+  splitUserId: string | null;
+  splitName: string | null;
+  payerRatio: number;
   createdAt: string;
   updatedAt: string;
   expense: { id: string; actualAmount: number; spentAt: IsoDate } | null;
@@ -40,6 +46,11 @@ export interface Expense {
   purchasePlanId: string | null;
   recordedBy: string;
   recordedByName: string;
+  payerUserId: string;
+  payerName: string;
+  splitUserId: string | null;
+  splitName: string | null;
+  payerRatio: number;
   createdAt: string;
 }
 
@@ -54,7 +65,12 @@ export type Summary = MonthSummary & {
   momRatio: number | null;
   overdueCount: number;
   upcoming: Plan[];
+  /** だれの数字か */
+  userId: string;
 };
+
+/** ?user= を付ける（省けばサーバーは自分の分を返す） */
+const userParam = (user?: string) => (user ? `&user=${encodeURIComponent(user)}` : "");
 
 export const plansQuery = queryOptions({
   queryKey: ["plans"],
@@ -67,14 +83,19 @@ export const categoriesQuery = queryOptions({
   queryFn: async () => (await api<{ categories: Category[] }>("/categories")).categories,
   staleTime: 5 * 60_000,
 });
-export const summaryQuery = (month: YearMonth) =>
+// 集計は人ごと。user を省けば自分の分
+export const summaryQuery = (month: YearMonth, user?: string) =>
   // 月・週を切り替えている間は前の中身を残す（灰色の仮の画面に戻さない）
-  queryOptions({ queryKey: ["summary", month], queryFn: () => api<Summary>(`/summary?month=${month}`), placeholderData: keepPreviousData });
-export const dailyQuery = (from: IsoDate, to: IsoDate) =>
   queryOptions({
-    queryKey: ["daily", from, to],
+    queryKey: ["summary", month, user ?? "me"],
+    queryFn: () => api<Summary>(`/summary?month=${month}${userParam(user)}`),
     placeholderData: keepPreviousData,
-    queryFn: async () => (await api<{ days: { date: IsoDate; amount: number }[] }>(`/daily?from=${from}&to=${to}`)).days,
+  });
+export const dailyQuery = (from: IsoDate, to: IsoDate, user?: string) =>
+  queryOptions({
+    queryKey: ["daily", from, to, user ?? "me"],
+    placeholderData: keepPreviousData,
+    queryFn: async () => (await api<{ days: { date: IsoDate; amount: number }[] }>(`/daily?from=${from}&to=${to}${userParam(user)}`)).days,
   });
 export const expensesQuery = (month: YearMonth) =>
   queryOptions({
@@ -82,18 +103,23 @@ export const expensesQuery = (month: YearMonth) =>
     placeholderData: keepPreviousData,
     queryFn: async () => (await api<{ expenses: Expense[] }>(`/expenses?month=${month}`)).expenses,
   });
-export const budgetsQuery = (from: YearMonth, to: YearMonth) =>
+export const budgetsQuery = (from: YearMonth, to: YearMonth, user?: string) =>
   queryOptions({
-    queryKey: ["budgets", from, to],
-    queryFn: async () => (await api<{ budgets: { yearMonth: YearMonth; amount: number }[] }>(`/budgets?from=${from}&to=${to}`)).budgets,
+    queryKey: ["budgets", from, to, user ?? "me"],
+    queryFn: async () =>
+      (await api<{ budgets: { yearMonth: YearMonth; amount: number }[] }>(`/budgets?from=${from}&to=${to}${userParam(user)}`)).budgets,
   });
 
 export type Insights = Omit<InsightsData, "categories"> & {
   categories: (InsightsData["categories"][number] & { categoryId: string | null })[];
   memberCount: number;
 };
-export const insightsQuery = (month: YearMonth) =>
-  queryOptions({ queryKey: ["insights", month], queryFn: () => api<Insights>(`/insights?month=${month}`), placeholderData: keepPreviousData });
+export const insightsQuery = (month: YearMonth, user?: string) =>
+  queryOptions({
+    queryKey: ["insights", month, user ?? "me"],
+    queryFn: () => api<Insights>(`/insights?month=${month}${userParam(user)}`),
+    placeholderData: keepPreviousData,
+  });
 
 /** お金に関わる一覧と集計を、まとめて取り直す */
 function useRefreshMoney() {
@@ -112,6 +138,9 @@ export interface PlanBody {
   memo: string | null;
   productUrl: string | null;
   assigneeUserId: string | null;
+  payerUserId?: string;
+  splitUserId?: string | null;
+  payerRatio?: number;
 }
 export interface ExpenseBody {
   title: string;
@@ -119,6 +148,9 @@ export interface ExpenseBody {
   spentAt: IsoDate;
   categoryId: string | null;
   memo: string | null;
+  payerUserId?: string;
+  splitUserId?: string | null;
+  payerRatio?: number;
 }
 
 /** 書き込みをまとめて作る。onSuccess で一覧と集計を取り直し、伴走ガイドに合図を送る */
@@ -138,7 +170,7 @@ export const useCreatePlan = () =>
 export const useUpdatePlan = () =>
   useMoneyMutation(({ id, ...b }: PlanBody & { id: string }) => api<{ plan: Plan }>(`/plans/${id}`, { method: "PATCH", body: b }));
 export const usePurchasePlan = () =>
-  useMoneyMutation(({ id, ...b }: { id: string; actualAmount: string | number; spentAt: IsoDate }) =>
+  useMoneyMutation(({ id, ...b }: { id: string; actualAmount: string | number; spentAt: IsoDate; payerUserId?: string; splitUserId?: string | null; payerRatio?: number }) =>
     api<{ plan: Plan }>(`/plans/${id}/purchase`, { method: "POST", body: b }),
   "plan-purchased",
   );

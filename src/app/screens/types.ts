@@ -1,4 +1,5 @@
 import type { IsoDate } from "@shared/date/jst";
+import type { Split } from "@shared/money/split";
 import type { PlanStatus } from "@shared/money/summary";
 
 /** 画面に出す予定の1件（サーバーから受け取った値をそのまま表示するための形） */
@@ -15,6 +16,8 @@ export interface PlanView {
   url?: string;
   /** 購入済みのとき：実際の金額と買った日 */
   purchase?: { amount: number; date: IsoDate };
+  /** 割り勘（払う人・相手・割合と、それぞれの名前）。見本の画面では省略できる */
+  split?: Split & { payerName: string; splitName: string | null };
 }
 
 export interface MemberView {
@@ -35,6 +38,11 @@ export const toPlanView = (p: {
   memo: string | null;
   productUrl: string | null;
   expense: { actualAmount: number; spentAt: IsoDate } | null;
+  payerUserId: string;
+  payerName: string;
+  splitUserId: string | null;
+  splitName: string | null;
+  payerRatio: number;
 }): PlanView => ({
   id: p.id,
   title: p.title,
@@ -46,4 +54,5 @@ export const toPlanView = (p: {
   memo: p.memo ?? undefined,
   url: p.productUrl ?? undefined,
   purchase: p.expense ? { amount: p.expense.actualAmount, date: p.expense.spentAt } : undefined,
+  split: { payerUserId: p.payerUserId, payerName: p.payerName, splitUserId: p.splitUserId, splitName: p.splitName, payerRatio: p.payerRatio },
 });

@@ -2,6 +2,7 @@ import { type ReactNode, useState } from "react";
 import type { IsoDate } from "@shared/date/jst";
 import { formatShortDate, type MessageKey } from "@shared/i18n";
 import { formatNumber, formatYen, parseAmountInput } from "@shared/money/amount";
+import { type Split, splitAmounts } from "@shared/money/split";
 import { ConfirmDialog } from "../components/glass/ConfirmDialog";
 import { GlassCard } from "../components/glass/GlassCard";
 import { GlassSheet } from "../components/glass/GlassSheet";
@@ -14,6 +15,7 @@ import { Icon } from "../components/ui/Icon";
 import { mutedText } from "../components/ui/SectionLabel";
 import { useT } from "../i18n/I18nProvider";
 import { useTheme } from "../theme/ThemeProvider";
+import { PayerField } from "./forms/PayerField";
 import type { PlanView } from "./types";
 
 /**
@@ -21,7 +23,7 @@ import type { PlanView } from "./types";
  * 残額の計算は shared/money に任せるため、previewRemaining として呼び出し側から受け取る。
  */
 export interface PlanDetailActions {
-  onPurchase?: (amount: number, date: IsoDate) => Promise<boolean>;
+  onPurchase?: (amount: number, date: IsoDate, split: Split) => Promise<boolean>;
   onUnpurchase?: () => void;
   onCancel?: () => void;
   onRestore?: () => void;
@@ -38,10 +40,16 @@ export function PlanDetailScreen({
   previewRemaining,
   onBack,
   actions = {},
+  members = [],
+  me = "",
 }: {
   plan: PlanView;
   today: IsoDate;
-  previewRemaining: (amount: number, date: IsoDate) => { before: number; after: number } | null;
+  /** 買った金額・日・割り勘から、自分の残額の変化を出す */
+  previewRemaining: (amount: number, date: IsoDate, split: Split) => { before: number; after: number } | null;
+  /** 払う人・分ける相手の候補（「買った」で割合を変えられる） */
+  members?: readonly { id: string; name: string }[];
+  me?: string;
   onBack: () => void;
   /** 操作。どれも成功したら true を返す（シートや確認を閉じる） */
   actions?: PlanDetailActions;
@@ -54,8 +62,11 @@ export function PlanDetailScreen({
   const [confirm, setConfirm] = useState(false);
   const [amountText, setAmountText] = useState(formatNumber(p.plannedAmount));
   const [date, setDate] = useState<IsoDate>(today);
+  const [split, setSplit] = useState<Split>(
+    p.split ? { payerUserId: p.split.payerUserId, splitUserId: p.split.splitUserId, payerRatio: p.split.payerRatio } : { payerUserId: me, splitUserId: null, payerRatio: 100 },
+  );
   const parsed = parseAmountInput(amountText);
-  const preview = parsed.ok ? previewRemaining(parsed.value, date) : null;
+  const preview = parsed.ok ? previewRemaining(parsed.value, date, split) : null;
   const diff = p.purchase ? p.purchase.amount - p.plannedAmount : 0;
 
   const rows: { label: string; value: ReactNode }[] = [
@@ -63,6 +74,27 @@ export function PlanDetailScreen({
     { label: t("plan.category"), value: <CategoryBadge name={p.category} /> },
     { label: t("plan.addedBy"), value: p.createdBy },
   ];
+  if (p.split && members.length > 1) {
+    const s = p.split;
+    const shown = (id: string, name: string) => (id === me ? t("payer.me") : name);
+    const amount = p.purchase?.amount ?? p.plannedAmount;
+    const { payer, other } = splitAmounts(amount, s.splitUserId ? s.payerRatio : 100);
+    rows.splice(2, 0, {
+      label: t("payer.row"),
+      value: s.splitUserId ? (
+        <span className="flex flex-col items-end">
+          <span>
+            {shown(s.payerUserId, s.payerName)} {formatYen(payer)}（{s.payerRatio}%）
+          </span>
+          <span>
+            {shown(s.splitUserId, s.splitName ?? "")} {formatYen(other)}（{100 - s.payerRatio}%）
+          </span>
+        </span>
+      ) : (
+        shown(s.payerUserId, s.payerName)
+      ),
+    });
+  }
   if (p.url) {
     rows.push({
       label: t("plan.link"),
@@ -190,7 +222,7 @@ export function PlanDetailScreen({
               data-tour="purchase-submit"
               onClick={async () => {
                 if (!parsed.ok) return;
-                if (!actions.onPurchase || (await actions.onPurchase(parsed.value, date))) setSheet(false);
+                if (!actions.onPurchase || (await actions.onPurchase(parsed.value, date, split))) setSheet(false);
               }}
             >
               {t("plan.markBought")}
@@ -205,6 +237,7 @@ export function PlanDetailScreen({
           <FormField label={t("plan.boughtDate")} required>
             {(f) => <TextInput {...f} type="date" value={date} max={today} onChange={(e) => setDate(e.target.value)} />}
           </FormField>
+          <PayerField members={members} me={me} amount={parsed.ok ? parsed.value : null} value={split} onChange={setSplit} />
         </div>
       </GlassSheet>
 

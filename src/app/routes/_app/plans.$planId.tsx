@@ -3,10 +3,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { jstThisMonth, jstToday, yearMonthOf } from "@shared/date/jst";
 import type { MessageKey } from "@shared/i18n";
+import { userShare } from "@shared/money/split";
 import { remainingAfterPlanChange } from "@shared/money/summary";
 import { ApiError } from "../../api/client";
 import { planQuery, plansQuery, summaryQuery, useDeletePlan, usePlanAction, usePurchasePlan } from "../../api/data";
-import { errorKey } from "../../api/space";
+import { meQuery } from "../../api/me";
+import { errorKey, spaceQuery } from "../../api/space";
 import { GlassCard } from "../../components/glass/GlassCard";
 import { CircleIconButton } from "../../components/ui/Buttons";
 import { PlanDetailSkeleton } from "../../components/loading/PageSkeletons";
@@ -32,6 +34,8 @@ function PlanDetail() {
   const plan = useQuery({ ...planQuery(planId), placeholderData: () => qc.getQueryData(plansQuery.queryKey)?.find((x) => x.id === planId) });
   const reveal = useStartedLoading(plan.isPending);
   const summary = useQuery(summaryQuery(jstThisMonth()));
+  const me = useQuery(meQuery).data?.user.id ?? "";
+  const space = useQuery(spaceQuery);
   const purchase = usePurchasePlan();
   const action = usePlanAction();
   const remove = useDeletePlan();
@@ -77,20 +81,22 @@ function PlanDetail() {
           plan={toPlanView(p)}
           today={jstToday()}
           onBack={back}
-          previewRemaining={(amount, date) => {
+          members={(space.data?.members ?? []).map((m) => ({ id: m.id, name: m.displayName }))}
+          me={me}
+          previewRemaining={(amount, date, split) => {
             if (!summary.data) return null;
-            // 予定（今月なら予定額）を外し、買った日の月に実際の金額が入る
-            const before = { id: p.id, plannedAmount: p.plannedAmount, plannedDate: p.plannedDate, createdAt: p.createdAt, status: p.status };
-            return remainingAfterPlanChange(summary.data, before, { amount, yearMonth: yearMonthOf(date) });
+            // 予定（今月なら自分の分の予定額）を外し、買った日の月に自分の分の実際の金額が入る
+            const before = { id: p.id, plannedAmount: userShare(p.plannedAmount, p, me), plannedDate: p.plannedDate, createdAt: p.createdAt, status: p.status };
+            return remainingAfterPlanChange(summary.data, before, { amount: userShare(amount, split, me), yearMonth: yearMonthOf(date) });
           }}
           actions={{
             pending: purchase.isPending || action.isPending || remove.isPending,
             error,
             onEdit: () => form.open(p),
-            onPurchase: async (amount, date) => {
+            onPurchase: async (amount, date, split) => {
               setError(null);
               try {
-                await purchase.mutateAsync({ id: p.id, actualAmount: amount, spentAt: date });
+                await purchase.mutateAsync({ id: p.id, actualAmount: amount, spentAt: date, ...split });
                 return true;
               } catch (e) {
                 fail(e);

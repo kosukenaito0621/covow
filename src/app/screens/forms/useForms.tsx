@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { jstThisMonth, jstToday, jstYearMonthOfInstant, yearMonthOf } from "@shared/date/jst";
 import { dataLocale, type MessageKey } from "@shared/i18n";
+import { userShare } from "@shared/money/split";
 import { remainingAfterPlanChange } from "@shared/money/summary";
 import {
   categoriesQuery,
@@ -14,6 +15,7 @@ import {
   useUpdateExpense,
   useUpdatePlan,
 } from "../../api/data";
+import { meQuery } from "../../api/me";
 import { errorKey, spaceQuery } from "../../api/space";
 import { ConfirmDialog } from "../../components/glass/ConfirmDialog";
 import { useT } from "../../i18n/I18nProvider";
@@ -40,6 +42,7 @@ export function usePlanForm(onSaved?: (plan: Plan) => void) {
   const summary = useQuery({ ...summaryQuery(month), enabled: state.open });
   const categories = useQuery(categoriesQuery);
   const space = useQuery(spaceQuery);
+  const me = useQuery(meQuery).data?.user.id ?? "";
   const create = useCreatePlan();
   const update = useUpdatePlan();
 
@@ -58,12 +61,14 @@ export function usePlanForm(onSaved?: (plan: Plan) => void) {
       sample={!state.plan && tour.active?.id === "add-plan" ? SAMPLES.plan[dataLocale(locale)] : null}
       categories={categories.data ?? []}
       members={(space.data?.members ?? []).map((m) => ({ id: m.id, name: m.displayName }))}
+      me={me}
       previewRemaining={(amount, date) => {
         if (!summary.data) return null;
         const before = state.plan
           ? {
               id: state.plan.id,
-              plannedAmount: state.plan.plannedAmount,
+              // 自分の分（割り勘なら割合で分けた額）で比べる
+              plannedAmount: userShare(state.plan.plannedAmount, state.plan, me),
               plannedDate: state.plan.plannedDate,
               createdAt: state.plan.createdAt,
               status: state.plan.status,
@@ -97,6 +102,8 @@ export function useExpenseForm() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<MessageKey | null>(null);
   const categories = useQuery(categoriesQuery);
+  const space = useQuery(spaceQuery);
+  const me = useQuery(meQuery).data?.user.id ?? "";
   const create = useCreateExpense();
   const update = useUpdateExpense();
   const remove = useDeleteExpense();
@@ -118,6 +125,8 @@ export function useExpenseForm() {
         sample={!state.expense && tour.active?.id === "expense" ? SAMPLES.expense[dataLocale(locale)] : null}
         today={jstToday()}
         categories={categories.data ?? []}
+        members={(space.data?.members ?? []).map((m) => ({ id: m.id, name: m.displayName }))}
+        me={me}
         pending={create.isPending || update.isPending}
         error={error}
         onDelete={() => setConfirmDelete(true)}

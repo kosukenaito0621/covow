@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { IsoDate } from "@shared/date/jst";
 import { type MessageKey } from "@shared/i18n";
 import { formatNumber, formatYen, parseAmountInput } from "@shared/money/amount";
+import { type Split, userShare } from "@shared/money/split";
 import { LIMITS } from "@shared/schemas";
 import type { Plan, PlanBody } from "../../api/data";
 import { GlassSheet } from "../../components/glass/GlassSheet";
@@ -9,13 +10,12 @@ import { PrimaryButton } from "../../components/ui/Buttons";
 import { AmountInput, FormField, TextInput } from "../../components/ui/FormField";
 import { AttentionNote } from "../../components/ui/States";
 import { useT } from "../../i18n/I18nProvider";
-import { CategoryChoice, ChoiceChips, MemoInput } from "./fields";
-
-const ANYONE = "__anyone__";
+import { CategoryChoice, MemoInput } from "./fields";
+import { PayerField } from "./PayerField";
 
 /**
  * 購入予定の登録・編集のシート。
- * 下に「いまの残額 → 登録後」を出し、予算を超えそうなら注意を添える（計算は previewRemaining＝shared/money）。
+ * 下に「自分のいまの残額 → 登録後」を出し、予算を超えそうなら注意を添える（計算は previewRemaining＝shared/money。割り勘は自分の分で）。
  */
 export function PlanFormSheet({
   open,
@@ -24,6 +24,7 @@ export function PlanFormSheet({
   sample,
   categories,
   members,
+  me,
   previewRemaining,
   onSubmit,
   pending,
@@ -36,9 +37,12 @@ export function PlanFormSheet({
   /** 新しく登録するときの見本の値（伴走ガイドで使う） */
   sample?: { title: string; amount: number } | null;
   categories: readonly { id: string; name: string }[];
-  /** 買う人の候補（1人だけなら欄を出さない） */
+  /** 払う人・分ける相手の候補（1人だけなら欄を出さない） */
   members: readonly { id: string; name: string }[];
-  previewRemaining: (amount: number, date: IsoDate | null) => { before: number; after: number } | null;
+  /** ログイン中の人 */
+  me: string;
+  /** 自分の分の金額で、自分の残額の変化を出す */
+  previewRemaining: (myAmount: number, date: IsoDate | null) => { before: number; after: number } | null;
   onSubmit: (body: PlanBody) => void;
   pending: boolean;
   error: MessageKey | null;
@@ -49,7 +53,9 @@ export function PlanFormSheet({
   const [amount, setAmount] = useState(plan ? formatNumber(plan.plannedAmount) : sample ? formatNumber(sample.amount) : "");
   const [date, setDate] = useState(plan?.plannedDate ?? "");
   const [categoryId, setCategoryId] = useState<string | null>(plan?.categoryId ?? null);
-  const [assignee, setAssignee] = useState(plan?.assigneeUserId ?? ANYONE);
+  const [split, setSplit] = useState<Split>(
+    plan ? { payerUserId: plan.payerUserId, splitUserId: plan.splitUserId, payerRatio: plan.payerRatio } : { payerUserId: me, splitUserId: null, payerRatio: 100 },
+  );
   const [memo, setMemo] = useState(plan?.memo ?? "");
   const [url, setUrl] = useState(plan?.productUrl ?? "");
   const [touched, setTouched] = useState(false);
@@ -57,7 +63,7 @@ export function PlanFormSheet({
   const parsed = parseAmountInput(amount);
   const titleError = touched && title.trim() === "" ? t("error.validation") : undefined;
   const amountError = touched && !parsed.ok ? t(`amount.${parsed.error}`) : undefined;
-  const preview = parsed.ok ? previewRemaining(parsed.value, date || null) : null;
+  const preview = parsed.ok ? previewRemaining(userShare(parsed.value, split, me), date || null) : null;
 
   const submit = () => {
     setTouched(true);
@@ -69,7 +75,8 @@ export function PlanFormSheet({
       categoryId,
       memo: memo.trim() || null,
       productUrl: url.trim() || null,
-      assigneeUserId: assignee === ANYONE ? null : assignee,
+      assigneeUserId: plan?.assigneeUserId ?? null,
+      ...split,
     });
   };
 
@@ -118,14 +125,7 @@ export function PlanFormSheet({
           {(f) => <TextInput {...f} type="date" value={date} onChange={(e) => setDate(e.target.value)} />}
         </FormField>
         <CategoryChoice value={categoryId} onChange={setCategoryId} categories={categories} />
-        {members.length > 1 && (
-          <ChoiceChips
-            label={t("plan.assignee")}
-            value={assignee}
-            onChange={setAssignee}
-            options={[{ value: ANYONE, label: t("plan.assigneeAnyone") }, ...members.map((m) => ({ value: m.id, label: m.name }))]}
-          />
-        )}
+        <PayerField members={members} me={me} amount={parsed.ok ? parsed.value : null} value={split} onChange={setSplit} />
         <FormField label={t("plan.memo")}>{(f) => <MemoInput id={f.id} value={memo} onChange={setMemo} maxLength={LIMITS.memo} />}</FormField>
         <FormField label={t("plan.link")}>
           {(f) => <TextInput {...f} type="url" inputMode="url" value={url} maxLength={LIMITS.url} onChange={(e) => setUrl(e.target.value)} placeholder="https://" />}
