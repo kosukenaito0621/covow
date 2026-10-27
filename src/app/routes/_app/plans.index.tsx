@@ -9,6 +9,8 @@ import { useTheme } from "../../theme/ThemeProvider";
 import { usePlanForm } from "../../screens/forms/useForms";
 import { PlansScreen } from "../../screens/PlansScreen";
 import { toPlanView } from "../../screens/types";
+import { meQuery } from "../../api/me";
+import { spaceQuery } from "../../api/space";
 
 export const Route = createFileRoute("/_app/plans/")({
   component: Plans,
@@ -18,6 +20,8 @@ function Plans() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const plans = useQuery(plansQuery);
+  const space = useQuery(spaceQuery);
+  const me = useQuery(meQuery).data?.user.id ?? "";
   const reveal = useStartedLoading(plans.isPending);
   const form = usePlanForm((plan) => void navigate({ to: "/plans/$planId", params: { planId: plan.id } }));
 
@@ -30,6 +34,8 @@ function Plans() {
       ) : (
         <Reveal active={reveal} className="flex flex-col gap-5">
           <PlansScreen
+            members={(space.data?.members ?? []).map((m) => ({ id: m.id, name: m.displayName }))}
+            me={me}
             plans={plans.data.map(toPlanView)}
             today={jstToday()}
             onOpen={(id) => void navigate({ to: "/plans/$planId", params: { planId: id } })}

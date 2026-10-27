@@ -160,6 +160,7 @@ export const en = {
   "filter.person": "Person",
   "person.view": "Whose numbers",
   "budget.othersReadOnly": "Only {name} can change this budget.",
+  "insights.ofBudget": "{pct}% of {budget}",
   "settings.news": "News",
   "settings.localizeCategories.ja": "Rename to Japanese",
   "settings.localizeCategories.en": "Rename to English",

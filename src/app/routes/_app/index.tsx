@@ -31,12 +31,15 @@ import { tourEvent } from "../../tour/missions";
 import { offerKey, useTour } from "../../tour/TourProvider";
 import { useExpenseForm, usePlanForm } from "../../screens/forms/useForms";
 import { useTheme } from "../../theme/ThemeProvider";
+import { PersonSwitch, useViewUser } from "../../components/PersonSwitch";
 
-type HomeSearch = { month?: string };
+type HomeSearch = { month?: string; user?: string };
 
 export const Route = createFileRoute("/_app/")({
   validateSearch: (s: Record<string, unknown>): HomeSearch => ({
     month: typeof s.month === "string" && isYearMonth(s.month) ? s.month : undefined,
+    // だれの数字を見るか（省けば自分）
+    user: typeof s.user === "string" && s.user ? s.user : undefined,
   }),
   component: Home,
 });
@@ -51,14 +54,20 @@ function Home() {
   const navigate = useNavigate();
   const { t, locale } = useT();
   const { theme } = useTheme();
-  const summary = useQuery(summaryQuery(month));
+  const { view, isMe } = useViewUser(search.user);
+  const summary = useQuery(summaryQuery(month, search.user));
   const reveal = useStartedLoading(summary.isPending);
   const space = useQuery(spaceQuery);
   const planForm = usePlanForm();
   const expenseForm = useExpenseForm();
   const budgetSheet = useBudgetSheet();
   const thisMonth = jstThisMonth();
-  const setMonth = (m: string) => void navigate({ to: "/", search: m === thisMonth ? {} : { month: m } });
+  const setMonth = (m: string) => void navigate({ to: "/", search: { month: m === thisMonth ? undefined : m, user: search.user } });
+  const setUser = (user: string | undefined) => void navigate({ to: "/", search: { month: search.month, user } });
+  // 予算を変えられるのは本人だけ（相手の数字を見ているときは押せない）
+  const openBudget = (amount: number | null) => {
+    if (isMe) budgetSheet.open(month, amount);
+  };
 
   const header = (
     <header className="flex items-center justify-between gap-2">
@@ -102,15 +111,18 @@ function Home() {
             {s.remaining === null ? (
               <>
                 <p className={`mt-3 text-[15px] ${muted}`}>{t("home.noBudget")}</p>
-                <PrimaryButton tone={theme.tone.hero} className="mt-3" onClick={() => budgetSheet.open(month, null)}>
-                  {t("home.setBudget")}
-                </PrimaryButton>
+                {isMe && (
+                  <PrimaryButton tone={theme.tone.hero} className="mt-3" onClick={() => openBudget(null)}>
+                    {t("home.setBudget")}
+                  </PrimaryButton>
+                )}
               </>
             ) : (
               <>
                 <HeroAmount value={s.remaining} />
                 <p className={`num mt-1 flex flex-wrap gap-x-3 text-[13px] ${muted}`}>
-                  <button type="button" className="whitespace-nowrap underline-offset-4 hover:underline" onClick={() => budgetSheet.open(month, s.budget)}>
+                  <button type="button" className="whitespace-nowrap underline-offset-4 hover:underline" onClick={() => openBudget(s.budget)}
+                    disabled={!isMe}>
                     {t("home.budget")} {formatYen(s.budget ?? 0)}
                   </button>
                   <span className="whitespace-nowrap">
@@ -122,7 +134,7 @@ function Home() {
                 </p>
               </>
             )}
-            <WeekSpend month={month} today={s.today} />
+            <WeekSpend month={month} today={s.today} user={search.user} />
           </HeroGlassCard>
 
           {s.overBudget && <AttentionNote>{t("attention.overBy", { amount: formatYen(s.overAmount) })}</AttentionNote>}
@@ -207,6 +219,7 @@ function Home() {
   return (
     <main className="app-shell flex flex-col gap-5">
       {header}
+      <PersonSwitch value={view} onChange={setUser} />
       <TourOffer />
       {body}
       <div
@@ -270,7 +283,7 @@ function TourOffer() {
 }
 
 /** 週の日ごとの支出（曲線・曜日のチップ・週の切り替え）。今月なら今日を含む週、ほかの月はその月の1日を含む週から */
-function WeekSpend({ month, today }: { month: string; today: string }) {
+function WeekSpend({ month, today, user }: { month: string; today: string; user?: string }) {
   const { t, locale } = useT();
   const { theme } = useTheme();
   const tone = theme.tone.hero;
@@ -287,7 +300,7 @@ function WeekSpend({ month, today }: { month: string; today: string }) {
     setStart(initial);
     setSel(firstIndex >= 0 ? firstIndex : 0);
   }
-  const daily = useQuery(dailyQuery(dates[0]!, dates[6]!));
+  const daily = useQuery(dailyQuery(dates[0]!, dates[6]!, user));
   // 新しい週の数字を待つ間は、前の週の形を（日付ではなく曜日の順で）薄く残す
   const prev = daily.isPlaceholderData ? [...(daily.data ?? [])].sort((x, y) => (x.date < y.date ? -1 : 1)) : null;
   const amounts = dates.map((d, i) => (prev ? prev[i]?.amount : daily.data?.find((x) => x.date === d)?.amount) ?? 0);

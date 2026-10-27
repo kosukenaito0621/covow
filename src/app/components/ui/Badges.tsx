@@ -1,4 +1,5 @@
 import type { MessageKey } from "@shared/i18n";
+import { formatYen } from "@shared/money/amount";
 import type { PlanStatus } from "@shared/money/summary";
 import { useT } from "../../i18n/I18nProvider";
 import { Icon, type IconName } from "./Icon";
@@ -53,5 +54,16 @@ export function DemoDataBanner() {
     >
       {t("common.demo")}
     </div>
+  );
+}
+
+/** 割り勘の印。自分が関わっていれば自分の分の金額も出す（例：割り勘 自分 ¥5,000） */
+export function SplitBadge({ myShare }: { myShare: number | null }) {
+  const { t } = useT();
+  return (
+    <span className="num inline-flex items-center rounded-full border border-current/30 px-2 py-0.5 text-[11px] font-semibold">
+      {t("badge.split")}
+      {myShare !== null && ` ${t("badge.myShare", { amount: formatYen(myShare) })}`}
+    </span>
   );
 }

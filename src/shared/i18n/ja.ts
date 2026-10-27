@@ -158,6 +158,7 @@ export const ja = {
   "filter.person": "人",
   "person.view": "だれの数字か",
   "budget.othersReadOnly": "この予算を変えられるのは{name}さんだけです。",
+  "insights.ofBudget": "予算 {budget} の {pct}%",
   "settings.news": "お知らせ",
   "settings.localizeCategories.ja": "カテゴリ名を日本語にする",
   "settings.localizeCategories.en": "カテゴリ名を英語にする",

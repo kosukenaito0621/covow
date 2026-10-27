@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import type { IsoDate, YearMonth } from "@shared/date/jst";
 import { formatMonth, formatMonthShort, formatShortDate, textLocale } from "@shared/i18n";
 import { formatYen } from "@shared/money/amount";
@@ -42,7 +42,7 @@ export interface InsightsData {
   trendAverage: number | null;
   trendOverCount: number;
   /** id が null のものは退出したメンバーのまとめ */
-  members: readonly { id: string | null; name: string; amount: number; ratio: number; planCount: number }[];
+  members: readonly { id: string | null; name: string; amount: number; ratio: number; planCount: number; budget?: number | null }[];
 }
 
 export function InsightsScreen({
@@ -53,6 +53,7 @@ export function InsightsScreen({
   nextDisabled,
   showMembers = true,
   onTabChange,
+  personSwitch,
 }: {
   data: InsightsData;
   initialTab?: InsightsTab;
@@ -62,6 +63,8 @@ export function InsightsScreen({
   /** メンバー別のタブを出すか（一人のときは出さない） */
   showMembers?: boolean;
   onTabChange?: (tab: InsightsTab) => void;
+  /** 見出しの下に置く「だれの数字か」の切り替え */
+  personSwitch?: ReactNode;
 }) {
   const { t, locale } = useT();
   const { theme } = useTheme();
@@ -92,6 +95,8 @@ export function InsightsScreen({
           />
         </div>
       </header>
+
+      {personSwitch}
 
       <div data-tour="insights-tabs">
         <TabChips
@@ -250,6 +255,7 @@ function Trend({ d }: { d: InsightsData }) {
   );
 }
 
+/** メンバー別：払った額（割り勘はその人の分）。予算があれば、その人の予算に対する割合をバーで出す */
 function Members({ d }: { d: InsightsData }) {
   const { t } = useT();
   const { theme } = useTheme();
@@ -258,6 +264,8 @@ function Members({ d }: { d: InsightsData }) {
     <ul className="flex flex-col gap-2.5">
       {d.members.map((m) => {
         const name = m.id === null ? t("insights.formerMember") : m.name;
+        const usage = m.budget ? m.amount / m.budget : null;
+        const bar = usage ?? m.ratio;
         return (
           <li key={m.id ?? "former"}>
             <GlassCard className="flex items-center gap-3 px-4 py-3">
@@ -271,13 +279,17 @@ function Members({ d }: { d: InsightsData }) {
                   <motion.div
                     className="h-full rounded-full bg-gradient-to-r from-cyan to-lavender"
                     initial={{ width: 0 }}
-                    animate={{ width: `${m.ratio * 100}%` }}
+                    animate={{ width: `${Math.min(bar, 1) * 100}%` }}
                     transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                   />
                 </div>
                 <p className={`num mt-1 flex justify-between text-[12px] ${cardMuted}`}>
                   <span>{t("insights.plansAdded", { count: m.planCount })}</span>
-                  <span>{Math.round(m.ratio * 100)}%</span>
+                  <span>
+                    {usage !== null && m.budget
+                      ? t("insights.ofBudget", { budget: formatYen(m.budget), pct: Math.round(usage * 100) })
+                      : `${Math.round(m.ratio * 100)}%`}
+                  </span>
                 </p>
               </div>
             </GlassCard>

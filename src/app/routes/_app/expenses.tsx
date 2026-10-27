@@ -1,12 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { addMonths, isYearMonth, jstThisMonth } from "@shared/date/jst";
 import { formatMonth, formatShortDate } from "@shared/i18n";
 import { formatYen } from "@shared/money/amount";
+import { involves, userShare } from "@shared/money/split";
 import { expensesQuery } from "../../api/data";
+import { meQuery } from "../../api/me";
+import { spaceQuery } from "../../api/space";
+import { TabChips } from "../../components/glass/TabChips";
 import { AddPill } from "../../components/glass/AddPill";
 import { GlassCard } from "../../components/glass/GlassCard";
-import { CategoryBadge, FromPlanBadge } from "../../components/ui/Badges";
+import { CategoryBadge, FromPlanBadge, SplitBadge } from "../../components/ui/Badges";
 import { CircleIconButton } from "../../components/ui/Buttons";
 import { Icon } from "../../components/ui/Icon";
 import { mutedText } from "../../components/ui/SectionLabel";
@@ -26,7 +31,13 @@ export const Route = createFileRoute("/_app/expenses")({
   component: Expenses,
 });
 
-/** 支出の一覧（月ごと）。予定から作られた支出には印を付ける。右下のボタンで予定なしの支出を記録する */
+const EVERYONE = "__everyone__";
+type Source = "all" | "fromPlan" | "unplanned";
+
+/**
+ * 支出の一覧（月ごと）。予定から作られた支出には印を付ける。右下のボタンで予定なしの支出を記録する。
+ * 人（払った人か分けた相手）と、予定から／予定外で絞り込める。人で絞ったときの合計は、その人の分。
+ */
 function Expenses() {
   const search = Route.useSearch();
   const month = search.month ?? jstThisMonth();
@@ -34,12 +45,20 @@ function Expenses() {
   const { t, locale } = useT();
   const { theme } = useTheme();
   const list = useQuery(expensesQuery(month));
+  const space = useQuery(spaceQuery);
+  const me = useQuery(meQuery).data?.user.id ?? "";
+  const members = space.data?.members ?? [];
+  const [person, setPerson] = useState(EVERYONE);
+  const [source, setSource] = useState<Source>("all");
   const reveal = useStartedLoading(list.isPending);
   const form = useExpenseForm();
   const muted = mutedText(theme.tone.card);
   const thisMonth = jstThisMonth();
   const setMonth = (m: string) => void navigate({ to: "/expenses", search: m === thisMonth ? {} : { month: m } });
-  const total = list.data?.reduce((a, e) => a + e.actualAmount, 0) ?? 0;
+  const shown = (list.data ?? [])
+    .filter((e) => person === EVERYONE || involves(e, person))
+    .filter((e) => source === "all" || (source === "fromPlan") === !!e.purchasePlanId);
+  const total = shown.reduce((a, e) => a + (person === EVERYONE ? e.actualAmount : userShare(e.actualAmount, e, person)), 0);
 
   return (
     <main className="app-shell flex flex-col gap-5">
@@ -54,13 +73,34 @@ function Expenses() {
             <p className="num text-[15px] font-semibold">{formatMonth(month, locale)}</p>
             <CircleIconButton tone={theme.tone.page} icon="chevronRight" label={t("home.nextMonth")} onClick={() => setMonth(addMonths(month, 1))} />
           </div>
-          {list.data && list.data.length > 0 && (
+          {shown.length > 0 && (
             <p className="num text-[15px] font-semibold">
               {t("insights.total")} {formatYen(total)}
             </p>
           )}
         </div>
       </header>
+
+      {members.length > 1 && (
+        <TabChips
+          label={t("filter.person")}
+          value={person}
+          onChange={setPerson}
+          tone={theme.tone.page}
+          options={[{ value: EVERYONE, label: t("filter.everyone") }, ...members.map((m) => ({ value: m.id, label: m.id === me ? t("payer.me") : m.displayName }))]}
+        />
+      )}
+      <TabChips
+        label={t("plans.filter")}
+        value={source}
+        onChange={setSource}
+        tone={theme.tone.page}
+        options={[
+          { value: "all", label: t("home.all") },
+          { value: "fromPlan", label: t("filter.fromPlan") },
+          { value: "unplanned", label: t("filter.unplanned") },
+        ]}
+      />
 
       {list.isPending ? (
         <LoadingSkeleton>
@@ -71,7 +111,7 @@ function Expenses() {
       ) : (
         <Reveal active={reveal}>
           <Stale stale={list.isPlaceholderData}>
-            {list.data.length === 0 ? (
+            {shown.length === 0 ? (
               <GlassCard>
                 <EmptyState
                   tone={theme.tone.card}
@@ -83,7 +123,7 @@ function Expenses() {
               </GlassCard>
             ) : (
               <ul className="flex flex-col gap-2.5">
-                {list.data.map((e) => (
+                {shown.map((e) => (
                   <li key={e.id}>
                     <GlassCard>
                       <button type="button" onClick={() => form.open(e)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
@@ -94,6 +134,7 @@ function Expenses() {
                             <span>・ {formatShortDate(e.spentAt, locale)}</span>
                             <CategoryBadge name={e.categoryName} />
                             {e.purchasePlanId && <FromPlanBadge />}
+                      {e.splitUserId && <SplitBadge myShare={involves(e, me) ? userShare(e.actualAmount, e, me) : null} />}
                           </p>
                         </div>
                         <span className="num shrink-0 text-[15px] font-semibold">{formatYen(e.actualAmount)}</span>

@@ -3,11 +3,12 @@ import { useMemo, useState } from "react";
 import { type IsoDate, yearMonthOf } from "@shared/date/jst";
 import { formatShortDate, type MessageKey } from "@shared/i18n";
 import { formatYen } from "@shared/money/amount";
+import { involves, userShare } from "@shared/money/split";
 import type { PlanStatus } from "@shared/money/summary";
 import { AddPill } from "../components/glass/AddPill";
 import { GlassCard } from "../components/glass/GlassCard";
 import { TabChips } from "../components/glass/TabChips";
-import { CategoryBadge, StatusBadge } from "../components/ui/Badges";
+import { CategoryBadge, SplitBadge, StatusBadge } from "../components/ui/Badges";
 import { Icon } from "../components/ui/Icon";
 import { SearchField } from "../components/ui/SearchField";
 import { mutedText, SectionLabel } from "../components/ui/SectionLabel";
@@ -34,27 +35,37 @@ const groupOf = (p: PlanView, today: IsoDate): Group => {
   return yearMonthOf(p.plannedDate) === yearMonthOf(today) ? "thisMonth" : "later";
 };
 
-/** 予定の一覧。上で状態を絞り込み、検索欄で商品名・メモを探す。未購入は日付ごとにまとめる */
+const EVERYONE = "__everyone__";
+
+/** 予定の一覧。上で状態と人を絞り込み、検索欄で商品名・メモを探す。未購入は日付ごとにまとめる */
 export function PlansScreen({
   plans,
   today,
   onOpen,
   onAdd,
+  members = [],
+  me = "",
 }: {
   plans: readonly PlanView[];
   today: IsoDate;
   onOpen: (id: string) => void;
   onAdd: () => void;
+  /** 人の絞り込みの候補（1人なら出さない） */
+  members?: readonly { id: string; name: string }[];
+  me?: string;
 }) {
   const { t } = useT();
   const { theme } = useTheme();
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
+  const [person, setPerson] = useState(EVERYONE);
 
-  const count = (s: Filter) => (s === "all" ? plans.length : plans.filter((p) => p.status === s).length);
+  // 人で絞ると、払う人か分ける相手のものを出す
+  const ofPerson = useMemo(() => (person === EVERYONE ? plans : plans.filter((p) => !p.split || involves(p.split, person))), [plans, person]);
+  const count = (s: Filter) => (s === "all" ? ofPerson.length : ofPerson.filter((p) => p.status === s).length);
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const shown = plans
+    const shown = ofPerson
       .filter((p) => filter === "all" || p.status === filter)
       .filter((p) => !q || p.title.toLowerCase().includes(q) || (p.memo ?? "").toLowerCase().includes(q));
     const order: Group[] = ["overdue", "thisMonth", "later", "noDate", "done"];
@@ -66,7 +77,7 @@ export function PlansScreen({
           .sort((a, b) => (a.plannedDate ?? "9999").localeCompare(b.plannedDate ?? "9999")),
       }))
       .filter((x) => x.items.length > 0);
-  }, [plans, filter, query, today]);
+  }, [ofPerson, filter, query, today]);
 
   const filters: Filter[] = ["all", "planned", "purchased", "canceled"];
   const firstPlannedId = groups.flatMap((x) => x.items).find((p) => p.status === "planned")?.id;
@@ -95,6 +106,16 @@ export function PlansScreen({
         options={filters.map((f) => ({ value: f, label: `${filterLabel(f)} ${count(f)}` }))}
       />
 
+      {members.length > 1 && (
+        <TabChips
+          label={t("filter.person")}
+          value={person}
+          onChange={setPerson}
+          tone={theme.tone.page}
+          options={[{ value: EVERYONE, label: t("filter.everyone") }, ...members.map((m) => ({ value: m.id, label: m.id === me ? t("payer.me") : m.name }))]}
+        />
+      )}
+
       <div id="plans-panel" role="tabpanel" aria-labelledby={`plans-tab-${filter}`} className="flex flex-col gap-6">
         {plans.length === 0 ? (
           <GlassCard>
@@ -119,7 +140,7 @@ export function PlansScreen({
                 <span className="num text-[12px] font-semibold opacity-85">{items.length}</span>
               </div>
               {items.map((p, i) => (
-                <PlanRow key={p.id} plan={p} index={i} overdue={g === "overdue"} onOpen={() => onOpen(p.id)} tourTarget={p.id === firstPlannedId} />
+                <PlanRow key={p.id} plan={p} me={me} index={i} overdue={g === "overdue"} onOpen={() => onOpen(p.id)} tourTarget={p.id === firstPlannedId} />
               ))}
             </section>
           ))
@@ -138,12 +159,14 @@ export function PlansScreen({
 
 function PlanRow({
   plan: p,
+  me,
   index,
   overdue,
   onOpen,
   tourTarget,
 }: {
   plan: PlanView;
+  me: string;
   index: number;
   overdue: boolean;
   onOpen: () => void;
@@ -180,6 +203,9 @@ function PlanRow({
               </span>
             )}
             <CategoryBadge name={p.category} />
+            {p.split?.splitUserId && (
+              <SplitBadge myShare={involves(p.split, me) ? userShare(p.purchase?.amount ?? p.plannedAmount, p.split, me) : null} />
+            )}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
