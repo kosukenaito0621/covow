@@ -99,6 +99,23 @@ export const productUrlSchema = z
 const idSchema = z.string().min(1).max(64);
 const optionalId = idSchema.nullish().transform((v) => v ?? null);
 
+/**
+ * 割り勘：払う人（省けば、作るときは登録した人・直すときは今のまま）、分ける相手（null＝分けない）、払う人の割合（10〜100 の 10 きざみ）。
+ * 「分けない ⇔ 100」はここで確かめる。払う人・相手がメンバーか、払う人と相手が同じでないかは repo で確かめる。
+ */
+const splitFields = {
+  payerUserId: idSchema.optional(),
+  splitUserId: idSchema.nullable().optional(),
+  payerRatio: z.number().int().min(10).max(100).multipleOf(10).optional(),
+};
+export type SplitInput = { payerUserId?: string; splitUserId?: string | null; payerRatio?: number };
+const checkSplit = (v: SplitInput, ctx: z.RefinementCtx) => {
+  if (v.payerUserId === undefined && v.splitUserId === undefined && v.payerRatio === undefined) return;
+  if ((v.splitUserId == null) !== ((v.payerRatio ?? 100) === 100)) {
+    ctx.addIssue({ code: "custom", path: ["payerRatio"], message: "分ける割合を確認してください" });
+  }
+};
+
 export const planInputSchema = z.object({
   title: requiredText("商品名", LIMITS.title),
   plannedAmount: amountSchema,
@@ -106,15 +123,17 @@ export const planInputSchema = z.object({
   plannedDate: optionalDate,
   memo: optionalText("メモ", LIMITS.memo),
   productUrl: productUrlSchema,
-  /** 購入担当者。null＝ふたり */
+  /** 購入担当者。null＝ふたり（画面では使っていない。払う人に置き換えた） */
   assigneeUserId: optionalId,
-});
+  ...splitFields,
+}).superRefine(checkSplit);
 export type PlanInput = z.output<typeof planInputSchema>;
 
 export const purchaseInputSchema = z.object({
   actualAmount: amountSchema,
   spentAt: isoDateSchema,
-});
+  ...splitFields,
+}).superRefine(checkSplit);
 
 export const expenseInputSchema = z.object({
   title: requiredText("支出内容", LIMITS.title),
@@ -122,7 +141,8 @@ export const expenseInputSchema = z.object({
   spentAt: isoDateSchema,
   categoryId: optionalId,
   memo: optionalText("メモ", LIMITS.memo),
-});
+  ...splitFields,
+}).superRefine(checkSplit);
 export type ExpenseInput = z.output<typeof expenseInputSchema>;
 
 export const budgetInputSchema = z.object({

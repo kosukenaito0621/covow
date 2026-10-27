@@ -97,10 +97,10 @@ export async function partnerVisit(db: Db, input: { spaceId: string; youId: stri
   const now = new Date().toISOString();
   await d1
     .prepare(
-      `INSERT INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, created_at, updated_at)
-       VALUES (?, ?, ?, NULL, ?, ?, ?, ?, NULL, NULL, 'planned', ?, ?)`,
+      `INSERT INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, payer_user_id, created_at, updated_at)
+       VALUES (?, ?, ?, NULL, ?, ?, ?, ?, NULL, NULL, 'planned', ?, ?, ?)`,
     )
-    .bind(id, input.spaceId, partner.id, PARTNER_VISIT_PLAN.text[dataLocale(input.locale)], PARTNER_VISIT_PLAN.amount, cat?.id ?? null, partnerVisitDate(jstToday()), now, now)
+    .bind(id, input.spaceId, partner.id, PARTNER_VISIT_PLAN.text[dataLocale(input.locale)], PARTNER_VISIT_PLAN.amount, cat?.id ?? null, partnerVisitDate(jstToday()), partner.id, now, now)
     .run();
   return { id };
 }

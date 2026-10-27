@@ -130,15 +130,15 @@ for (const r of data) {
   const memo = r[C.memo] || null;
   const cat = r[C.category] ? categoryOf(r[C.category]) : "NULL";
   out.push(
-    `INSERT OR IGNORE INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, created_at, updated_at)
-SELECT ${q(`legacy-plan-${r[C.id]}`)}, ${space}, ${userOf(r[C.who])}, NULL, ${q(r[C.title])}, ${amount}, ${cat}, ${q(date)}, ${q(memo)}, NULL, ${q(status)}, ${q(created)}, ${q(updated)}
+    `INSERT OR IGNORE INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, payer_user_id, created_at, updated_at)
+SELECT ${q(`legacy-plan-${r[C.id]}`)}, ${space}, ${userOf(r[C.who])}, NULL, ${q(r[C.title])}, ${amount}, ${cat}, ${q(date)}, ${q(memo)}, NULL, ${q(status)}, ${userOf(r[C.who])}, ${q(created)}, ${q(updated)}
 WHERE ${guard};`,
   );
   if (status === "purchased") {
     // 旧アプリには実際の金額がないので、予定金額と同じにする。買った日は予定日、なければ登録日（日本時間）
     out.push(
-      `INSERT OR IGNORE INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, created_at, updated_at)
-SELECT ${q(`legacy-exp-${r[C.id]}`)}, ${space}, ${q(`legacy-plan-${r[C.id]}`)}, ${userOf(r[C.who])}, ${q(r[C.title])}, ${amount}, ${cat}, ${q(date ?? jstDate(created))}, NULL, ${q(updated)}, ${q(updated)}
+      `INSERT OR IGNORE INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, payer_user_id, created_at, updated_at)
+SELECT ${q(`legacy-exp-${r[C.id]}`)}, ${space}, ${q(`legacy-plan-${r[C.id]}`)}, ${userOf(r[C.who])}, ${q(r[C.title])}, ${amount}, ${cat}, ${q(date ?? jstDate(created))}, NULL, ${userOf(r[C.who])}, ${q(updated)}, ${q(updated)}
 WHERE ${guard} AND EXISTS (SELECT 1 FROM purchase_plans WHERE id = ${q(`legacy-plan-${r[C.id]}`)});`,
     );
     purchased++;

@@ -1,8 +1,10 @@
-import type { PlanInput } from "../../shared/schemas";
+import type { Split } from "../../shared/money/split";
+import type { PlanInput, SplitInput } from "../../shared/schemas";
 import type { PlanStatus } from "../../shared/money/summary";
 import type { Db } from "../db/client";
 import { assertCategoryInSpace } from "./categories";
 import { fromConstraint, RepoError } from "./errors";
+import { assertMember, resolveSplit } from "./members";
 
 /*
  * 購入予定。どの文も WHERE に space_id を入れて、ほかのスペースの予定は「ない」ものとして扱う（404）。
@@ -23,6 +25,12 @@ export interface PlanRow {
   createdByName: string;
   assigneeUserId: string | null;
   assigneeName: string | null;
+  /** 割り勘：払う人・分ける相手（null＝分けない）・払う人の割合 */
+  payerUserId: string;
+  payerName: string;
+  splitUserId: string | null;
+  splitName: string | null;
+  payerRatio: number;
   createdAt: string;
   updatedAt: string;
   /** 購入済みなら、紐づく支出 */
@@ -36,11 +44,14 @@ const SELECT = `
          p.category_id AS categoryId, c.name AS categoryName, p.memo, p.product_url AS productUrl,
          p.created_by AS createdBy, cu.display_name AS createdByName,
          p.assignee_user_id AS assigneeUserId, au.display_name AS assigneeName,
+         p.payer_user_id AS payerUserId, pu.display_name AS payerName, p.split_user_id AS splitUserId, su.display_name AS splitName, p.payer_ratio AS payerRatio,
          p.created_at AS createdAt, p.updated_at AS updatedAt,
          e.id AS expenseId, e.actual_amount AS actualAmount, e.spent_at AS spentAt
     FROM purchase_plans p
     JOIN users cu ON cu.id = p.created_by
     LEFT JOIN users au ON au.id = p.assignee_user_id
+    JOIN users pu ON pu.id = p.payer_user_id
+    LEFT JOIN users su ON su.id = p.split_user_id
     LEFT JOIN categories c ON c.id = p.category_id
     LEFT JOIN expenses e ON e.purchase_plan_id = p.id`;
 
@@ -64,27 +75,18 @@ export async function getPlan(db: Db, spaceId: string, id: string): Promise<Plan
   return toRow(row);
 }
 
-/** 購入担当者に指定できるのは、いまのメンバーだけ（null＝みんな） */
-async function assertMember(db: Db, spaceId: string, userId: string | null) {
-  if (userId === null) return;
-  const row = await db.$client
-    .prepare("SELECT 1 AS ok FROM space_members WHERE space_id = ? AND user_id = ?")
-    .bind(spaceId, userId)
-    .first();
-  if (!row) throw new RepoError("INVALID_REFERENCE");
-}
-
 export async function createPlan(db: Db, spaceId: string, userId: string, input: PlanInput) {
   await assertCategoryInSpace(db, spaceId, input.categoryId);
   await assertMember(db, spaceId, input.assigneeUserId);
+  const split = await resolveSplit(db, spaceId, input, { payerUserId: userId, splitUserId: null, payerRatio: 100 });
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   await db.$client
     .prepare(
-      `INSERT INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'planned', ?, ?)`,
+      `INSERT INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, payer_user_id, split_user_id, payer_ratio, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'planned', ?, ?, ?, ?, ?)`,
     )
-    .bind(id, spaceId, userId, input.assigneeUserId, input.title, input.plannedAmount, input.categoryId, input.plannedDate, input.memo, input.productUrl, now, now)
+    .bind(id, spaceId, userId, input.assigneeUserId, input.title, input.plannedAmount, input.categoryId, input.plannedDate, input.memo, input.productUrl, split.payerUserId, split.splitUserId, split.payerRatio, now, now)
     .run();
   return getPlan(db, spaceId, id);
 }
@@ -93,12 +95,14 @@ export async function createPlan(db: Db, spaceId: string, userId: string, input:
 export async function updatePlan(db: Db, spaceId: string, id: string, input: PlanInput) {
   await assertCategoryInSpace(db, spaceId, input.categoryId);
   await assertMember(db, spaceId, input.assigneeUserId);
+  const split = await resolveSplit(db, spaceId, input, await getPlan(db, spaceId, id));
   const res = await db.$client
     .prepare(
-      `UPDATE purchase_plans SET title = ?, planned_amount = ?, category_id = ?, planned_date = ?, memo = ?, product_url = ?, assignee_user_id = ?, updated_at = ?
+      `UPDATE purchase_plans SET title = ?, planned_amount = ?, category_id = ?, planned_date = ?, memo = ?, product_url = ?, assignee_user_id = ?,
+         payer_user_id = ?, split_user_id = ?, payer_ratio = ?, updated_at = ?
        WHERE id = ? AND space_id = ?`,
     )
-    .bind(input.title, input.plannedAmount, input.categoryId, input.plannedDate, input.memo, input.productUrl, input.assigneeUserId, new Date().toISOString(), id, spaceId)
+    .bind(input.title, input.plannedAmount, input.categoryId, input.plannedDate, input.memo, input.productUrl, input.assigneeUserId, split.payerUserId, split.splitUserId, split.payerRatio, new Date().toISOString(), id, spaceId)
     .run();
   if (res.meta.changes === 0) throw new RepoError("NOT_FOUND");
   return getPlan(db, spaceId, id);
@@ -118,20 +122,24 @@ async function conflictOrNotFound(db: Db, spaceId: string, id: string, alreadyCo
  * 購入済みにする（指示書 7.4）。
  * 1) 未購入のときだけ購入済みにする 2) 購入済みになった予定があるときだけ支出を作る、を1回の batch で行う。
  * 2回目の送信は 2) が UNIQUE（1つの予定に支出は1つ）で失敗して全体が取り消され、409 になる。
+ * 割り勘は、指定があれば予定もその割合にそろえてから、予定の割合を支出に写す（省けば予定の割合のまま）。
  */
-export async function purchasePlan(db: Db, spaceId: string, userId: string, id: string, input: { actualAmount: number; spentAt: string }) {
+export async function purchasePlan(db: Db, spaceId: string, userId: string, id: string, input: { actualAmount: number; spentAt: string } & SplitInput) {
+  const split: Split = await resolveSplit(db, spaceId, input, await getPlan(db, spaceId, id));
   const now = new Date().toISOString();
   const d1 = db.$client;
   let results: D1Result[];
   try {
     results = await d1.batch([
       d1
-        .prepare("UPDATE purchase_plans SET status = 'purchased', updated_at = ? WHERE id = ? AND space_id = ? AND status = 'planned'")
-        .bind(now, id, spaceId),
+        .prepare(
+          "UPDATE purchase_plans SET status = 'purchased', payer_user_id = ?, split_user_id = ?, payer_ratio = ?, updated_at = ? WHERE id = ? AND space_id = ? AND status = 'planned'",
+        )
+        .bind(split.payerUserId, split.splitUserId, split.payerRatio, now, id, spaceId),
       d1
         .prepare(
-          `INSERT INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, created_at, updated_at)
-           SELECT ?, space_id, id, ?, title, ?, category_id, ?, NULL, ?, ? FROM purchase_plans WHERE id = ? AND space_id = ? AND status = 'purchased'`,
+          `INSERT INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, payer_user_id, split_user_id, payer_ratio, created_at, updated_at)
+           SELECT ?, space_id, id, ?, title, ?, category_id, ?, NULL, payer_user_id, split_user_id, payer_ratio, ?, ? FROM purchase_plans WHERE id = ? AND space_id = ? AND status = 'purchased'`,
         )
         .bind(crypto.randomUUID(), userId, input.actualAmount, input.spentAt, now, now, id, spaceId),
     ]);
@@ -142,11 +150,19 @@ export async function purchasePlan(db: Db, spaceId: string, userId: string, id: 
   return getPlan(db, spaceId, id);
 }
 
-/** 未購入に戻す（指示書 7.5）。紐づく支出の削除と予定の更新を1回の batch で行う */
+/** 未購入に戻す（指示書 7.5）。支出の割り勘を予定に書き戻し、紐づく支出の削除と予定の更新を1回の batch で行う */
 export async function unpurchasePlan(db: Db, spaceId: string, id: string) {
   const now = new Date().toISOString();
   const d1 = db.$client;
   const results = await d1.batch([
+    d1
+      .prepare(
+        `UPDATE purchase_plans SET (payer_user_id, split_user_id, payer_ratio) =
+           (SELECT payer_user_id, split_user_id, payer_ratio FROM expenses WHERE purchase_plan_id = ? AND space_id = ?)
+         WHERE id = ? AND space_id = ? AND status = 'purchased'
+           AND EXISTS (SELECT 1 FROM expenses WHERE purchase_plan_id = ? AND space_id = ?)`,
+      )
+      .bind(id, spaceId, id, spaceId, id, spaceId),
     d1
       .prepare(
         `DELETE FROM expenses WHERE purchase_plan_id = ? AND space_id = ?
@@ -157,7 +173,7 @@ export async function unpurchasePlan(db: Db, spaceId: string, id: string) {
       .prepare("UPDATE purchase_plans SET status = 'planned', updated_at = ? WHERE id = ? AND space_id = ? AND status = 'purchased'")
       .bind(now, id, spaceId),
   ]);
-  if (results[1]?.meta.changes !== 1) throw await conflictOrNotFound(db, spaceId, id, "STATE_CONFLICT");
+  if (results[2]?.meta.changes !== 1) throw await conflictOrNotFound(db, spaceId, id, "STATE_CONFLICT");
   return getPlan(db, spaceId, id);
 }
 

@@ -39,16 +39,18 @@ interface SamplePlan {
   /** 購入済みのときの実際の金額 */
   paid?: number;
   byPartner?: boolean;
+  /** ふたりで折半（5:5）にする見本 */
+  split?: boolean;
   memo?: Text;
 }
 
 const PLANS: SamplePlan[] = [
-  { text: { en: "Dining chairs (pair)", ja: "ダイニングチェア（2脚）" }, amount: 28000, cat: "home", dayOffset: 3, status: "planned", memo: { en: "Oak, the lighter finish.", ja: "オーク材の明るい色" } },
+  { text: { en: "Dining chairs (pair)", ja: "ダイニングチェア（2脚）" }, amount: 28000, cat: "home", dayOffset: 3, status: "planned", split: true, memo: { en: "Oak, the lighter finish.", ja: "オーク材の明るい色" } },
   { text: { en: "Humidifier", ja: "加湿器" }, amount: 9800, cat: "home", dayOffset: 6, status: "planned", byPartner: true },
   { text: { en: "Winter rug", ja: "冬用のラグ" }, amount: 12800, cat: "home", dayOffset: null, status: "planned" },
   { text: { en: "Birthday gift for Mom", ja: "母の誕生日プレゼント" }, amount: 8000, cat: "social", dayOffset: -40, status: "planned", byPartner: true },
   { text: { en: "Coffee grinder", ja: "コーヒーミル" }, amount: 12000, cat: "daily", dayOffset: -12, status: "purchased", paid: 10780, byPartner: true },
-  { text: { en: "Bookshelf", ja: "本棚" }, amount: 15000, cat: "home", dayOffset: -20, status: "purchased", paid: 16480 },
+  { text: { en: "Bookshelf", ja: "本棚" }, amount: 15000, cat: "home", dayOffset: -20, status: "purchased", paid: 16480, split: true },
   { text: { en: "Second monitor", ja: "サブモニター" }, amount: 32000, cat: "hobby", dayOffset: -8, status: "canceled" },
 ];
 
@@ -118,16 +120,17 @@ export function sampleStatements({ d1, locale, today, now, youId, partnerId, spa
     const id = crypto.randomUUID();
     const date = p.dayOffset === null ? null : addDays(today, p.dayOffset);
     const by = p.byPartner ? partnerId : youId;
+    const split = p.split ? { splitUserId: by === youId ? partnerId : youId, payerRatio: 50 } : { splitUserId: null, payerRatio: 100 };
     out.push(
       d1
         .prepare(
-          `INSERT INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, created_at, updated_at)
-           VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?)`,
+          `INSERT INTO purchase_plans (id, space_id, created_by, assignee_user_id, title, planned_amount, category_id, planned_date, memo, product_url, status, payer_user_id, split_user_id, payer_ratio, created_at, updated_at)
+           VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?)`,
         )
-        .bind(id, spaceId, by, p.text[locale], p.amount, catIds[p.cat], date, p.memo?.[locale] ?? null, p.status, now, now),
+        .bind(id, spaceId, by, p.text[locale], p.amount, catIds[p.cat], date, p.memo?.[locale] ?? null, p.status, by, split.splitUserId, split.payerRatio, now, now),
     );
     if (p.status === "purchased" && date) {
-      out.push(expense(d1, { spaceId, by, title: p.text[locale], amount: p.paid ?? p.amount, catId: catIds[p.cat], date, now, planId: id }));
+      out.push(expense(d1, { spaceId, by, title: p.text[locale], amount: p.paid ?? p.amount, catId: catIds[p.cat], date, now, planId: id, ...split }));
     }
   }
   return out;
@@ -135,14 +138,14 @@ export function sampleStatements({ d1, locale, today, now, youId, partnerId, spa
 
 function expense(
   d1: D1Database,
-  e: { spaceId: string; by: string; title: string; amount: number; catId: string; date: IsoDate; now: string; planId?: string },
+  e: { spaceId: string; by: string; title: string; amount: number; catId: string; date: IsoDate; now: string; planId?: string; splitUserId?: string | null; payerRatio?: number },
 ) {
   return d1
     .prepare(
-      `INSERT INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)`,
+      `INSERT INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, payer_user_id, split_user_id, payer_ratio, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?)`,
     )
-    .bind(crypto.randomUUID(), e.spaceId, e.planId ?? null, e.by, e.title, e.amount, e.catId, e.date, e.now, e.now);
+    .bind(crypto.randomUUID(), e.spaceId, e.planId ?? null, e.by, e.title, e.amount, e.catId, e.date, e.by, e.splitUserId ?? null, e.payerRatio ?? 100, e.now, e.now);
 }
 
 /** はるさんの予定（見本のスペースのカテゴリの並びから、カテゴリを選ぶ） */
