@@ -26,7 +26,7 @@
 - 予定を「買った」ときに割合を変え、そのあと「予定に戻す」：予定の割合が支出のものに戻る → Task 3 のテスト。
 - 1人だけのスペース：人の切り替えを出さない。「ふたりで分ける」も選べない → Task 6・7。
 - `?user=` にほかのスペースの人の ID：404 で何も漏れない → Task 4 のテスト。
-- 金額 1円・割合 10% のような端の値：払う人 0円にならない分け方（1円は払う人へ寄る）→ Task 1 のテスト。
+- 金額 1円・割合 10% のような端の値：1円は割合の大きい相手へ寄り、払う人は 0円（合計は 1円のまま）→ Task 1 のテスト。
 
 ---
 
@@ -43,7 +43,7 @@
   - `forUser<T extends Split>(items: readonly T[], userId: string, amountKey: "plannedAmount" | "actualAmount"): T[]`（その人の分の金額に置き換え、関わらないものは外す）
   - `involves(split: Split, userId: string): boolean`
 
-- [ ] Step 1: テスト `splitAmounts`：(999,50)→{500,499}、(1000,30)→{300,700}、(1000,100)→{1000,0}、(1,10)→{1,0}、(7,70)→{5,2}。どれも payer+other=amount。
+- [ ] Step 1: テスト `splitAmounts`：(999,50)→{500,499}、(1000,30)→{300,700}、(1000,100)→{1000,0}、(1,10)→{0,1}、(7,70)→{5,2}。どれも payer+other=amount。
 - [ ] Step 2: テスト `userShare`・`forUser`：払う人・相手・無関係の3人で確かめる。
 - [ ] Step 3: 実装（other = 割合の大きい側に端数を寄せる。payerRatio>=50 なら other=floor(amount*(100-r)/100)、それ以外は payer=floor(amount*r/100)）。
 - [ ] Step 4: `npx vitest run --config vitest.unit.config.ts src/shared/money/split.test.ts` が PASS。
