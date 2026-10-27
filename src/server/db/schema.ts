@@ -143,6 +143,10 @@ export const purchasePlans = sqliteTable(
     memo: text("memo"),
     productUrl: text("product_url"),
     status: text("status", { enum: PLAN_STATUSES }).notNull().default("planned"),
+    // 割り勘（0006）：払う人・分ける相手（NULL＝分けない）・払う人の割合（10〜100 の 10 きざみ）
+    payerUserId: text("payer_user_id").references(() => users.id),
+    splitUserId: text("split_user_id").references(() => users.id),
+    payerRatio: integer("payer_ratio").notNull().default(100),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
   },
@@ -177,6 +181,10 @@ export const expenses = sqliteTable(
     categoryId: text("category_id").references(() => categories.id, { onDelete: "set null" }),
     spentAt: text("spent_at").notNull(),
     memo: text("memo"),
+    // 割り勘（0006）：払う人・分ける相手（NULL＝分けない）・払う人の割合（10〜100 の 10 きざみ）
+    payerUserId: text("payer_user_id").references(() => users.id),
+    splitUserId: text("split_user_id").references(() => users.id),
+    payerRatio: integer("payer_ratio").notNull().default(100),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),
   },
@@ -194,6 +202,10 @@ export const budgets = sqliteTable(
     spaceId: text("space_id")
       .notNull()
       .references(() => spaces.id, { onDelete: "cascade" }),
+    // 人ごとの予算（0006）
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
     yearMonth: text("year_month").notNull(),
     budgetAmount: integer("budget_amount").notNull(),
     createdAt: text("created_at").notNull(),
@@ -201,7 +213,7 @@ export const budgets = sqliteTable(
   },
   (t) => [
     // 将来カテゴリ別予算を足すときは category_id（NULL＝全体）を加えて UNIQUE を広げる
-    uniqueIndex("budgets_space_month_unique").on(t.spaceId, t.yearMonth),
+    uniqueIndex("budgets_space_user_month_unique").on(t.spaceId, t.userId, t.yearMonth),
     check("budgets_amount_check", sql`${t.budgetAmount} BETWEEN 0 AND 99999999`),
     check("budgets_month_check", sql`${t.yearMonth} GLOB ${sql.raw(`'${MONTH_GLOB}'`)}`),
   ],

@@ -134,14 +134,14 @@ export const dataRoutes = base
     const from = c.req.query("from");
     const to = c.req.query("to");
     if (!from || !to || !isYearMonth(from) || !isYearMonth(to) || from > to) return badQuery(c);
-    return c.json({ budgets: await listBudgets(c.var.db, currentSpaceId(c), from, to) });
+    return c.json({ budgets: await listBudgets(c.var.db, currentSpaceId(c), currentUser(c).id, from, to) });
   })
   .put("/budgets/:yearMonth", async (c) => {
     const ym = c.req.param("yearMonth");
     if (!isYearMonth(ym)) return badQuery(c);
     const parsed = await parseBody(c, budgetInputSchema);
     if (!parsed.ok) return parsed.res;
-    const months = await putBudget(c.var.db, currentSpaceId(c), ym, parsed.data.amount, parsed.data.applyToFuture);
+    const months = await putBudget(c.var.db, currentSpaceId(c), currentUser(c).id, ym, parsed.data.amount, parsed.data.applyToFuture);
     return c.json({ months, amount: parsed.data.amount });
   })
 
@@ -233,7 +233,7 @@ export const dataRoutes = base
     const today = jstToday();
     const prev = addMonths(ym, -1);
     const [budget, plans, expenses] = await Promise.all([
-      getBudget(c.var.db, spaceId, ym),
+      getBudget(c.var.db, spaceId, currentUser(c).id, ym),
       listPlans(c.var.db, spaceId),
       listExpensesBetween(c.var.db, spaceId, `${prev}-01`, `${ym}-31`),
     ]);

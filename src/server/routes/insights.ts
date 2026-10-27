@@ -16,6 +16,7 @@ import { listExpensesBetween } from "../repo/expenses";
 import { listPlans } from "../repo/plans";
 import { getSpace } from "../repo/space";
 import { currentSpaceId, requireMember } from "../middleware/require-member";
+import { currentUser } from "../middleware/session";
 import type { AppEnv } from "../types";
 
 /** 推移で見る月数（表示中の月を含めて） */
@@ -37,7 +38,7 @@ export const insightsRoutes = new Hono<AppEnv>().get("/", requireMember(), async
   const [plans, expenses, budgets, categories, space] = await Promise.all([
     listPlans(db, spaceId),
     listExpensesBetween(db, spaceId, `${first}-01`, `${ym}-31`),
-    listBudgets(db, spaceId, first, ym),
+    listBudgets(db, spaceId, currentUser(c).id, first, ym),
     listCategories(db, spaceId),
     getSpace(db, spaceId),
   ]);

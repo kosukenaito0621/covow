@@ -89,14 +89,16 @@ export function sampleStatements({ d1, locale, today, now, youId, partnerId, spa
     );
   });
 
-  // 予算：5か月前から来月まで（3か月前だけ控えめにして、予算オーバーの月を1つ見せる）
+  // 予算は人ごと：5か月前から来月まで（3か月前だけ控えめにして、予算オーバーの月を1つ見せる）
   const month = yearMonthOf(today);
-  for (let i = -5; i <= 1; i++) {
-    out.push(
-      d1
-        .prepare("INSERT INTO budgets (id, space_id, year_month, budget_amount, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-        .bind(crypto.randomUUID(), spaceId, addMonths(month, i), i === -3 ? 60000 : i === -2 ? 200000 : 180000, now, now),
-    );
+  for (const userId of [youId, partnerId]) {
+    for (let i = -5; i <= 1; i++) {
+      out.push(
+        d1
+          .prepare("INSERT INTO budgets (id, space_id, user_id, year_month, budget_amount, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+          .bind(crypto.randomUUID(), spaceId, userId, addMonths(month, i), i === -3 ? 30000 : i === -2 ? 100000 : 90000, now, now),
+      );
+    }
   }
 
   // 支出：5か月前の1日から今日まで、2日に1回くらい（分析の推移が6か月そろうように）
