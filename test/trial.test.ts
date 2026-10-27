@@ -38,7 +38,7 @@ describe("体験版", () => {
     expect(plans.length).toBeGreaterThanOrEqual(7);
     expect(new Set(plans.map((p) => p.status))).toEqual(new Set(["planned", "purchased", "canceled"]));
     const summary = await (await t.call("/summary")).json<{ budget: number; actualTotal: number }>();
-    expect(summary.budget).toBe(180000);
+    expect(summary.budget).toBe(90000); // 予算は人ごと
     expect(summary.actualTotal).toBeGreaterThan(0);
     const cats = (await (await t.call("/categories")).json<{ categories: { name: string }[] }>()).categories;
     expect(cats[0]?.name).toBe("食費");
