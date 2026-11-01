@@ -107,12 +107,14 @@ export function sampleStatements({ d1, locale, today, now, youId, partnerId, spa
   const r = rng(11);
   const start = `${addMonths(month, -5)}-01`;
   for (let d = start; d <= today; d = addDays(d, 1)) {
-    if (r() < 0.45) continue;
+    // 今日は必ず1件（月の初日に始めても、ホームが空にならないように）
+    if (r() < 0.45 && d !== today) continue;
     const item = EXPENSE_ITEMS[Math.floor(r() * EXPENSE_ITEMS.length)]!;
     const amount = Math.round((item.min + r() * (item.max - item.min)) / 10) * 10;
     // 3か月前の月はやや多め（予算オーバーの月が1つある見本にする）
     const boost = yearMonthOf(d) === addMonths(month, -3) ? 1.35 : 1;
-    out.push(expense(d1, { spaceId, by: r() < 0.55 ? youId : partnerId, title: item.text[locale], amount: Math.round(amount * boost), catId: catIds[item.cat], date: d, now }));
+    const by = d === today ? youId : r() < 0.55 ? youId : partnerId;
+    out.push(expense(d1, { spaceId, by, title: item.text[locale], amount: Math.round(amount * boost), catId: catIds[item.cat], date: d, now }));
   }
 
   // 予定（購入済みのものには支出を付ける）
