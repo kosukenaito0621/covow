@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { jstToday } from "@shared/date/jst";
+import { isYearMonth, jstThisMonth, jstToday } from "@shared/date/jst";
 import { plansQuery } from "../../api/data";
 import { PlansSkeleton } from "../../components/loading/PageSkeletons";
 import { Reveal, useStartedLoading } from "../../components/ui/Reveal";
@@ -12,13 +12,20 @@ import { toPlanView } from "../../screens/types";
 import { meQuery } from "../../api/me";
 import { spaceQuery } from "../../api/space";
 
+type PlansSearch = { month?: string };
+
 export const Route = createFileRoute("/_app/plans/")({
+  // 表示する月（省けば今月）。戻ったときも同じ月を出せるよう URL に残す
+  validateSearch: (s: Record<string, unknown>): PlansSearch => ({
+    month: typeof s.month === "string" && isYearMonth(s.month) ? s.month : undefined,
+  }),
   component: Plans,
 });
 
 function Plans() {
   const navigate = useNavigate();
   const { theme } = useTheme();
+  const search = Route.useSearch();
   const plans = useQuery(plansQuery);
   const space = useQuery(spaceQuery);
   const me = useQuery(meQuery).data?.user.id ?? "";
@@ -34,6 +41,8 @@ function Plans() {
       ) : (
         <Reveal active={reveal} className="flex flex-col gap-5">
           <PlansScreen
+            month={search.month}
+            onMonthChange={(m) => void navigate({ to: "/plans", search: { month: m === jstThisMonth() ? undefined : m } })}
             members={(space.data?.members ?? []).map((m) => ({ id: m.id, name: m.displayName }))}
             me={me}
             plans={plans.data.map(toPlanView)}

@@ -36,7 +36,7 @@ const CATS = [
   { id: "c-gift", en: "Gifts", ja: "プレゼント" },
 ];
 
-type Raw = Omit<PlanView, "createdBy" | "category" | "title" | "memo"> & {
+type Raw = Omit<PlanView, "createdBy" | "createdAt" | "category" | "title" | "memo"> & {
   en: string;
   ja: string;
   by: string;
@@ -152,6 +152,8 @@ export default function ScreenPreviews() {
     ...r,
     title: r[dl],
     createdBy: NAMES[r.by] ?? r.by,
+    // 見本は日付なしの予定も今月に出す
+    createdAt: new Date().toISOString(),
     category: catName(r.cat),
     memo: r.memo?.[dl],
   }));

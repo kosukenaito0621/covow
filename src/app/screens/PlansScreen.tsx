@@ -1,10 +1,12 @@
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { type IsoDate, yearMonthOf } from "@shared/date/jst";
+import { type IsoDate, type YearMonth, yearMonthOf } from "@shared/date/jst";
 import { formatShortDate, type MessageKey } from "@shared/i18n";
 import { formatYen } from "@shared/money/amount";
+import { plansForMonth } from "@shared/money/month";
 import { involves, userShare } from "@shared/money/split";
 import type { PlanStatus } from "@shared/money/summary";
+import { MonthSwitcher } from "../components/MonthPicker";
 import { AddPill } from "../components/glass/AddPill";
 import { GlassCard } from "../components/glass/GlassCard";
 import { TabChips } from "../components/glass/TabChips";
@@ -37,7 +39,10 @@ const groupOf = (p: PlanView, today: IsoDate): Group => {
 
 const EVERYONE = "__everyone__";
 
-/** 予定の一覧。上で状態と人を絞り込み、検索欄で商品名・メモを探す。未購入は日付ごとにまとめる */
+/**
+ * 予定の一覧。上で月（開いたときは今月）・状態・人を絞り込み、検索欄で商品名・メモを探す。未購入は日付ごとにまとめる。
+ * 今月を見ているときは、期限切れと日付なしの未購入も出す（買い忘れを防ぐ）。
+ */
 export function PlansScreen({
   plans,
   today,
@@ -45,6 +50,8 @@ export function PlansScreen({
   onAdd,
   members = [],
   me = "",
+  month,
+  onMonthChange,
 }: {
   plans: readonly PlanView[];
   today: IsoDate;
@@ -53,6 +60,9 @@ export function PlansScreen({
   /** 人の絞り込みの候補（1人なら出さない） */
   members?: readonly { id: string; name: string }[];
   me?: string;
+  /** 表示する月（省けば今月）と、月を変えたとき */
+  month?: YearMonth;
+  onMonthChange?: (ym: YearMonth) => void;
 }) {
   const { t } = useT();
   const { theme } = useTheme();
@@ -61,7 +71,12 @@ export function PlansScreen({
   const [person, setPerson] = useState(EVERYONE);
 
   // 人で絞ると、払う人か分ける相手のものを出す
-  const ofPerson = useMemo(() => (person === EVERYONE ? plans : plans.filter((p) => !p.split || involves(p.split, person))), [plans, person]);
+  const ym = month ?? yearMonthOf(today);
+  const ofMonth = useMemo(() => plansForMonth(plans, ym, today), [plans, ym, today]);
+  const ofPerson = useMemo(
+    () => (person === EVERYONE ? ofMonth : ofMonth.filter((p) => !p.split || involves(p.split, person))),
+    [ofMonth, person],
+  );
   const count = (s: Filter) => (s === "all" ? ofPerson.length : ofPerson.filter((p) => p.status === s).length);
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -86,7 +101,10 @@ export function PlansScreen({
   return (
     <>
       <header className="flex items-end justify-between gap-3">
-        <h1 className="text-[28px] leading-none font-bold tracking-tight">{t("plans.title")}</h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-[28px] leading-none font-bold tracking-tight">{t("plans.title")}</h1>
+          {onMonthChange && <MonthSwitcher value={ym} onChange={onMonthChange} />}
+        </div>
       </header>
 
       <SearchField
@@ -124,6 +142,16 @@ export function PlansScreen({
               icon="plans"
               title={t("plans.empty")}
               body={t("plans.emptyBody")}
+              action={{ label: t("plan.add"), onClick: onAdd }}
+            />
+          </GlassCard>
+        ) : ofMonth.length === 0 ? (
+          <GlassCard>
+            <EmptyState
+              tone={theme.tone.card}
+              icon="calendar"
+              title={t("plans.emptyMonth")}
+              body={t("plans.emptyMonthBody")}
               action={{ label: t("plan.add"), onClick: onAdd }}
             />
           </GlassCard>

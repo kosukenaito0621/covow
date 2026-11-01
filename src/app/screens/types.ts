@@ -11,6 +11,8 @@ export interface PlanView {
   status: PlanStatus;
   /** 追加した人の表示名 */
   createdBy: string;
+  /** 登録した日時（日付のない予定を、登録した月に振り分ける） */
+  createdAt: string;
   category: string | null;
   memo?: string;
   url?: string;
@@ -34,6 +36,7 @@ export const toPlanView = (p: {
   plannedDate: IsoDate | null;
   status: PlanStatus;
   createdByName: string;
+  createdAt: string;
   categoryName: string | null;
   memo: string | null;
   productUrl: string | null;
@@ -50,6 +53,7 @@ export const toPlanView = (p: {
   plannedDate: p.plannedDate,
   status: p.status,
   createdBy: p.createdByName,
+  createdAt: p.createdAt,
   category: p.categoryName,
   memo: p.memo ?? undefined,
   url: p.productUrl ?? undefined,
