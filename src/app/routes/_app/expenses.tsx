@@ -48,7 +48,9 @@ function Expenses() {
   const space = useQuery(spaceQuery);
   const me = useQuery(meQuery).data?.user.id ?? "";
   const members = space.data?.members ?? [];
-  const [person, setPerson] = useState(EVERYONE);
+  // 人の絞り込みは、最初は自分（選ぶまでは null）。メンバーが1人なら絞り込まない
+  const [picked, setPerson] = useState<string | null>(null);
+  const person = picked ?? (members.length > 1 && me ? me : EVERYONE);
   const [source, setSource] = useState<Source>("all");
   const reveal = useStartedLoading(list.isPending);
   const form = useExpenseForm();
@@ -87,7 +89,11 @@ function Expenses() {
           value={person}
           onChange={setPerson}
           tone={theme.tone.page}
-          options={[{ value: EVERYONE, label: t("filter.everyone") }, ...members.map((m) => ({ value: m.id, label: m.id === me ? t("payer.me") : m.displayName }))]}
+          // 並びは 自分 → ほかのメンバー → 全員（全員は最後）
+          options={[
+            ...[...members].sort((a, b) => Number(b.id === me) - Number(a.id === me)).map((m) => ({ value: m.id, label: m.id === me ? t("payer.me") : m.displayName })),
+            { value: EVERYONE, label: t("filter.everyone") },
+          ]}
         />
       )}
       <TabChips
