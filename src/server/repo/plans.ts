@@ -4,6 +4,7 @@ import type { PlanStatus } from "../../shared/money/summary";
 import type { Db } from "../db/client";
 import { assertCategoryInSpace } from "./categories";
 import { fromConstraint, RepoError } from "./errors";
+import { deleteChanges, upsertChanges } from "./expense-changes";
 import { assertMember, resolveSplit } from "./members";
 
 /*
@@ -128,6 +129,7 @@ export async function purchasePlan(db: Db, spaceId: string, userId: string, id: 
   const split: Split = await resolveSplit(db, spaceId, input, await getPlan(db, spaceId, id));
   const now = new Date().toISOString();
   const d1 = db.$client;
+  const expenseId = crypto.randomUUID();
   let results: D1Result[];
   try {
     results = await d1.batch([
@@ -141,7 +143,9 @@ export async function purchasePlan(db: Db, spaceId: string, userId: string, id: 
           `INSERT INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, payer_user_id, split_user_id, payer_ratio, created_at, updated_at)
            SELECT ?, space_id, id, ?, title, ?, category_id, ?, NULL, payer_user_id, split_user_id, payer_ratio, ?, ? FROM purchase_plans WHERE id = ? AND space_id = ? AND status = 'purchased'`,
         )
-        .bind(crypto.randomUUID(), userId, input.actualAmount, input.spentAt, now, now, id, spaceId),
+        .bind(expenseId, userId, input.actualAmount, input.spentAt, now, now, id, spaceId),
+      // COWEL 連携：作った支出を、同じ batch で記録帳へ
+      upsertChanges(d1, "e.id = ? AND e.space_id = ?", [expenseId, spaceId]),
     ]);
   } catch (e) {
     throw fromConstraint(e) ?? e;
@@ -163,6 +167,8 @@ export async function unpurchasePlan(db: Db, spaceId: string, id: string) {
            AND EXISTS (SELECT 1 FROM expenses WHERE purchase_plan_id = ? AND space_id = ?)`,
       )
       .bind(id, spaceId, id, spaceId, id, spaceId),
+    // COWEL 連携：消す支出を、消す前に同じ batch で記録帳へ
+    deleteChanges(d1, "e.purchase_plan_id = ? AND e.space_id = ? AND EXISTS (SELECT 1 FROM purchase_plans WHERE id = ? AND space_id = ? AND status = 'purchased')", [id, spaceId, id, spaceId]),
     d1
       .prepare(
         `DELETE FROM expenses WHERE purchase_plan_id = ? AND space_id = ?
@@ -173,7 +179,7 @@ export async function unpurchasePlan(db: Db, spaceId: string, id: string) {
       .prepare("UPDATE purchase_plans SET status = 'planned', updated_at = ? WHERE id = ? AND space_id = ? AND status = 'purchased'")
       .bind(now, id, spaceId),
   ]);
-  if (results[2]?.meta.changes !== 1) throw await conflictOrNotFound(db, spaceId, id, "STATE_CONFLICT");
+  if (results[3]?.meta.changes !== 1) throw await conflictOrNotFound(db, spaceId, id, "STATE_CONFLICT");
   return getPlan(db, spaceId, id);
 }
 

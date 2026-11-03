@@ -3,6 +3,7 @@ import type { ExpenseInput } from "../../shared/schemas";
 import type { Db } from "../db/client";
 import { assertCategoryInSpace } from "./categories";
 import { RepoError } from "./errors";
+import { deleteChanges, upsertChanges } from "./expense-changes";
 import { resolveSplit } from "./members";
 
 /*
@@ -85,37 +86,47 @@ export async function createExpense(db: Db, spaceId: string, userId: string, inp
   const split = await resolveSplit(db, spaceId, input, { payerUserId: userId, splitUserId: null, payerRatio: 100 });
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  await db.$client
-    .prepare(
-      `INSERT INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, payer_user_id, split_user_id, payer_ratio, created_at, updated_at)
-       VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    )
-    .bind(id, spaceId, userId, input.title, input.actualAmount, input.categoryId, input.spentAt, input.memo, split.payerUserId, split.splitUserId, split.payerRatio, now, now)
-    .run();
+  const d1 = db.$client;
+  // COWEL 連携：作った支出を、同じ batch で記録帳へ
+  await d1.batch([
+    d1
+      .prepare(
+        `INSERT INTO expenses (id, space_id, purchase_plan_id, recorded_by, title, actual_amount, category_id, spent_at, memo, payer_user_id, split_user_id, payer_ratio, created_at, updated_at)
+         VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(id, spaceId, userId, input.title, input.actualAmount, input.categoryId, input.spentAt, input.memo, split.payerUserId, split.splitUserId, split.payerRatio, now, now),
+    upsertChanges(d1, "e.id = ? AND e.space_id = ?", [id, spaceId]),
+  ]);
   return getExpense(db, spaceId, id);
 }
 
 export async function updateExpense(db: Db, spaceId: string, id: string, input: ExpenseInput) {
   await assertCategoryInSpace(db, spaceId, input.categoryId);
   const split = await resolveSplit(db, spaceId, input, await getExpense(db, spaceId, id));
-  const res = await db.$client
-    .prepare(
-      `UPDATE expenses SET title = ?, actual_amount = ?, category_id = ?, spent_at = ?, memo = ?,
-         payer_user_id = ?, split_user_id = ?, payer_ratio = ?, updated_at = ?
-       WHERE id = ? AND space_id = ?`,
-    )
-    .bind(input.title, input.actualAmount, input.categoryId, input.spentAt, input.memo, split.payerUserId, split.splitUserId, split.payerRatio, new Date().toISOString(), id, spaceId)
-    .run();
-  if (res.meta.changes === 0) throw new RepoError("NOT_FOUND");
+  const d1 = db.$client;
+  // COWEL 連携：直した後の中身を、同じ batch で記録帳へ（直せなかったときは行が無いので書かれない）
+  const [res] = await d1.batch([
+    d1
+      .prepare(
+        `UPDATE expenses SET title = ?, actual_amount = ?, category_id = ?, spent_at = ?, memo = ?,
+           payer_user_id = ?, split_user_id = ?, payer_ratio = ?, updated_at = ?
+         WHERE id = ? AND space_id = ?`,
+      )
+      .bind(input.title, input.actualAmount, input.categoryId, input.spentAt, input.memo, split.payerUserId, split.splitUserId, split.payerRatio, new Date().toISOString(), id, spaceId),
+    upsertChanges(d1, "e.id = ? AND e.space_id = ?", [id, spaceId]),
+  ]);
+  if (res!.meta.changes === 0) throw new RepoError("NOT_FOUND");
   return getExpense(db, spaceId, id);
 }
 
 export async function deleteExpense(db: Db, spaceId: string, id: string) {
-  const res = await db.$client
-    .prepare("DELETE FROM expenses WHERE id = ? AND space_id = ? AND purchase_plan_id IS NULL")
-    .bind(id, spaceId)
-    .run();
-  if (res.meta.changes === 1) return;
+  const d1 = db.$client;
+  // COWEL 連携：消す支出を、消す前に同じ batch で記録帳へ
+  const [, res] = await d1.batch([
+    deleteChanges(d1, "e.id = ? AND e.space_id = ? AND e.purchase_plan_id IS NULL", [id, spaceId]),
+    d1.prepare("DELETE FROM expenses WHERE id = ? AND space_id = ? AND purchase_plan_id IS NULL").bind(id, spaceId),
+  ]);
+  if (res!.meta.changes === 1) return;
   const row = await db.$client
     .prepare("SELECT purchase_plan_id AS planId FROM expenses WHERE id = ? AND space_id = ?")
     .bind(id, spaceId)

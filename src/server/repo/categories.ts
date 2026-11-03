@@ -4,6 +4,7 @@ import type { BaseLocale } from "../../shared/i18n";
 import type { Db } from "../db/client";
 import { categories, expenses, purchasePlans } from "../db/schema";
 import { fromConstraint, RepoError } from "./errors";
+import { upsertChanges } from "./expense-changes";
 
 /*
  * カテゴリ。どの操作も WHERE に space_id を入れ、ほかのスペースのカテゴリは「ない」ものとして扱う（404）。
@@ -51,11 +52,13 @@ export async function createCategory(db: Db, spaceId: string, name: string) {
 export async function renameCategory(db: Db, spaceId: string, id: string, name: string) {
   let changed: number;
   try {
-    const res = await db.$client
-      .prepare("UPDATE categories SET name = ?, updated_at = ? WHERE id = ? AND space_id = ?")
-      .bind(name, nowIso(), id, spaceId)
-      .run();
-    changed = res.meta.changes;
+    const d1 = db.$client;
+    // COWEL 連携：名前が変わったカテゴリの支出を、新しい名前で同じ batch の記録帳へ
+    const [res] = await d1.batch([
+      d1.prepare("UPDATE categories SET name = ?, updated_at = ? WHERE id = ? AND space_id = ?").bind(name, nowIso(), id, spaceId),
+      upsertChanges(d1, "e.category_id = ? AND e.space_id = ?", [id, spaceId]),
+    ]);
+    changed = res!.meta.changes;
   } catch (e) {
     throw fromConstraint(e) ?? e;
   }
@@ -72,10 +75,14 @@ export async function localizePresetCategories(db: Db, spaceId: string, to: Base
   const now = nowIso();
   const d1 = db.$client;
   // 読んだあとに名前が変わっていたら、その行は変えない（WHERE name = 元の名前）
+  // COWEL 連携：名前が変わったカテゴリの支出を、新しい名前で記録帳へ（同じ batch、名前を変えた文の直後）
   const results = await d1.batch(
-    renames.map((r) => d1.prepare("UPDATE categories SET name = ?, updated_at = ? WHERE space_id = ? AND name = ?").bind(r.to, now, spaceId, r.from)),
+    renames.flatMap((r) => [
+      d1.prepare("UPDATE categories SET name = ?, updated_at = ? WHERE space_id = ? AND name = ?").bind(r.to, now, spaceId, r.from),
+      upsertChanges(d1, "e.space_id = ? AND c.name = ? AND c.updated_at = ?", [spaceId, r.to, now]),
+    ]),
   );
-  return results.reduce((a, r) => a + r.meta.changes, 0);
+  return results.filter((_, i) => i % 2 === 0).reduce((a, r) => a + r.meta.changes, 0);
 }
 
 /** 並べ替え。送られた ID がこのスペースのカテゴリとちょうど同じ集まりのときだけ受け付ける */
@@ -117,6 +124,11 @@ export async function categoryUsage(db: Db, spaceId: string, id: string) {
 
 /** 削除。使っていた予定・支出は「未分類」になる（外部キーの ON DELETE SET NULL） */
 export async function deleteCategory(db: Db, spaceId: string, id: string) {
-  const res = await db.$client.prepare("DELETE FROM categories WHERE id = ? AND space_id = ?").bind(id, spaceId).run();
-  if (res.meta.changes === 0) throw new RepoError("NOT_FOUND");
+  const d1 = db.$client;
+  // COWEL 連携：カテゴリが空になる支出を記録帳へ（消すと元のカテゴリが分からないので、消す前に名前なしで書く）
+  const [, res] = await d1.batch([
+    upsertChanges(d1, "e.category_id = ? AND e.space_id = ?", [id, spaceId], { dropCategory: true }),
+    d1.prepare("DELETE FROM categories WHERE id = ? AND space_id = ?").bind(id, spaceId),
+  ]);
+  if (res!.meta.changes === 0) throw new RepoError("NOT_FOUND");
 }
