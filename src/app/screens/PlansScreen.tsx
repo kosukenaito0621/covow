@@ -208,8 +208,8 @@ function PlanRow({
   tourTarget?: boolean;
 }) {
   const { t, locale } = useT();
-  // 行はピルと同じ色の面なので、文字はその面の色に合わせる
-  const muted = "text-current/85";
+  // 行はピルと同じ色の面。小さい文字も薄くせず、面の文字色のまま出す（読みやすさのため）
+  const muted = "";
   const date = p.purchase?.date ?? p.plannedDate;
   return (
     // 動きはガラスの面そのものに付ける（外側の箱に opacity を付けると、ガラスのぼかしが消えるため）

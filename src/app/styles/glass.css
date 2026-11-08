@@ -378,9 +378,13 @@
 /* 目印の色：支出＝p1（今月の支出のピル）、予定＝p2（未購入のピル）。記録シートの見出しと登録ボタンに使う */
 .accent-p1 {
   color: var(--p1-text);
-  background: linear-gradient(130deg, var(--p1-a), var(--p1-b));
+  background: linear-gradient(130deg, var(--p1-a), var(--p1-b)) #fff;
 }
 .accent-p2 {
   color: var(--p2-text);
-  background: linear-gradient(140deg, var(--p2-a), var(--p2-b));
+  background: linear-gradient(140deg, var(--p2-a), var(--p2-b)) #000;
+}
+[data-theme="tropical"] .accent-p2,
+[data-theme="frost"] .accent-p2 {
+  background-color: #fff;
 }

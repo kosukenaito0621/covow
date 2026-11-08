@@ -53,8 +53,8 @@ function Expenses() {
   const [source, setSource] = useState<Source>("all");
   const reveal = useStartedLoading(list.isPending);
   const form = useExpenseForm();
-  // 行はピルと同じ色の面なので、文字はその面の色に合わせる
-  const muted = "text-current/85";
+  // 行はピルと同じ色の面。小さい文字も薄くせず、面の文字色のまま出す（読みやすさのため）
+  const muted = "";
   const thisMonth = jstThisMonth();
   const setMonth = (m: string) => void navigate({ to: "/expenses", search: m === thisMonth ? {} : { month: m } });
   const shown = (list.data ?? [])
