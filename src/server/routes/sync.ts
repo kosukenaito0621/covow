@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { parseBody } from "../http";
-import { exchangeLinkCode, linkMembers, listChanges, snapshot, spaceForKey } from "../repo/sync-links";
+import { countExchange, exchangeLinkCode, linkMembers, listChanges, snapshot, spaceForKey } from "../repo/sync-links";
 import type { AppEnv } from "../types";
 
 /*
@@ -34,6 +34,7 @@ const withKey = new Hono<AppEnv>()
 
 export const syncRoutes = new Hono<AppEnv>()
   .post("/link/exchange", async (c) => {
+    if (!(await countExchange(c.var.db, c.req.header("CF-Connecting-IP") ?? "local"))) return c.json({ code: "TOO_MANY_TRIES", message: "TOO_MANY_TRIES" }, 429);
     const parsed = await parseBody(c, z.object({ code: z.string().regex(/^\d{8}$/) }));
     if (!parsed.ok) return c.json({ code: "CODE_INVALID", message: "CODE_INVALID" }, 400);
     const link = await exchangeLinkCode(c.var.db, parsed.data.code);

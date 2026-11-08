@@ -1,4 +1,5 @@
 import type { Db } from "../db/client";
+import { jstToday } from "../../shared/date/jst";
 import { payloadSql } from "./expense-changes";
 
 /*
@@ -11,6 +12,18 @@ const hash = async (value: string) =>
   [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)))].map((b) => b.toString(16).padStart(2, "0")).join("");
 const randomDigits = () => [...crypto.getRandomValues(new Uint8Array(8))].map((b) => String(b % 10)).join("");
 const randomKey = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+/** 番号の交換は、同じ接続元から1日にこの回数まで（当て推量を防ぐ。数え方は体験版と同じ trial_quota） */
+export const EXCHANGE_DAILY_LIMIT = 20;
+/** 今日この接続元からの交換の回数を1つ増やし、上限以内なら true */
+export async function countExchange(db: Db, ip: string) {
+  const today = jstToday();
+  const row = await db.$client
+    .prepare("INSERT INTO trial_quota (key, day, count) VALUES (?, ?, 1) ON CONFLICT (key, day) DO UPDATE SET count = count + 1 RETURNING count")
+    .bind(await hash(`sync-exchange:${today}:${ip}`), today)
+    .first<{ count: number }>();
+  return (row?.count ?? 0) <= EXCHANGE_DAILY_LIMIT;
+}
 
 /** 番号を発行する（その人のまだ使っていない番号は取り消す） */
 export async function createLinkCode(db: Db, spaceId: string, userId: string) {

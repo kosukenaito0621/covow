@@ -102,6 +102,18 @@ describe("COWEL との連携", () => {
     expect((await a.call("/expenses", { method: "POST", body: { title: "X", actualAmount: 1, spentAt: TODAY }, origin: "https://evil.example" })).status).toBe(403);
   });
 
+  it("番号の交換は同じ接続元から1日20回まで（当て推量を防ぐ）。超えると正しい番号でも 429", async () => {
+    const { a } = await pair();
+    const from = (code: string) =>
+      exports.default.fetch(`${ORIGIN}/api/sync/link/exchange`, { method: "POST", headers: { "Content-Type": "application/json", "CF-Connecting-IP": "203.0.113.9" }, body: JSON.stringify({ code }) });
+    for (let i = 0; i < 20; i++) expect((await from(String(10000000 + i))).status).toBe(400);
+    const res = await from(await codeFor(a));
+    expect(res.status).toBe(429);
+    expect(await res.json()).toMatchObject({ code: "TOO_MANY_TRIES" });
+    // 別の接続元はまだ使える
+    expect((await sync("/link/exchange", { method: "POST", body: { code: await codeFor(a) } })).status).toBe(200);
+  });
+
   it("members は2人の連携状態を返す", async () => {
     const { a, b } = await pair();
     const { key } = await link(a);
