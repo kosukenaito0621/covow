@@ -14,7 +14,6 @@ import { GlassCard } from "../../components/glass/GlassCard";
 import { CategoryBadge, FromPlanBadge, SplitBadge } from "../../components/ui/Badges";
 import { CircleIconButton } from "../../components/ui/Buttons";
 import { Icon } from "../../components/ui/Icon";
-import { mutedText } from "../../components/ui/SectionLabel";
 import { ExpensesListSkeleton } from "../../components/loading/PageSkeletons";
 import { Reveal, Stale, useStartedLoading } from "../../components/ui/Reveal";
 import { EmptyState, ErrorMessage, LoadingSkeleton } from "../../components/ui/States";
@@ -54,7 +53,8 @@ function Expenses() {
   const [source, setSource] = useState<Source>("all");
   const reveal = useStartedLoading(list.isPending);
   const form = useExpenseForm();
-  const muted = mutedText(theme.tone.card);
+  // 行はピルと同じ色の面なので、文字はその面の色に合わせる
+  const muted = "text-current/85";
   const thisMonth = jstThisMonth();
   const setMonth = (m: string) => void navigate({ to: "/expenses", search: m === thisMonth ? {} : { month: m } });
   const shown = (list.data ?? [])
@@ -131,7 +131,7 @@ function Expenses() {
               <ul className="flex flex-col gap-2.5">
                 {shown.map((e) => (
                   <li key={e.id}>
-                    <GlassCard>
+                    <div className="lg lg-p1 rounded-[24px]">
                       <button type="button" onClick={() => form.open(e)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
                         <div className="min-w-0 flex-1">
                           <p className="line-clamp-2 text-[15px] leading-snug font-semibold">{e.title}</p>
@@ -146,7 +146,7 @@ function Expenses() {
                         <span className="num shrink-0 text-[15px] font-semibold">{formatYen(e.actualAmount)}</span>
                         <Icon name="chevronRight" size={18} className="shrink-0 opacity-70" />
                       </button>
-                    </GlassCard>
+                    </div>
                   </li>
                 ))}
               </ul>

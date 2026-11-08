@@ -197,6 +197,7 @@ export function PlanDetailScreen({
         open={sheet}
         onClose={() => setSheet(false)}
         title={t("plan.markBought")}
+        accent="p1"
         footer={
           <div className="flex flex-col gap-3">
             {preview && (
@@ -215,6 +216,7 @@ export function PlanDetailScreen({
             )}
             <PrimaryButton
               tone="dark"
+              accent="p1"
               icon="check"
               fullWidth
               disabled={!parsed.ok}

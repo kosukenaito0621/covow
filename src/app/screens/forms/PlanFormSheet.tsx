@@ -85,6 +85,7 @@ export function PlanFormSheet({
       open={open}
       onClose={onClose}
       title={plan ? t("plan.editTitle") : t("plan.add")}
+      accent="p2"
       footer={
         <div className="flex flex-col gap-3">
           {preview && (
@@ -102,7 +103,7 @@ export function PlanFormSheet({
               {t(error)}
             </p>
           )}
-          <PrimaryButton tone="dark" fullWidth loading={pending} onClick={submit} data-tour="plan-submit">
+          <PrimaryButton tone="dark" accent="p2" fullWidth loading={pending} onClick={submit} data-tour="plan-submit">
             {plan ? t("common.save") : t("plan.add")}
           </PrimaryButton>
         </div>

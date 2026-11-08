@@ -3,12 +3,15 @@ import type { BaseLocale } from "./i18n";
 /** スペース作成時に入れる初期カテゴリ（この順に並べる）。作った人のデータの言語（dataLocale）で入れ、あとから名前を変えられる */
 /**
  * 初期カテゴリ（スペースを作ったときに入る）。key は見本データなどから指すための名前で、DB には入らない。
+ * 2026-11-08：交通費（ふだんの移動。旅行・おでかけとは別）と医療費を足した。
  * 2026-10-26：外食・カフェを足し、衣服・美容をファッション・衣服とコスメ・美容に分けた（旧アプリの分け方に合わせる）。
  */
 export const CATEGORY_PRESETS = [
   { key: "food", en: "Groceries", ja: "食費" },
   { key: "eatingOut", en: "Eating out", ja: "外食・カフェ" },
   { key: "daily", en: "Daily goods", ja: "日用品" },
+  { key: "transport", en: "Transport", ja: "交通費" },
+  { key: "medical", en: "Medical", ja: "医療費" },
   { key: "home", en: "Home & appliances", ja: "家具・家電" },
   { key: "fashion", en: "Fashion & clothing", ja: "ファッション・衣服" },
   { key: "beauty", en: "Cosmetics & beauty", ja: "コスメ・美容" },

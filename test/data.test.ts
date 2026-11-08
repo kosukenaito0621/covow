@@ -156,9 +156,9 @@ describe("カテゴリと予算", () => {
     await a.call(`/categories/${cats.find((c) => c.name === "Social")!.id}`, { method: "PATCH", body: { name: "Dates" } });
     await a.call(`/categories/${cats.find((c) => c.name === "Fashion & clothing")!.id}`, { method: "PATCH", body: { name: "Clothing & beauty" } });
     const res = await a.call("/categories/localize", { method: "POST", body: { locale: "ja" } });
-    expect(await res.json()).toEqual({ renamed: 9 });
+    expect(await res.json()).toEqual({ renamed: 11 });
     const names = (await (await a.call("/categories")).json<{ categories: { id: string; name: string }[] }>()).categories.map((c) => c.name);
-    expect(names).toEqual(["食費", "外食・カフェ", "日用品", "家具・家電", "ファッション・衣服", "コスメ・美容", "趣味・娯楽", "Dates", "旅行・おでかけ", "その他"]);
+    expect(names).toEqual(["食費", "外食・カフェ", "日用品", "交通費", "医療費", "家具・家電", "ファッション・衣服", "コスメ・美容", "趣味・娯楽", "Dates", "旅行・おでかけ", "その他"]);
     expect((await (await a.call(`/plans/${p.id}`)).json<{ plan: Plan }>()).plan.categoryId).toBe(groceries.id);
     expect(await (await a.call("/categories/localize", { method: "POST", body: { locale: "ja" } })).json()).toEqual({ renamed: 0 });
     expect((await a.call("/categories/localize", { method: "POST", body: { locale: "fr" } })).status).toBe(422);

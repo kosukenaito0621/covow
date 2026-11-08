@@ -13,7 +13,7 @@ import { TabChips } from "../components/glass/TabChips";
 import { CategoryBadge, SplitBadge, StatusBadge } from "../components/ui/Badges";
 import { Icon } from "../components/ui/Icon";
 import { SearchField } from "../components/ui/SearchField";
-import { mutedText, SectionLabel } from "../components/ui/SectionLabel";
+import { SectionLabel } from "../components/ui/SectionLabel";
 import { EmptyState } from "../components/ui/States";
 import { useT } from "../i18n/I18nProvider";
 import { useTheme } from "../theme/ThemeProvider";
@@ -208,8 +208,8 @@ function PlanRow({
   tourTarget?: boolean;
 }) {
   const { t, locale } = useT();
-  const { theme } = useTheme();
-  const muted = mutedText(theme.tone.card);
+  // 行はピルと同じ色の面なので、文字はその面の色に合わせる
+  const muted = "text-current/85";
   const date = p.purchase?.date ?? p.plannedDate;
   return (
     // 動きはガラスの面そのものに付ける（外側の箱に opacity を付けると、ガラスのぼかしが消えるため）
@@ -217,7 +217,7 @@ function PlanRow({
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, delay: Math.min(index, 6) * 0.03 }}
-      className="lg lg-card rounded-[24px]"
+      className="lg lg-p2 rounded-[24px]"
     >
       <button
         type="button"

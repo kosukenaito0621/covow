@@ -43,17 +43,18 @@ function ChipRow({ count }: { count: number }) {
   );
 }
 
-/** 一覧の1行（予定・支出）。高さ 70px */
-function RowCard() {
+/** 一覧の1行（予定・支出）。高さ 70px。surface は本物の行と同じ色（支出＝p1、予定＝p2） */
+function RowCard({ surface }: { surface?: "p1" | "p2" }) {
   const { theme } = useTheme();
+  const tone = surface ? theme.tone[surface] : theme.tone.card;
   return (
-    <CardShell className="flex h-[70px] items-center justify-between gap-3 rounded-[24px] px-4">
+    <div className={`lg ${surface ? `lg-${surface}` : "lg-card"} flex h-[70px] items-center justify-between gap-3 rounded-[24px] px-4`}>
       <div className="flex flex-col gap-2">
-        <Skeleton tone={theme.tone.card} className="h-4 w-40" />
-        <Skeleton tone={theme.tone.card} className="h-3 w-24" />
+        <Skeleton tone={tone} className="h-4 w-40" />
+        <Skeleton tone={tone} className="h-3 w-24" />
       </div>
-      <Skeleton tone={theme.tone.card} className="h-4 w-16" />
-    </CardShell>
+      <Skeleton tone={tone} className="h-4 w-16" />
+    </div>
   );
 }
 
@@ -116,9 +117,9 @@ export function PlansSkeleton() {
         <ChipRow count={4} />
         <div className="flex flex-col gap-2.5">
           <Skeleton tone={theme.tone.page} className="h-4 w-24" />
-          <RowCard />
-          <RowCard />
-          <RowCard />
+          <RowCard surface="p2" />
+          <RowCard surface="p2" />
+          <RowCard surface="p2" />
         </div>
       </div>
     </LoadingSkeleton>
@@ -176,7 +177,7 @@ export function ExpensesListSkeleton() {
   return (
     <div className="flex flex-col gap-2.5">
       {Array.from({ length: 5 }, (_, i) => (
-        <RowCard key={i} />
+        <RowCard key={i} surface="p1" />
       ))}
     </div>
   );

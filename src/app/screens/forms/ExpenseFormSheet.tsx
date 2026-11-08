@@ -73,6 +73,7 @@ export function ExpenseFormSheet({
       open={open}
       onClose={onClose}
       title={expense ? t("expense.edit") : t("expense.add")}
+      accent="p1"
       footer={
         <div className="flex flex-col gap-3">
           {error && (
@@ -80,7 +81,7 @@ export function ExpenseFormSheet({
               {t(error)}
             </p>
           )}
-          <PrimaryButton tone="dark" fullWidth loading={pending} onClick={submit} data-tour="expense-submit">
+          <PrimaryButton tone="dark" accent="p1" fullWidth loading={pending} onClick={submit} data-tour="expense-submit">
             {expense ? t("common.save") : t("expense.add")}
           </PrimaryButton>
           {expense && !fromPlan && onDelete && (

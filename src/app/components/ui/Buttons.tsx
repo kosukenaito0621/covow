@@ -17,8 +17,9 @@ const base =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-[15px] font-semibold transition-opacity disabled:cursor-not-allowed disabled:opacity-45";
 
 /** 主要な操作。明るい面では濃紺、暗い面では白 */
-export function PrimaryButton({ children, tone = "light", icon, loading, fullWidth, disabled, className, ...rest }: ButtonProps) {
-  const color = tone === "dark" ? "bg-white text-ink" : "bg-ink text-white";
+export function PrimaryButton({ children, tone = "light", accent, icon, loading, fullWidth, disabled, className, ...rest }: ButtonProps & { accent?: "p1" | "p2" }) {
+  // accent：記録シートの目印の色（p1＝支出、p2＝予定）
+  const color = accent ? `accent-${accent} border border-white/30` : tone === "dark" ? "bg-white text-ink" : "bg-ink text-white";
   return (
     <motion.button
       type="button"

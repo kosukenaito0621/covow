@@ -1,6 +1,7 @@
 import { animate, useReducedMotion } from "motion/react";
 import { type ReactNode, useEffect, useId, useRef } from "react";
 import { useT } from "../../i18n/I18nProvider";
+import { useTheme } from "../../theme/ThemeProvider";
 import { CircleIconButton } from "../ui/Buttons";
 
 /**
@@ -13,14 +14,18 @@ export function GlassSheet({
   title,
   children,
   footer,
+  accent,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** 見出しの部分を目印の色にする（p1＝支出、p2＝予定） */
+  accent?: "p1" | "p2";
 }) {
   const { t } = useT();
+  const { theme } = useTheme();
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const reduce = useReducedMotion();
@@ -60,14 +65,16 @@ export function GlassSheet({
     >
       {open && (
         <div className="flex max-h-[92dvh] flex-col">
-          <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-white/35" aria-hidden="true" />
-          <header className="flex items-center justify-between gap-3 px-5 pt-3 pb-2">
-            <h2 id={titleId} className="text-[17px] font-semibold">
-              {title}
-            </h2>
-            <CircleIconButton icon="close" label={t("common.close")} onClick={onClose} />
-          </header>
-          <div className="flex-1 overflow-y-auto px-5 pb-4">{children}</div>
+          <div className={accent ? `accent-${accent}` : ""}>
+            <div className={`mx-auto mt-2.5 h-1 w-10 rounded-full ${accent ? "bg-current/35" : "bg-white/35"}`} aria-hidden="true" />
+            <header className={`flex items-center justify-between gap-3 px-5 pt-3 ${accent ? "pb-3" : "pb-2"}`}>
+              <h2 id={titleId} className="text-[17px] font-semibold">
+                {title}
+              </h2>
+              <CircleIconButton tone={accent ? theme.tone[accent] : "dark"} icon="close" label={t("common.close")} onClick={onClose} />
+            </header>
+          </div>
+          <div className={`flex-1 overflow-y-auto px-5 pb-4 ${accent ? "pt-4" : ""}`}>{children}</div>
           {footer && (
             <footer className="border-t border-white/12 px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+16px)]">{footer}</footer>
           )}
