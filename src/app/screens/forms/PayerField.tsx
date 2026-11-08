@@ -61,14 +61,14 @@ export function PayerField({
                 onClick={() => step(-10)}
                 disabled={value.payerRatio <= 10}
                 aria-label={t("payer.less", { name: nameOf(value.payerUserId) })}
-                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-[20px] disabled:opacity-40"
+                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-current/30 text-[20px] disabled:opacity-40"
               >
                 −
               </button>
               <p className="num flex-1 text-center text-[15px] font-semibold" aria-live="polite">
                 {nameOf(value.payerUserId)} {value.payerRatio}% ・ {nameOf(value.splitUserId)} {100 - value.payerRatio}%
                 {shares && (
-                  <span className="block text-[13px] font-medium text-white/85">
+                  <span className="block text-[13px] font-medium">
                     {formatYen(shares.payer)} ・ {formatYen(shares.other)}
                   </span>
                 )}
@@ -78,7 +78,7 @@ export function PayerField({
                 onClick={() => step(10)}
                 disabled={value.payerRatio >= 90}
                 aria-label={t("payer.more", { name: nameOf(value.payerUserId) })}
-                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-white/30 text-[20px] disabled:opacity-40"
+                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-current/30 text-[20px] disabled:opacity-40"
               >
                 ＋
               </button>

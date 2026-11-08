@@ -10,6 +10,7 @@ import { PrimaryButton } from "../../components/ui/Buttons";
 import { AmountInput, FormField, TextInput } from "../../components/ui/FormField";
 import { AttentionNote } from "../../components/ui/States";
 import { useT } from "../../i18n/I18nProvider";
+import { useTheme } from "../../theme/ThemeProvider";
 import { CategoryChoice, MemoInput } from "./fields";
 import { PayerField } from "./PayerField";
 
@@ -48,6 +49,7 @@ export function PlanFormSheet({
   error: MessageKey | null;
 }) {
   const { t } = useT();
+  const { theme } = useTheme();
   // 入力の初期値は、編集する予定の値（新規なら空）。呼び出し側が開くたびに key を変えて作り直す
   const [title, setTitle] = useState(plan?.title ?? sample?.title ?? "");
   const [amount, setAmount] = useState(plan ? formatNumber(plan.plannedAmount) : sample ? formatNumber(sample.amount) : "");
@@ -90,9 +92,9 @@ export function PlanFormSheet({
         <div className="flex flex-col gap-3">
           {preview && (
             <p className="num flex items-center justify-between gap-3 text-[14px]">
-              <span className="text-white/90">{t("plan.thisMonthLeft")}</span>
+              <span>{t("plan.thisMonthLeft")}</span>
               <span className="whitespace-nowrap">
-                <span className="text-white/90">{formatYen(preview.before)}</span>
+                <span>{formatYen(preview.before)}</span>
                 <span className="ml-2 font-semibold">→ {formatYen(preview.after)}</span>
               </span>
             </p>
@@ -103,7 +105,7 @@ export function PlanFormSheet({
               {t(error)}
             </p>
           )}
-          <PrimaryButton tone="dark" accent="p2" fullWidth loading={pending} onClick={submit} data-tour="plan-submit">
+          <PrimaryButton tone={theme.tone.p2} fullWidth loading={pending} onClick={submit} data-tour="plan-submit">
             {plan ? t("common.save") : t("plan.add")}
           </PrimaryButton>
         </div>

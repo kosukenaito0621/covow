@@ -10,6 +10,7 @@ import { FromPlanBadge } from "../../components/ui/Badges";
 import { PrimaryButton, SecondaryButton } from "../../components/ui/Buttons";
 import { AmountInput, FormField, TextInput } from "../../components/ui/FormField";
 import { useT } from "../../i18n/I18nProvider";
+import { useTheme } from "../../theme/ThemeProvider";
 import { CategoryChoice, MemoInput } from "./fields";
 import { PayerField } from "./PayerField";
 
@@ -47,6 +48,7 @@ export function ExpenseFormSheet({
   error: MessageKey | null;
 }) {
   const { t } = useT();
+  const { theme } = useTheme();
   // 入力の初期値は、編集する支出の値（新規なら空・今日）。呼び出し側が開くたびに key を変えて作り直す
   const [title, setTitle] = useState(expense?.title ?? sample?.title ?? "");
   const [amount, setAmount] = useState(expense ? formatNumber(expense.actualAmount) : sample ? formatNumber(sample.amount) : "");
@@ -81,11 +83,11 @@ export function ExpenseFormSheet({
               {t(error)}
             </p>
           )}
-          <PrimaryButton tone="dark" accent="p1" fullWidth loading={pending} onClick={submit} data-tour="expense-submit">
+          <PrimaryButton tone={theme.tone.p1} fullWidth loading={pending} onClick={submit} data-tour="expense-submit">
             {expense ? t("common.save") : t("expense.add")}
           </PrimaryButton>
           {expense && !fromPlan && onDelete && (
-            <SecondaryButton tone="dark" icon="trash" fullWidth onClick={onDelete}>
+            <SecondaryButton tone={theme.tone.p1} icon="trash" fullWidth onClick={onDelete}>
               {t("plan.delete")}
             </SecondaryButton>
           )}
@@ -102,7 +104,7 @@ export function ExpenseFormSheet({
         {fromPlan && (
           <div className="flex flex-col items-start gap-2">
             <FromPlanBadge />
-            <p className="text-[13px] text-white/90">{t("expense.fromPlanNote")}</p>
+            <p className="text-[13px]">{t("expense.fromPlanNote")}</p>
           </div>
         )}
         <FormField label={t("expense.item")} required error={touched && title.trim() === "" ? t("error.validation") : undefined}>

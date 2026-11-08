@@ -202,9 +202,9 @@ export function PlanDetailScreen({
           <div className="flex flex-col gap-3">
             {preview && (
               <p className="num flex items-center justify-between gap-3 text-[14px]">
-                <span className="text-white/90">{t("plan.afterThis")}</span>
+                <span>{t("plan.afterThis")}</span>
                 <span className="whitespace-nowrap">
-                  <span className="text-white/90">{formatYen(preview.before)}</span>
+                  <span>{formatYen(preview.before)}</span>
                   <span className="ml-2 font-semibold">→ {formatYen(preview.after)}</span>
                 </span>
               </p>
@@ -215,8 +215,7 @@ export function PlanDetailScreen({
               </p>
             )}
             <PrimaryButton
-              tone="dark"
-              accent="p1"
+              tone={theme.tone.p1}
               icon="check"
               fullWidth
               disabled={!parsed.ok}

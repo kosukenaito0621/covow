@@ -375,16 +375,36 @@
   line-height: 1;
 }
 
-/* 目印の色：支出＝p1（今月の支出のピル）、予定＝p2（未購入のピル）。記録シートの見出しと登録ボタンに使う */
+/*
+ * 目印の色：支出＝p1（今月の支出のピル）、予定＝p2（未購入のピル）。記録シート全体に使う。
+ * 下地を不透明にして、透ける色が暗いシートに沈まないようにする。
+ * --chip-on-* は選択中のチップの色（面の上で目立つ色）。color-scheme は日付欄のアイコンの色を面に合わせる。
+ */
+.overlay-glass-dark {
+  --chip-on-bg: #ffffff;
+  --chip-on-fg: #111827;
+}
 .accent-p1 {
   color: var(--p1-text);
+  color-scheme: light;
+  --chip-on-bg: var(--p1-text);
+  --chip-on-fg: #ffffff;
   background: linear-gradient(130deg, var(--p1-a), var(--p1-b)) #fff;
 }
 .accent-p2 {
   color: var(--p2-text);
+  color-scheme: dark;
   background: linear-gradient(140deg, var(--p2-a), var(--p2-b)) #000;
 }
 [data-theme="tropical"] .accent-p2,
 [data-theme="frost"] .accent-p2 {
+  color-scheme: light;
+  --chip-on-bg: var(--p2-text);
+  --chip-on-fg: #ffffff;
   background-color: #fff;
+}
+/* 色付きのシートでは、アンバーの注意文字が面に埋もれるので、面の文字色で出す */
+.accent-p1 .text-amber,
+.accent-p2 .text-amber {
+  color: currentColor;
 }

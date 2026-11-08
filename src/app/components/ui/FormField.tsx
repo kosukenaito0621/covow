@@ -27,7 +27,7 @@ export function FormField({
   const hintId = hint ? `${id}-hint` : undefined;
   const errorId = error ? `${id}-error` : undefined;
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
-  const muted = tone === "dark" ? "text-white/78" : "text-ink-muted";
+  const muted = tone === "dark" ? "" : "text-ink-muted";
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-[13px] font-semibold">
@@ -52,7 +52,7 @@ export function FormField({
 export function TextInput({ tone = "dark", className, ...rest }: ComponentProps<"input"> & { tone?: Tone }) {
   const color =
     tone === "dark"
-      ? "border-white/25 bg-white/8 text-white placeholder:text-white/55 aria-invalid:border-amber"
+      ? "border-current/25 bg-current/8 text-current placeholder:text-current/60 aria-invalid:border-amber"
       : "border-ink/18 bg-white/80 text-ink placeholder:text-ink-muted/70 aria-invalid:border-attention-ink";
   return <input className={`min-h-12 w-full rounded-[16px] border px-4 text-[16px] ${color} ${className ?? ""}`} {...rest} />;
 }

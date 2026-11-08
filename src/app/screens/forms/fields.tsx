@@ -22,7 +22,7 @@ export function ChoiceChips<T extends string>({
           <label
             key={o.value}
             className={`inline-flex min-h-11 cursor-pointer items-center rounded-full border px-4 text-[14px] font-medium transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-white ${
-              value === o.value ? "border-white bg-white text-[#111827]" : "border-white/30 text-white"
+              value === o.value ? "border-(--chip-on-bg) bg-(--chip-on-bg) text-(--chip-on-fg)" : "border-current/30"
             }`}
           >
             <input type="radio" name={id} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="sr-only" />
@@ -66,7 +66,7 @@ export function MemoInput(props: { id: string; value: string; onChange: (v: stri
       maxLength={props.maxLength}
       value={props.value}
       onChange={(e) => props.onChange(e.target.value)}
-      className="w-full rounded-[16px] border border-white/25 bg-white/8 px-4 py-3 text-[16px] text-white placeholder:text-white/55"
+      className="w-full rounded-[16px] border border-current/25 bg-current/8 px-4 py-3 text-[16px] text-current placeholder:text-current/60"
     />
   );
 }
