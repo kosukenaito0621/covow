@@ -23,6 +23,9 @@ import { useBudgetSheet } from "../../screens/forms/BudgetSheet";
 import { useCategorySheet } from "../../screens/forms/CategorySheet";
 import { useProfileSheet } from "../../screens/forms/ProfileSheet";
 import { SettingsScreen } from "../../screens/SettingsScreen";
+import { CowelLinkCard } from "../../screens/CowelLinkCard";
+import { api } from "../../api/client";
+import { useMutation } from "@tanstack/react-query";
 import { useT } from "../../i18n/I18nProvider";
 import { useTour } from "../../tour/TourProvider";
 import { useNews } from "../../news/useNews";
@@ -78,6 +81,7 @@ function Settings() {
           newsUnread: news.unread,
           onTour: () => tour.reset(),
           isGuest: me.user.isGuest,
+          cowel: me.user.isGuest ? undefined : <CowelLink />,
           onSignOut: () => logout.mutate(undefined, { onSuccess: () => void navigate({ to: "/login" }) }),
           signingOut: logout.isPending,
           signOutError: logout.isError,
@@ -170,4 +174,25 @@ function useSpaceCard(isGuest: boolean): { props: SpaceCardProps | null; fallbac
         ),
     },
   };
+}
+
+/** COWEL との連携（COWEL の docs/superpowers/plans/2026-11-04-covow-sync.md の Task 4）。番号は出した応答でだけ分かる */
+function CowelLink() {
+  const qc = useQueryClient();
+  const status = useQuery({ queryKey: ["sync-status"], queryFn: () => api<{ linked: boolean }>("/space/sync-status") });
+  const create = useMutation({ mutationFn: () => api<{ code: string; expiresAt: string }>("/space/sync-code", { method: "POST" }) });
+  const revoke = useMutation({
+    mutationFn: () => api<void>("/space/sync-revoke", { method: "POST" }),
+    onSuccess: () => { create.reset(); void qc.invalidateQueries({ queryKey: ["sync-status"] }); },
+  });
+  return (
+    <CowelLinkCard
+      linked={!!status.data?.linked}
+      code={create.data ?? null}
+      busy={create.isPending || revoke.isPending}
+      error={create.isError || revoke.isError}
+      onCreateCode={() => create.mutate()}
+      onRevoke={() => revoke.mutate()}
+    />
+  );
 }

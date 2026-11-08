@@ -9,6 +9,8 @@ const SAFE = new Set(["GET", "HEAD", "OPTIONS"]);
  */
 export const originCheck = () =>
   createMiddleware<AppEnv>(async (c, next) => {
+    // COWEL のサーバーが番号を鍵に換える窓口だけは Origin なし（ブラウザからではない。番号そのものが本人の確認）
+    if (c.req.method === "POST" && c.req.path === "/api/sync/link/exchange") return next();
     if (!SAFE.has(c.req.method) && c.req.header("Origin") !== c.env.APP_ORIGIN) {
       return c.json({ code: "FORBIDDEN_ORIGIN", message: "この操作は受け付けられません" }, 403);
     }

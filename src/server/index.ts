@@ -9,6 +9,7 @@ import { dataRoutes } from "./routes/data";
 import { meRoutes } from "./routes/me";
 import { insightsRoutes } from "./routes/insights";
 import { inviteRoutes, spaceRoutes } from "./routes/space";
+import { syncRoutes } from "./routes/sync";
 import { trialRoutes } from "./routes/trial";
 import { purgeExpiredGuests } from "./trial/trial";
 import type { AppEnv } from "./types";
@@ -34,6 +35,7 @@ const app = new Hono<AppEnv>()
   .route("/me", meRoutes)
   .route("/space", spaceRoutes)
   .route("/invites", inviteRoutes)
+  .route("/sync", syncRoutes)
   .route("/trial", trialRoutes)
   .route("/insights", insightsRoutes)
   .route("/", dataRoutes);

@@ -15,6 +15,7 @@ import {
   renameSpace,
   revokeInvites,
 } from "../repo/space";
+import { createLinkCode, linkStatus, revokeLink } from "../repo/sync-links";
 import type { AppEnv } from "../types";
 
 const inviteUrl = (origin: string, token: string) => `${origin}/invite/${token}`;
@@ -78,7 +79,14 @@ export const spaceRoutes = new Hono<AppEnv>()
   .delete("/invite", async (c) => {
     await revokeInvites(c.var.db, currentSpaceId(c));
     return c.body(null, 204);
-  });
+  })
+  // COWEL との連携：8桁の番号（10分・1回限り）を出す・自分の連携をやめる・自分が連携しているか
+  .post("/sync-code", async (c) => c.json(await createLinkCode(c.var.db, currentSpaceId(c), currentUser(c).id), 201))
+  .post("/sync-revoke", async (c) => {
+    await revokeLink(c.var.db, currentUser(c).id);
+    return c.body(null, 204);
+  })
+  .get("/sync-status", async (c) => c.json(await linkStatus(c.var.db, currentSpaceId(c), currentUser(c).id)));
 
 /** 招待リンクを開いた人向け（中身の確認はログイン前でもできる。参加はログインが必要） */
 export const inviteRoutes = new Hono<AppEnv>()

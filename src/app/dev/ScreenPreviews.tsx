@@ -12,6 +12,7 @@ import { InsightsScreen, type InsightsTab } from "../screens/InsightsScreen";
 import { PlanDetailScreen } from "../screens/PlanDetailScreen";
 import { PlansScreen } from "../screens/PlansScreen";
 import { SettingsScreen } from "../screens/SettingsScreen";
+import { CowelLinkCard } from "../screens/CowelLinkCard";
 import type { PlanView } from "../screens/types";
 import { useTheme } from "../theme/ThemeProvider";
 import { THEME_IDS, THEMES, type ThemeId } from "../theme/themes";
@@ -270,6 +271,7 @@ export default function ScreenPreviews() {
               budgets: [0, 1, 2].map((i) => ({ yearMonth: addMonths(YM, i), amount: budgetOf(addMonths(YM, i)) })),
               categories: CATS.map((c) => ({ id: c.id, name: c[dl] })),
             }}
+            actions={{ cowel: <CowelLinkCard linked code={{ code: "48213907", expiresAt: "2026-10-28T10:10:00.000Z" }} /> }}
           />
         )}
       </main>

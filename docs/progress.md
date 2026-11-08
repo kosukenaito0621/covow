@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-11-08（COWEL との連携・別ブランチ claude/cowel-sync、未公開）
+### 今日やったこと
+- 内藤さんの承認（COWEL 側の会話で「COVOW側を始める」）で、COWEL の計画 docs/superpowers/plans/2026-11-04-covow-sync.md の Task 3・4 を実装。作業は main ではなく worktree（C:devcovow-cowel-sync、ブランチ claude/cowel-sync）。本番・GitHub への push はしていない
+- 移行 0007（変更の記録帳 expense_changes）：支出の追加・訂正・削除、予定から購入・未購入に戻す、カテゴリの名前の変更（言語の切り替えを含む）・削除で、同じ batch に1行。payload は COWEL が使う項目だけ（メモ・URL なし）
+- 移行 0008（sync_link_codes・sync_links）：設定で8桁の番号（10分・1回限り）を出し、COWEL が鍵に換える。番号も鍵もハッシュだけ保存。窓口 /api/sync（exchange は Origin なし、ほかは鍵で読むだけ：expense-changes・expenses-snapshot・members）。/api/space/sync-code・sync-revoke・sync-status
+- 設定に「COWEL連携」の欄（英語・日本語）。確認用ページ /dev/screens?screen=settings に見本
+- npm run check 相当：型・Lint・テスト 169 件すべて通過
+
+### 次にやること
+- COWEL と手元でつないだ検査（COWEL の Task 7）
+- 内藤さんの許可を得て：本番 D1 に 0007・0008 → main へ取り込み → デプロイ
+
 ## 2026-11-03（一覧は自分のものから）
 ### 今日やったこと
 - 予定一覧・支出一覧の人の絞り込みを、開いたときは「自分」に。並びは 自分 → ほかのメンバー → 全員（全員は最後）。メンバーが1人なら絞り込まない

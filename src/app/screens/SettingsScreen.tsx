@@ -36,6 +36,8 @@ export interface SettingsActions {
   newsUnread?: number;
   /** 「使い方ガイドをもう一度」 */
   onTour?: () => void;
+  /** COWEL との連携の欄（体験版では出さない） */
+  cowel?: ReactNode;
   /** 体験版：アカウント削除を出さない */
   isGuest?: boolean;
   /** 予算の行を押したとき（その月と、いまの金額） */
@@ -189,6 +191,12 @@ export function SettingsScreen({
           )}
         </GlassCard>
       </Block>
+      )}
+
+      {actions.cowel && (
+        <Block id="set-cowel" title={t("settings.cowel")}>
+          {actions.cowel}
+        </Block>
       )}
 
       <Block id="set-account" title={t("settings.account")}>
